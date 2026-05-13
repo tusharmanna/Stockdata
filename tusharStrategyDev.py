@@ -1,5 +1,5 @@
 """
-tusharStrategyDev.py  --  TusharStrategy v1 vs v2 vs v3 vs v4
+tusharStrategyDev.py  --  TusharStrategy v1 vs v2 vs v3 vs v4 vs v5
 
 STRATEGIES
 ----------
@@ -27,6 +27,15 @@ v4 (Hybrid: v2 Signals + v3 Graduated Sizing):
   - SIZING: v3's graduated position (30%/60%/85%/110% based on MA count)
   - Combines sharp entry/exit with graduated position management
 
+v5 (V4 Exits + BB+RSI Dynamic Sizing):
+  - GATE: V4's edge-triggered exits (v1 OR 200MA) block market access
+  - SIZING: While unblocked, Bollinger Bands %B + RSI determines daily position:
+            %B >= 1.0 + RSI >= 65  -> 100%
+            %B >= 0.5 + RSI >= 60  -> 75%
+            %B >= 0.5 + RSI >= 50  -> 50%
+            %B > 0.0  + RSI >= 45  -> 25%
+            else                   -> 0% (cash within unblocked regime)
+
 USAGE
 -----
   python tusharStrategyDev.py                        # today's v1 signal
@@ -35,6 +44,8 @@ USAGE
   python tusharStrategyDev.py --v3 --all             # v1 vs v2 vs v3 full history
   python tusharStrategyDev.py --v4 --all             # v1 vs v2 vs v3 vs v4 full history
   python tusharStrategyDev.py --v4 --year 2022       # v1-v4 for specific year
+  python tusharStrategyDev.py --v5 --all             # v1 vs v2 vs v3 vs v4 vs v5 full history
+  python tusharStrategyDev.py --v5 --year 2022       # v1-v5 for specific year
 """
 
 import argparse
@@ -57,6 +68,9 @@ MA200_PERIOD      = 200
 MA_CONFIRM_DAYS   = 3             # consecutive closes above/below MA to trigger
 MA20_PERIOD       = 20            # v3 short-term MA
 # v3 position sizes: 30% (0 MAs), 60% (1 MA), 85% (2 MAs), 110% (3 MAs)
+BB_PERIOD         = 20            # v5 Bollinger Band lookback
+BB_STD            = 2.0           # v5 Bollinger Band standard deviations
+RSI_PERIOD        = 14            # v5 Wilder's RSI period
 DATA_START        = "2015-01-01"  # warmup start for accurate rolling high (matches tushar_strategy.py)
 
 MONTHS = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -77,6 +91,19 @@ def _load(ticker: str, start: str = DATA_START) -> pd.DataFrame:
     df.index = pd.to_datetime(df.index).tz_localize(None)
     df.index.name = "date"
     return df[["open", "high", "low", "close", "volume"]]
+
+
+# -- RSI Helper ----------------------------------------------------------------
+
+def _rsi(close: pd.Series, period: int = RSI_PERIOD) -> pd.Series:
+    """Wilder's smoothed RSI using exponential moving average."""
+    delta    = close.diff()
+    gain     = delta.clip(lower=0)
+    loss     = (-delta).clip(lower=0)
+    avg_gain = gain.ewm(alpha=1/period, adjust=False, min_periods=period).mean()
+    avg_loss = loss.ewm(alpha=1/period, adjust=False, min_periods=period).mean()
+    rs       = avg_gain / avg_loss.replace(0, float("nan"))
+    return (100 - 100 / (1 + rs)).fillna(50)
 
 
 # -- Strategy 1: TusharStrategy v1 (fixed position sizing) --------------------
@@ -385,6 +412,134 @@ def compute_signal_v4(qqq_df: pd.DataFrame) -> pd.DataFrame:
     df["ma20"] = df["ma20"]
     df["ma50"] = df["ma50"]
     df["ma200"] = df["ma200"]
+    return df
+
+
+def compute_signal_v5(qqq_df: pd.DataFrame) -> pd.DataFrame:
+    """v5: V4's sharp exits (to 0%) as market-access gate + BB+RSI dynamic daily position sizing while unblocked."""
+    df = qqq_df.copy()
+    # V4 indicators
+    df["high189"] = df["close"].rolling(HIGH_PERIOD, min_periods=1).max()
+    df["pcthi"]   = (df["high189"] - df["close"]) / df["high189"] * 100
+    # MA indicators
+    df["ma20"]  = df["close"].rolling(MA20_PERIOD,  min_periods=1).mean()
+    df["ma50"]  = df["close"].rolling(MA50_PERIOD,  min_periods=1).mean()
+    df["ma200"] = df["close"].rolling(MA200_PERIOD, min_periods=1).mean()
+    # BB indicators
+    df["bb_mid"]  = df["close"].rolling(BB_PERIOD, min_periods=1).mean()
+    df["bb_std"]  = df["close"].rolling(BB_PERIOD, min_periods=1).std()
+    df["bb_upper"]= df["bb_mid"] + BB_STD * df["bb_std"]
+    df["bb_lower"]= df["bb_mid"] - BB_STD * df["bb_std"]
+    # RSI indicator
+    df["rsi"] = _rsi(df["close"], RSI_PERIOD)
+
+    position_size_list, action_list = [], []
+    days_below_list = []
+    days_above_200_list, days_below_200_list = [], []
+    pct_b_list, blocked_list = [], []
+
+    position_size = 1.0
+    prev_position_size = 1.0
+    days_below = 0
+    days_above_200 = 0
+    days_below_200 = 0
+    prev_v1_exit = False
+    prev_ma_exit = False
+    prev_v1_entry = False
+    prev_ma_entry = False
+    blocked = False
+
+    for _, row in df.iterrows():
+        close = row["close"]
+        pcthi = row["pcthi"]
+        rsi = row["rsi"]
+        bb_upper = row["bb_upper"]
+        bb_lower = row["bb_lower"]
+        ma200 = row["ma200"]
+
+        # --- V4 exit/entry conditions ---
+        if pcthi >= SIGNAL_THRESHOLD:
+            days_below = 0
+            v1_exit = True
+        else:
+            days_below += 1
+            v1_exit = False
+
+        v1_entry = (days_below >= REENTRY_DAYS)
+
+        if close > ma200:
+            days_above_200 += 1
+            days_below_200 = 0
+        else:
+            days_below_200 += 1
+            days_above_200 = 0
+
+        ma_exit = (days_below_200 >= MA_CONFIRM_DAYS)
+        ma_entry = (days_above_200 >= MA_CONFIRM_DAYS)
+
+        # Edge detection
+        v1_exit_edge  = v1_exit and not prev_v1_exit
+        ma_exit_edge  = ma_exit and not prev_ma_exit
+        v1_entry_edge = v1_entry and not prev_v1_entry
+        ma_entry_edge = ma_entry and not prev_ma_entry
+
+        # Gate: V4 exit blocks market access; V4 entry unblocks
+        if v1_exit_edge or ma_exit_edge:
+            blocked = True
+        elif blocked and (v1_entry_edge or ma_entry_edge):
+            blocked = False
+
+        # Position sizing
+        if blocked:
+            position_size = 0.0
+            pct_b = 0.0
+        else:
+            # BB+RSI dynamic sizing
+            band_width = bb_upper - bb_lower
+            pct_b = (close - bb_lower) / band_width if band_width > 0 else 0.5
+
+            if pct_b >= 1.0 and rsi >= 65:     position_size = 1.00
+            elif pct_b >= 0.5 and rsi >= 60:   position_size = 0.75
+            elif pct_b >= 0.5 and rsi >= 50:   position_size = 0.50
+            elif pct_b > 0.0 and rsi >= 45:    position_size = 0.25
+            else:                               position_size = 0.00
+
+        # Update previous state
+        prev_v1_exit = v1_exit
+        prev_ma_exit = ma_exit
+        prev_v1_entry = v1_entry
+        prev_ma_entry = ma_entry
+
+        # Determine action
+        if position_size > prev_position_size:
+            act = "BUY"
+        elif position_size < prev_position_size:
+            act = "SELL"
+        else:
+            act = "HOLD"
+
+        position_size_list.append(position_size)
+        action_list.append(act)
+        days_below_list.append(days_below)
+        days_above_200_list.append(days_above_200)
+        days_below_200_list.append(days_below_200)
+        pct_b_list.append(pct_b)
+        blocked_list.append(blocked)
+        prev_position_size = position_size
+
+    df["position_size"] = position_size_list
+    df["action"] = action_list
+    df["regime"] = ["BUY_TQQQ" if ps > 0 else "CASH" for ps in position_size_list]
+    df["pcthi"] = df["pcthi"]
+    df["days_below"] = days_below_list
+    df["days_above_200"] = days_above_200_list
+    df["days_below_200"] = days_below_200_list
+    df["bb_upper"] = df["bb_upper"]
+    df["bb_lower"] = df["bb_lower"]
+    df["bb_mid"] = df["bb_mid"]
+    df["rsi"] = df["rsi"]
+    df["pct_b"] = pct_b_list
+    df["blocked"] = blocked_list
     return df
 
 
@@ -840,6 +995,132 @@ def print_v4_trade_log(sig_v4: pd.DataFrame, tqqq_df: pd.DataFrame) -> None:
         print(f"\n  Total: {len(trades)} signals ({sum(1 for t in trades if t['action']=='BUY')} buys, {sum(1 for t in trades if t['action']=='SELL')} sells)\n")
 
 
+def print_v5_comparison(daily_v1: list[dict], daily_v2: list[dict], daily_v3: list[dict],
+                        daily_v4: list[dict], daily_v5: list[dict], daily_tbh: list[dict],
+                        years: list[int], capital: float) -> None:
+    """v1 vs v2 vs v3 vs v4 vs v5 annual comparison."""
+    r_v1  = _monthly_rets(daily_v1)
+    r_v2  = _monthly_rets(daily_v2)
+    r_v3  = _monthly_rets(daily_v3)
+    r_v4  = _monthly_rets(daily_v4)
+    r_v5  = _monthly_rets(daily_v5)
+    r_tbh = _monthly_rets(daily_tbh)
+
+    W   = 125
+    SEP = "=" * W
+    DIV = "-" * W
+
+    print(f"\n{SEP}")
+    print(f"  v1 vs v2 vs v3 vs v4 vs v5 (V4 Exits + BB+RSI Sizing)  |  Capital: ${capital:,.0f}")
+    print(f"{SEP}\n")
+
+    yr_totals = []
+    cum_v1 = cum_v2 = cum_v3 = cum_v4 = cum_v5 = cum_tbh = capital
+
+    for year in years:
+        yv10 = cum_v1
+        yv20 = cum_v2
+        yv30 = cum_v3
+        yv40 = cum_v4
+        yv50 = cum_v5
+        ytbh0 = cum_tbh
+
+        for m in range(1, 13):
+            ym = (year, m)
+            tbh = r_tbh.get(ym)
+            v1  = r_v1.get(ym)
+            v2  = r_v2.get(ym)
+            v3  = r_v3.get(ym)
+            v4  = r_v4.get(ym)
+            v5  = r_v5.get(ym)
+
+            if tbh: cum_tbh *= 1 + tbh / 100
+            if v1:  cum_v1  *= 1 + v1  / 100
+            if v2:  cum_v2  *= 1 + v2  / 100
+            if v3:  cum_v3  *= 1 + v3  / 100
+            if v4:  cum_v4  *= 1 + v4  / 100
+            if v5:  cum_v5  *= 1 + v5  / 100
+
+        fy_tbh = round((cum_tbh / ytbh0 - 1) * 100, 1)
+        fy_v1  = round((cum_v1  / yv10  - 1) * 100, 1)
+        fy_v2  = round((cum_v2  / yv20  - 1) * 100, 1)
+        fy_v3  = round((cum_v3  / yv30  - 1) * 100, 1)
+        fy_v4  = round((cum_v4  / yv40  - 1) * 100, 1)
+        fy_v5  = round((cum_v5  / yv50  - 1) * 100, 1)
+
+        yr_totals.append((year, fy_tbh, fy_v1, fy_v2, fy_v3, fy_v4, fy_v5))
+        if yr_totals == [(years[0], fy_tbh, fy_v1, fy_v2, fy_v3, fy_v4, fy_v5)]:
+            print(f"  {'Year':<7} {'TQQQ B&H':>10} {'v1':>10} {'v2':>10} {'v3':>10} {'v4':>10} {'v5':>10}")
+            print(DIV)
+
+        print(f"  {year:<7} {_fmt(fy_tbh):>10} {_fmt(fy_v1):>10} {_fmt(fy_v2):>10} {_fmt(fy_v3):>10} {_fmt(fy_v4):>10} {_fmt(fy_v5):>10}")
+
+    if len(yr_totals) > 1:
+        print(f"\n{SEP}")
+        n_yr = (date.today().year - min(y for y, _, _, _, _, _, _ in yr_totals)) + \
+               (date.today().month - 1) / 12 + (date.today().day - 1) / 365
+        cagr = lambda x: round(((x / capital) ** (1 / n_yr) - 1) * 100, 1) if n_yr > 0 and x > 0 else 0.0
+
+        ov_tbh = round((cum_tbh / capital - 1) * 100, 1)
+        ov_v1  = round((cum_v1  / capital - 1) * 100, 1)
+        ov_v2  = round((cum_v2  / capital - 1) * 100, 1)
+        ov_v3  = round((cum_v3  / capital - 1) * 100, 1)
+        ov_v4  = round((cum_v4  / capital - 1) * 100, 1)
+        ov_v5  = round((cum_v5  / capital - 1) * 100, 1)
+
+        print(f"  {'CAGR':<7} {_fmt(cagr(cum_tbh)):>10} {_fmt(cagr(cum_v1)):>10} {_fmt(cagr(cum_v2)):>10} {_fmt(cagr(cum_v3)):>10} {_fmt(cagr(cum_v4)):>10} {_fmt(cagr(cum_v5)):>10}")
+        print(f"  {'Final':<7} ${cum_tbh:>9,.0f} ${cum_v1:>9,.0f} ${cum_v2:>9,.0f} ${cum_v3:>9,.0f} ${cum_v4:>9,.0f} ${cum_v5:>9,.0f}")
+        print(f"\n{SEP}\n")
+
+
+def print_v5_trade_log(sig_v5: pd.DataFrame, tqqq_df: pd.DataFrame) -> None:
+    """Print v5 (V4 exits + BB+RSI sizing) trade log."""
+    trades = []
+    for dt, row in sig_v5.iterrows():
+        if row["action"] in ("BUY", "SELL"):
+            tqqq_p = _price_on(tqqq_df, dt)
+            if tqqq_p is None:
+                continue
+
+            pcthi = row.get("pcthi", 0)
+            days_below = row.get("days_below", 0)
+            d200 = row.get("days_below_200", 0) if row["action"] == "SELL" else row.get("days_above_200", 0)
+            blocked = row.get("blocked", False)
+            pct_b = row.get("pct_b", 0)
+            rsi = row.get("rsi", 50)
+            pos_size = row.get("position_size", 0)
+
+            # Determine gate status and trigger
+            if blocked:
+                trigger = "BLOCKED"
+            else:
+                # Check if this was a gate unblock
+                v1_fired = (days_below >= REENTRY_DAYS and pcthi < SIGNAL_THRESHOLD)
+                ma_fired = (d200 >= MA_CONFIRM_DAYS)
+                if v1_fired or ma_fired:
+                    trigger = "v1-entry" if v1_fired else "200MA-above"
+                else:
+                    trigger = f"BB+RSI"
+
+            trades.append({
+                "date": dt,
+                "action": row["action"],
+                "price": tqqq_p,
+                "trigger": trigger,
+                "pct_b": pct_b,
+                "rsi": rsi,
+                "pos": pos_size
+            })
+
+    if trades:
+        print(f"\n  v5 (V4 Exits + BB+RSI Dynamic Sizing) Trade Log:")
+        print(f"  {'Date':<12} {'Act':<4} {'Price':>10} {'Gate/Signal':<15} {'%B':>6} {'RSI':>6} {'Target%':<8}")
+        print(f"  {'-'*70}")
+        for t in trades:
+            print(f"  {t['date'].date()} {t['action']:<4} ${t['price']:>8.2f}  {t['trigger']:<15} {t['pct_b']:>6.2f} {t['rsi']:>6.1f}  {t['pos']*100:>6.0f}%")
+        print(f"\n  Total: {len(trades)} signals ({sum(1 for t in trades if t['action']=='BUY')} buys, {sum(1 for t in trades if t['action']=='SELL')} sells)\n")
+
+
 def print_daily_signal(sig_df: pd.DataFrame, tqqq_df: pd.DataFrame) -> None:
     row       = sig_df.iloc[-1]
     today     = sig_df.index[-1].date()
@@ -876,6 +1157,8 @@ def main():
                     help="Compare v1 vs v2 vs v3 graduated MA exposure")
     ap.add_argument("--v4",       action="store_true",
                     help="Compare v1 vs v2 vs v3 vs v4 (v2 signals + v3 sizing)")
+    ap.add_argument("--v5",       action="store_true",
+                    help="Compare v1-v5 (V4 exits + BB+RSI dynamic sizing)")
     ap.add_argument("--all",      action="store_true",
                     help="Backtest all years")
     ap.add_argument("--year",     type=int,
@@ -889,7 +1172,35 @@ def main():
     print("Computing v1 signal...")
     sig_v1 = compute_signal_v1(qqq_df)
 
-    if args.v4:
+    if args.v5:
+        print("Computing v2, v3, v4, and v5 signals...")
+        sig_v2 = compute_signal_v2(qqq_df)
+        sig_v3 = compute_signal_v3(qqq_df)
+        sig_v4 = compute_signal_v4(qqq_df)
+        sig_v5 = compute_signal_v5(qqq_df)
+        # Align all to common trading dates
+        common = sig_v1.index.intersection(tqqq_df.index)
+        tqqq_al = tqqq_df.loc[common]
+        sig_v1 = sig_v1.loc[common]
+        sig_v2 = sig_v2.loc[common]
+        sig_v3 = sig_v3.loc[common]
+        sig_v4 = sig_v4.loc[common]
+        sig_v5 = sig_v5.loc[common]
+        daily_v1 = run_backtest(sig_v1, tqqq_al, args.capital)
+        daily_v2 = run_backtest(sig_v2, tqqq_al, args.capital)
+        daily_v3 = run_backtest(sig_v3, tqqq_al, args.capital)
+        daily_v4 = run_backtest(sig_v4, tqqq_al, args.capital)
+        daily_v5 = run_backtest(sig_v5, tqqq_al, args.capital)
+        daily_tbh = run_buyhold(tqqq_al, args.capital)
+        if args.all:
+            years = sorted(set(d["date"].year for d in daily_v1))
+        elif args.year:
+            years = [args.year]
+        else:
+            years = [date.today().year]
+        print_v5_comparison(daily_v1, daily_v2, daily_v3, daily_v4, daily_v5, daily_tbh, years, args.capital)
+        print_v5_trade_log(sig_v5, tqqq_al)
+    elif args.v4:
         print("Computing v2, v3, and v4 signals...")
         sig_v2 = compute_signal_v2(qqq_df)
         sig_v3 = compute_signal_v3(qqq_df)
