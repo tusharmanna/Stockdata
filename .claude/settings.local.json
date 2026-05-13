@@ -5,7 +5,24 @@
       "Bash(where python:*)",
       "Bash(python:*)",
       "Bash(pip install:*)",
-      "Bash(pip show:*)"
+      "Bash(pip show:*)",
+      "Bash(taskkill /F /IM python.exe)",
+      "Bash(tasklist:*)",
+      "Bash(ls:*)",
+      "Bash(taskkill //PID 41440 //F)",
+      "Bash(taskkill //PID 32476 //F)",
+      "Bash(taskkill //PID 12016 //F)",
+      "Bash(wmic process:*)",
+      "Bash(taskkill //PID 35148 //F)",
+      "Bash(taskkill //PID 32308 //F)",
+      "Bash(taskkill //PID 42564 //F)",
+      "Bash(curl -s \"https://api.nasdaq.com/api/screener/stocks?tableonly=true&limit=10000&download=true\" -H \"User-Agent: Mozilla/5.0\")",
+      "Bash(taskkill:*)",
+      "Bash(python3 *)",
+      "Bash(Get-ChildItem -Path \"E:\\\\work\\\\Stockdata\" -Recurse -Filter \"*.py\")",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(dir E:\\\\work\\\\Stockdata *)",
+      "Bash(dir \"E:\\\\work\\\\Stockdata\\\\data\" /b)"
     ]
   }
 }

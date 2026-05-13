@@ -10,8 +10,9 @@ DB_PATH = os.path.join(os.path.dirname(__file__), "stockdata.db")
 
 
 def _connect() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=60)
     conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("PRAGMA busy_timeout=60000")
     return conn
 
 
@@ -76,6 +77,223 @@ def init_db():
             body_pct   REAL,
             range_pct  REAL,
             PRIMARY KEY (scan_date, ticker)
+        );
+
+        CREATE TABLE IF NOT EXISTS red_candle_scan_results (
+            scan_date  TEXT NOT NULL,
+            ticker     TEXT NOT NULL,
+            price_date TEXT,
+            open       REAL,
+            close      REAL,
+            high       REAL,
+            low        REAL,
+            volume     INTEGER,
+            ma20       REAL,
+            ma50       REAL,
+            ma200      REAL,
+            vol_avg30  REAL,
+            body_pct   REAL,
+            range_pct  REAL,
+            PRIMARY KEY (scan_date, ticker)
+        );
+
+        CREATE TABLE IF NOT EXISTS stockbee_scan_results (
+            scan_date        TEXT NOT NULL,
+            ticker           TEXT NOT NULL,
+            price_date       TEXT,
+            open             REAL,
+            close            REAL,
+            high             REAL,
+            low              REAL,
+            volume           INTEGER,
+            prev_volume      INTEGER,
+            ma20             REAL,
+            ma50             REAL,
+            ma200            REAL,
+            vol_avg30        REAL,
+            range_pct        REAL,
+            range_expansion  REAL,
+            close_vs_high_pct REAL,
+            PRIMARY KEY (scan_date, ticker)
+        );
+
+        CREATE TABLE IF NOT EXISTS ibd_scan_results (
+            scan_date      TEXT NOT NULL,
+            ticker         TEXT NOT NULL,
+            price_date     TEXT,
+            open           REAL,
+            close          REAL,
+            high           REAL,
+            low            REAL,
+            volume         INTEGER,
+            ma20           REAL,
+            ma50           REAL,
+            ma200          REAL,
+            vol_avg30      REAL,
+            dist_ma50_pct  REAL,
+            dist_ma200_pct REAL,
+            range_pct      REAL,
+            PRIMARY KEY (scan_date, ticker)
+        );
+
+        CREATE TABLE IF NOT EXISTS momentum_scan_results (
+            scan_date     TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            price_date    TEXT,
+            open          REAL,
+            close         REAL,
+            high          REAL,
+            low           REAL,
+            volume        INTEGER,
+            ma20          REAL,
+            ma50          REAL,
+            ma200         REAL,
+            vol_avg30     REAL,
+            dist_ma20_pct REAL,
+            dist_ma50_pct REAL,
+            ret_20d_pct   REAL,
+            range_pct     REAL,
+            PRIMARY KEY (scan_date, ticker)
+        );
+
+        CREATE TABLE IF NOT EXISTS double_trouble_scan_results (
+            scan_date          TEXT NOT NULL,
+            ticker             TEXT NOT NULL,
+            price_date         TEXT,
+            open               REAL,
+            close              REAL,
+            high               REAL,
+            low                REAL,
+            volume             INTEGER,
+            ma20               REAL,
+            ma50               REAL,
+            ma200              REAL,
+            vol_avg30          REAL,
+            close_vs_52wk_low  REAL,
+            change_pct         REAL,
+            range_pct          REAL,
+            PRIMARY KEY (scan_date, ticker)
+        );
+
+        CREATE TABLE IF NOT EXISTS ti65_scan_results (
+            scan_date   TEXT NOT NULL,
+            ticker      TEXT NOT NULL,
+            price_date  TEXT,
+            open        REAL,
+            close       REAL,
+            high        REAL,
+            low         REAL,
+            volume      INTEGER,
+            ma50        REAL,
+            ma200       REAL,
+            vol_avg30   REAL,
+            avgc7       REAL,
+            avgc65      REAL,
+            ti65_ratio  REAL,
+            change_pct  REAL,
+            range_pct   REAL,
+            PRIMARY KEY (scan_date, ticker)
+        );
+
+        CREATE TABLE IF NOT EXISTS ma_cross_up_results (
+            scan_date   TEXT NOT NULL,
+            ticker      TEXT NOT NULL,
+            price_date  TEXT,
+            open        REAL,
+            close       REAL,
+            high        REAL,
+            low         REAL,
+            volume      INTEGER,
+            ma20        REAL,
+            ma50        REAL,
+            ma200       REAL,
+            vol_avg30   REAL,
+            body_pct    REAL,
+            range_pct   REAL,
+            crossed_ma  TEXT,
+            PRIMARY KEY (scan_date, ticker)
+        );
+
+        CREATE TABLE IF NOT EXISTS ma_cross_down_results (
+            scan_date   TEXT NOT NULL,
+            ticker      TEXT NOT NULL,
+            price_date  TEXT,
+            open        REAL,
+            close       REAL,
+            high        REAL,
+            low         REAL,
+            volume      INTEGER,
+            ma20        REAL,
+            ma50        REAL,
+            ma200       REAL,
+            vol_avg30   REAL,
+            body_pct    REAL,
+            range_pct   REAL,
+            crossed_ma  TEXT,
+            PRIMARY KEY (scan_date, ticker)
+        );
+
+        CREATE TABLE IF NOT EXISTS parabolic_scan_results (
+            scan_date     TEXT NOT NULL,
+            ticker        TEXT NOT NULL,
+            price_date    TEXT,
+            open          REAL,
+            close         REAL,
+            high          REAL,
+            low           REAL,
+            volume        INTEGER,
+            ma20          REAL,
+            ma50          REAL,
+            ma200         REAL,
+            vol_avg30     REAL,
+            ret_20d_pct   REAL,
+            ret_5d_pct    REAL,
+            rise_60d_pct  REAL,
+            dist_ma50_pct REAL,
+            range_pct     REAL,
+            PRIMARY KEY (scan_date, ticker)
+        );
+
+        CREATE TABLE IF NOT EXISTS near_ma50_below_results (
+            scan_date      TEXT NOT NULL,
+            ticker         TEXT NOT NULL,
+            price_date     TEXT,
+            open           REAL,
+            close          REAL,
+            high           REAL,
+            low            REAL,
+            volume         INTEGER,
+            ma20           REAL,
+            ma50           REAL,
+            ma200          REAL,
+            vol_avg30      REAL,
+            pct_below_ma50 REAL,
+            range_pct      REAL,
+            PRIMARY KEY (scan_date, ticker)
+        );
+
+        CREATE TABLE IF NOT EXISTS ma50_cross_up_results (
+            scan_date   TEXT NOT NULL,
+            ticker      TEXT NOT NULL,
+            price_date  TEXT,
+            open        REAL,
+            close       REAL,
+            high        REAL,
+            low         REAL,
+            volume      INTEGER,
+            ma20        REAL,
+            ma50        REAL,
+            ma200       REAL,
+            vol_avg30   REAL,
+            change_pct  REAL,
+            range_pct   REAL,
+            PRIMARY KEY (scan_date, ticker)
+        );
+
+        CREATE TABLE IF NOT EXISTS failed_tickers (
+            ticker    TEXT PRIMARY KEY,
+            fail_date TEXT NOT NULL,
+            reason    TEXT
         );
     """)
     conn.commit()
@@ -148,6 +366,31 @@ def get_prices(ticker: str) -> pd.DataFrame:
     return df
 
 
+def get_all_prices_bulk() -> dict:
+    """Return all prices grouped by ticker as {ticker: DataFrame}. Much faster than per-ticker queries."""
+    conn = _connect()
+    df = pd.read_sql_query(
+        "SELECT ticker, date, open, high, low, close, volume FROM prices ORDER BY ticker, date",
+        conn,
+    )
+    conn.close()
+    return {ticker: group.reset_index(drop=True) for ticker, group in df.groupby("ticker")}
+
+
+def upsert_indicators_bulk(rows: list):
+    """Insert or replace many indicator rows in a single transaction."""
+    if not rows:
+        return
+    conn = _connect()
+    conn.executemany(
+        "INSERT OR REPLACE INTO indicators (ticker, date, ma10, ma20, ma50, ma200, vol_avg30) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+        rows,
+    )
+    conn.commit()
+    conn.close()
+
+
 def get_all_tickers() -> list[str]:
     """Return list of distinct tickers in the prices table."""
     conn = _connect()
@@ -155,6 +398,35 @@ def get_all_tickers() -> list[str]:
     tickers = [row[0] for row in cur.fetchall()]
     conn.close()
     return tickers
+
+
+def mark_failed(ticker: str, reason: str):
+    """Record a ticker as failed/delisted so future runs skip it."""
+    mark_failed_many([ticker], reason)
+
+
+def mark_failed_many(tickers: list, reason: str):
+    """Record multiple tickers as failed in a single transaction."""
+    import datetime
+    if not tickers:
+        return
+    today = datetime.date.today().strftime("%Y-%m-%d")
+    conn = _connect()
+    conn.executemany(
+        "INSERT OR REPLACE INTO failed_tickers (ticker, fail_date, reason) VALUES (?, ?, ?)",
+        [(t, today, reason) for t in tickers],
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_failed_tickers() -> set:
+    """Return the set of tickers marked as failed."""
+    conn = _connect()
+    cur = conn.execute("SELECT ticker FROM failed_tickers")
+    result = {row[0] for row in cur.fetchall()}
+    conn.close()
+    return result
 
 
 def has_date(ticker: str, date_str: str) -> bool:

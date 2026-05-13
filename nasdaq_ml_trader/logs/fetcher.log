@@ -1,0 +1,49 @@
+2026-05-08 14:15:40,872 INFO [nasdaq_ml.fetcher] Downloading full history...
+2026-05-08 14:15:41,431 INFO [nasdaq_ml.fetcher] Downloaded 10418 rows from 1985-01-02 to 2026-05-08
+2026-05-08 14:15:41,880 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 14:15:51,477 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 14:15:51,487 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 14:15:56,376 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 14:15:56,379 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 14:16:17,717 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 14:16:17,717 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 15:16:13,857 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 15:16:13,892 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 15:18:11,915 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 15:18:11,968 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 15:19:30,369 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 15:19:30,413 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 15:22:16,262 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 15:22:16,266 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 15:22:23,947 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 15:22:23,950 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 15:22:41,407 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 15:22:41,418 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 15:36:03,464 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 15:36:03,477 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 15:36:17,768 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 15:36:17,779 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 15:36:53,224 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 15:36:53,308 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 15:39:02,383 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 15:39:02,427 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 15:58:54,638 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 15:58:54,733 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 16:05:04,201 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 16:05:04,221 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 16:07:00,908 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 16:07:00,927 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 16:07:46,841 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 16:07:47,187 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 16:08:08,435 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 16:08:08,440 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 16:13:14,136 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 16:13:14,147 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 16:14:03,054 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 16:14:03,127 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-08 16:16:47,083 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-08 16:16:47,118 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-09 00:16:07,623 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-09 00:16:07,681 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-09 00:17:07,577 INFO [nasdaq_ml.fetcher] Cache is up to date
+2026-05-09 00:17:07,644 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet

@@ -1,0 +1,863 @@
+ 
+=== Run started: Tue 03/24/2026 20:00:01.11 === 
+$AMPGZ: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$ALISU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$AKO: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+3 Failed downloads:
+['AMPGZ', 'ALISU', 'AKO']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+3 Failed downloads:
+
+3 Failed downloads:
+['AMPGZ', 'ALISU', 'AKO']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['AMPGZ', 'ALISU', 'AKO']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+3 Failed downloads:
+['AMPGZ', 'ALISU', 'AKO']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$ALIS: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$ALDFU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$ABLV: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: ANG"}}}
+$AHL: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$ANG: possibly delisted; no timezone found
+$AFJKU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$ASPCR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+4 Failed downloads:
+['AHL', 'AFJKU', 'ASPCR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['ANG']: possibly delisted; no timezone found
+
+4 Failed downloads:
+
+4 Failed downloads:
+
+4 Failed downloads:
+['AHL', 'AFJKU', 'ASPCR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['AHL', 'AFJKU', 'ASPCR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['AHL', 'AFJKU', 'ASPCR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['ANG']: possibly delisted; no timezone found
+['ANG']: possibly delisted; no timezone found
+['ANG']: possibly delisted; no timezone found
+$ATH: possibly delisted; no timezone found
+$ARTCU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$APAC: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$APACU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['APACU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['APACU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['APACU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['APACU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BBLGW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BF: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BEBE: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BIXIW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+2 Failed downloads:
+['BEBE', 'BIXIW']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+2 Failed downloads:
+['BEBE', 'BIXIW']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+2 Failed downloads:
+['BEBE', 'BIXIW']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+2 Failed downloads:
+['BEBE', 'BIXIW']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BLRKU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BIXI: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BML: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BSAAR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BPACR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BRK: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['BRK']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+
+1 Failed download:
+
+1 Failed download:
+['BRK']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['BRK']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['BRK']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$CCNEP: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$CCGWW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$CCIIW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$CDR: possibly delisted; no timezone found
+
+10 Failed downloads:
+['CCGWW', 'CCIIW']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['CDR']: possibly delisted; no timezone found
+
+10 Failed downloads:
+['CHSN', 'CHSCM', 'CHGG', 'CELC', 'CGO', 'CHACR', 'CEPU']: TypeError("'NoneType' object is not subscriptable")
+
+10 Failed downloads:
+['CCGWW', 'CCIIW']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+10 Failed downloads:
+['CCGWW', 'CCIIW']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['CDR']: possibly delisted; no timezone found
+['CHSN', 'CHSCM', 'CHGG', 'CELC', 'CGO', 'CHACR', 'CEPU']: TypeError("'NoneType' object is not subscriptable")
+['CDR']: possibly delisted; no timezone found
+['CCGWW', 'CCIIW']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['CHSN', 'CHSCM', 'CHGG', 'CELC', 'CGO', 'CHACR', 'CEPU']: TypeError("'NoneType' object is not subscriptable")
+['CDR']: possibly delisted; no timezone found
+['CHSN', 'CHSCM', 'CHGG', 'CELC', 'CGO', 'CHACR', 'CEPU']: TypeError("'NoneType' object is not subscriptable")
+$GTENU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$CHACU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+5 Failed downloads:
+
+5 Failed downloads:
+['GTENU', 'CHACU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['GTENU', 'CHACU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['CNXC', 'CME', 'CITR']: TypeError("'NoneType' object is not subscriptable")
+['CNXC', 'CME', 'CITR']: TypeError("'NoneType' object is not subscriptable")
+
+5 Failed downloads:
+
+5 Failed downloads:
+['GTENU', 'CHACU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['GTENU', 'CHACU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['CNXC', 'CME', 'CITR']: TypeError("'NoneType' object is not subscriptable")
+['CNXC', 'CME', 'CITR']: TypeError("'NoneType' object is not subscriptable")
+$CRAQU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$CRD: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+9 Failed downloads:
+['CRD']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['DBL', 'CXM', 'DFP', 'DCX', 'DIOD', 'DEO', 'DMO', 'DCGO']: TypeError("'NoneType' object is not subscriptable")
+
+9 Failed downloads:
+
+9 Failed downloads:
+
+9 Failed downloads:
+['CRD']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['CRD']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['CRD']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['DBL', 'CXM', 'DFP', 'DCX', 'DIOD', 'DEO', 'DMO', 'DCGO']: TypeError("'NoneType' object is not subscriptable")
+['DBL', 'CXM', 'DFP', 'DCX', 'DIOD', 'DEO', 'DMO', 'DCGO']: TypeError("'NoneType' object is not subscriptable")
+['DBL', 'CXM', 'DFP', 'DCX', 'DIOD', 'DEO', 'DMO', 'DCGO']: TypeError("'NoneType' object is not subscriptable")
+$DTSQU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['DTSQU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['DTSQU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['DTSQU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['DTSQU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$EURKR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$FIGX: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$ETI: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+
+1 Failed download:
+['ETI']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['ETI']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['ETI']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['ETI']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$EMIS: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$EVOX: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$EXAS: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$FERA: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['FERA']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['FERA']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+
+1 Failed download:
+['FERA']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['FERA']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$FSHPR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$FVNNR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$GLOP: possibly delisted; no timezone found
+$GJS: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['GJS']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['GJS']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['GJS']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['GJS']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$GIW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$GJT: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$FVN: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$GTERR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+3 Failed downloads:
+['GJT', 'FVN', 'GTERR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+3 Failed downloads:
+
+3 Failed downloads:
+['GJT', 'FVN', 'GTERR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+3 Failed downloads:
+['GJT', 'FVN', 'GTERR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['GJT', 'FVN', 'GTERR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$IINNW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$INACU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+8 Failed downloads:
+['GDV', 'GSHRW', 'GH', 'GRBK', 'FVR', 'GIX']: TypeError("'NoneType' object is not subscriptable")
+['IINNW', 'INACU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+8 Failed downloads:
+['GDV', 'GSHRW', 'GH', 'GRBK', 'FVR', 'GIX']: TypeError("'NoneType' object is not subscriptable")
+
+8 Failed downloads:
+
+8 Failed downloads:
+['IINNW', 'INACU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['GDV', 'GSHRW', 'GH', 'GRBK', 'FVR', 'GIX']: TypeError("'NoneType' object is not subscriptable")
+['GDV', 'GSHRW', 'GH', 'GRBK', 'FVR', 'GIX']: TypeError("'NoneType' object is not subscriptable")
+['IINNW', 'INACU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['IINNW', 'INACU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$ICR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$I: possibly delisted; no timezone found
+
+2 Failed downloads:
+['ICR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['I']: possibly delisted; no timezone found
+
+2 Failed downloads:
+['ICR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['I']: possibly delisted; no timezone found
+
+2 Failed downloads:
+['ICR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['I']: possibly delisted; no timezone found
+
+2 Failed downloads:
+['ICR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['I']: possibly delisted; no timezone found
+$IGACU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$IPOD: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$IRHOR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$IOR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$JBK: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$KBONW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$K: possibly delisted; no timezone found
+
+3 Failed downloads:
+['JBK', 'KBONW']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['K']: possibly delisted; no timezone found
+
+3 Failed downloads:
+['JBK', 'KBONW']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['K']: possibly delisted; no timezone found
+
+3 Failed downloads:
+
+3 Failed downloads:
+['JBK', 'KBONW']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['JBK', 'KBONW']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['K']: possibly delisted; no timezone found
+['K']: possibly delisted; no timezone found
+$KTH: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$LATA: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$LCCC: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$KFII: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+3 Failed downloads:
+['KFII']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['KEN', 'LBTYK']: TypeError("'NoneType' object is not subscriptable")
+
+3 Failed downloads:
+['KFII']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['KEN', 'LBTYK']: TypeError("'NoneType' object is not subscriptable")
+
+3 Failed downloads:
+['KFII']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['KEN', 'LBTYK']: TypeError("'NoneType' object is not subscriptable")
+$LKSPR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$LUCYW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$MESHW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$MBAVU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$MMTX: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$MLACR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$MLAAU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$N: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$NEWTO: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$NMPAR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$NMP: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$NTRBW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$OACCU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$OAK: possibly delisted; no timezone found
+$P: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$PAII: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$OYSEU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$PCTTU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$PAACU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$PCAP: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$PLMKU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$PHXE: possibly delisted; no timezone found
+$RNGTW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$QUMSU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$RIBB: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$PRHIZ: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SEATW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SCE: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SCPQW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SCPQ: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SIM: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SORN: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SSEA: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$TACHU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SVAQU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SVIVU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SVACU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$TDWD: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$TMTSU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$VNME: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$WALDW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$WHLRL: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$WTGUU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$WHLRD: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$WLIIU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+Failed to get ticker 'Y' reason: Failed to perform, curl: (35) Recv failure: Connection was reset. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+$Y: possibly delisted; no timezone found
+$XOMAP: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$ZKPU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$ZKPW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+ 
+=== Run started: Tue 03/24/2026 20:10:40.36 === 
+$AKO: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: ANG"}}}
+$ABLV: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$ANG: possibly delisted; no timezone found
+
+4 Failed downloads:
+['ALDFU']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
+['AKO', 'ABLV']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['ANG']: possibly delisted; no timezone found
+
+4 Failed downloads:
+['ALDFU']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
+['AKO', 'ABLV']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['ANG']: possibly delisted; no timezone found
+
+4 Failed downloads:
+
+4 Failed downloads:
+['ALDFU']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
+['ALDFU']: YFRateLimitError('Too Many Requests. Rate limited. Try after a while.')
+['AKO', 'ABLV']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['AKO', 'ABLV']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['ANG']: possibly delisted; no timezone found
+['ANG']: possibly delisted; no timezone found
+$APAC: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$ALISU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$ALIS: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$APACU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$AFJKU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$AMPGZ: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$AHL: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$ARTCU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+3 Failed downloads:
+['AMPGZ', 'AHL', 'ARTCU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+3 Failed downloads:
+['AMPGZ', 'AHL', 'ARTCU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+3 Failed downloads:
+['AMPGZ', 'AHL', 'ARTCU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+3 Failed downloads:
+['AMPGZ', 'AHL', 'ARTCU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$ATH: possibly delisted; no timezone found
+$ASPCR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BSAAR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BEBE: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BBLGW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BIXIW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BF: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+14 Failed downloads:
+['BBLGW', 'BIXIW', 'BF']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['BCARW', 'BCAB', 'BEAT', 'BATRK', 'BCH', 'BBOT', 'BANF', 'BCTXZ', 'BCAR', 'BARK', 'BBD']: TypeError("'NoneType' object is not subscriptable")
+
+14 Failed downloads:
+['BBLGW', 'BIXIW', 'BF']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['BCARW', 'BCAB', 'BEAT', 'BATRK', 'BCH', 'BBOT', 'BANF', 'BCTXZ', 'BCAR', 'BARK', 'BBD']: TypeError("'NoneType' object is not subscriptable")
+
+14 Failed downloads:
+
+14 Failed downloads:
+['BBLGW', 'BIXIW', 'BF']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['BCARW', 'BCAB', 'BEAT', 'BATRK', 'BCH', 'BBOT', 'BANF', 'BCTXZ', 'BCAR', 'BARK', 'BBD']: TypeError("'NoneType' object is not subscriptable")
+['BBLGW', 'BIXIW', 'BF']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['BCARW', 'BCAB', 'BEAT', 'BATRK', 'BCH', 'BBOT', 'BANF', 'BCTXZ', 'BCAR', 'BARK', 'BBD']: TypeError("'NoneType' object is not subscriptable")
+$BIXI: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BLRKU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BRK: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BPACR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$BML: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+3 Failed downloads:
+['BRK', 'BPACR', 'BML']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+3 Failed downloads:
+['BRK', 'BPACR', 'BML']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+3 Failed downloads:
+['BRK', 'BPACR', 'BML']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+3 Failed downloads:
+['BRK', 'BPACR', 'BML']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$CCIIW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$CCGWW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$CCNEP: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$CDR: possibly delisted; no timezone found
+
+2 Failed downloads:
+['CCNEP']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['CDR']: possibly delisted; no timezone found
+
+2 Failed downloads:
+['CCNEP']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['CDR']: possibly delisted; no timezone found
+
+2 Failed downloads:
+['CCNEP']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+2 Failed downloads:
+['CDR']: possibly delisted; no timezone found
+['CCNEP']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['CDR']: possibly delisted; no timezone found
+$CHACU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$CRAQU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$CRD: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+6 Failed downloads:
+['CRAQU', 'CRD']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['CMSC', 'CHSCN', 'CNCK', 'CPNG']: TypeError("'NoneType' object is not subscriptable")
+
+6 Failed downloads:
+
+6 Failed downloads:
+
+6 Failed downloads:
+['CRAQU', 'CRD']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['CRAQU', 'CRD']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['CRAQU', 'CRD']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['CMSC', 'CHSCN', 'CNCK', 'CPNG']: TypeError("'NoneType' object is not subscriptable")
+['CMSC', 'CHSCN', 'CNCK', 'CPNG']: TypeError("'NoneType' object is not subscriptable")
+['CMSC', 'CHSCN', 'CNCK', 'CPNG']: TypeError("'NoneType' object is not subscriptable")
+$GJT: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+8 Failed downloads:
+['CWBC', 'CURV', 'CUB', 'CXT', 'CWT', 'CTNM', 'CUBWU']: TypeError("'NoneType' object is not subscriptable")
+['GJT']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+8 Failed downloads:
+['CWBC', 'CURV', 'CUB', 'CXT', 'CWT', 'CTNM', 'CUBWU']: TypeError("'NoneType' object is not subscriptable")
+['GJT']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+8 Failed downloads:
+['CWBC', 'CURV', 'CUB', 'CXT', 'CWT', 'CTNM', 'CUBWU']: TypeError("'NoneType' object is not subscriptable")
+['GJT']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+8 Failed downloads:
+['CWBC', 'CURV', 'CUB', 'CXT', 'CWT', 'CTNM', 'CUBWU']: TypeError("'NoneType' object is not subscriptable")
+['GJT']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$EMIS: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+8 Failed downloads:
+
+8 Failed downloads:
+['ENIC', 'DHR', 'ENLT', 'DMA', 'ECVT', 'DTSS', 'EMF', 'DAWN']: TypeError("'NoneType' object is not subscriptable")
+
+8 Failed downloads:
+['ENIC', 'DHR', 'ENLT', 'DMA', 'ECVT', 'DTSS', 'EMF', 'DAWN']: TypeError("'NoneType' object is not subscriptable")
+
+8 Failed downloads:
+['ENIC', 'DHR', 'ENLT', 'DMA', 'ECVT', 'DTSS', 'EMF', 'DAWN']: TypeError("'NoneType' object is not subscriptable")
+['ENIC', 'DHR', 'ENLT', 'DMA', 'ECVT', 'DTSS', 'EMF', 'DAWN']: TypeError("'NoneType' object is not subscriptable")
+$DTSQU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$EXAS: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['EXAS']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['EXAS']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['EXAS']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['EXAS']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$EURKR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$EVOX: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$FERA: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$ETI: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$FIGX: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+4 Failed downloads:
+['FONR', 'FLGT', 'FMY']: TypeError("'NoneType' object is not subscriptable")
+
+4 Failed downloads:
+['FIGX']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+4 Failed downloads:
+['FONR', 'FLGT', 'FMY']: TypeError("'NoneType' object is not subscriptable")
+['FONR', 'FLGT', 'FMY']: TypeError("'NoneType' object is not subscriptable")
+['FIGX']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+4 Failed downloads:
+['FIGX']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['FONR', 'FLGT', 'FMY']: TypeError("'NoneType' object is not subscriptable")
+['FIGX']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$FVN: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$FVNNR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$FSHPR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$GIW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$GJS: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+2 Failed downloads:
+['GIW', 'GJS']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+2 Failed downloads:
+['GIW', 'GJS']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+2 Failed downloads:
+['GIW', 'GJS']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+2 Failed downloads:
+['GIW', 'GJS']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$GLOP: possibly delisted; no timezone found
+$GTERR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['GTERR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['GTERR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['GTERR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['GTERR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$GTENU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$INACU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['INACU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['INACU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['INACU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['INACU']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+Failed to get ticker 'I' reason: Failed to perform, curl: (35) Recv failure: Connection was reset. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+$I: possibly delisted; no timezone found
+$IINNW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$ICR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$IGACU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$IPOD: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+8 Failed downloads:
+['IINNW', 'ICR', 'IGACU', 'IPOD']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['IPAR', 'INMB', 'INM', 'IPEX']: TypeError("'NoneType' object is not subscriptable")
+
+8 Failed downloads:
+['IINNW', 'ICR', 'IGACU', 'IPOD']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['IPAR', 'INMB', 'INM', 'IPEX']: TypeError("'NoneType' object is not subscriptable")
+
+8 Failed downloads:
+['IINNW', 'ICR', 'IGACU', 'IPOD']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['IPAR', 'INMB', 'INM', 'IPEX']: TypeError("'NoneType' object is not subscriptable")
+
+8 Failed downloads:
+['IINNW', 'ICR', 'IGACU', 'IPOD']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+['IPAR', 'INMB', 'INM', 'IPEX']: TypeError("'NoneType' object is not subscriptable")
+$IOR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$IRHOR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$JBK: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+17 Failed downloads:
+['ITRG', 'JOYY', 'JCTC', 'JAGX', 'JHS', 'JFU', 'JGH', 'JHI', 'IVVD', 'JFB', 'JUNS', 'KEY', 'JSPR', 'KEX', 'KB', 'KOPN', 'KOYN']: TypeError("'NoneType' object is not subscriptable")
+
+17 Failed downloads:
+['ITRG', 'JOYY', 'JCTC', 'JAGX', 'JHS', 'JFU', 'JGH', 'JHI', 'IVVD', 'JFB', 'JUNS', 'KEY', 'JSPR', 'KEX', 'KB', 'KOPN', 'KOYN']: TypeError("'NoneType' object is not subscriptable")
+
+17 Failed downloads:
+['ITRG', 'JOYY', 'JCTC', 'JAGX', 'JHS', 'JFU', 'JGH', 'JHI', 'IVVD', 'JFB', 'JUNS', 'KEY', 'JSPR', 'KEX', 'KB', 'KOPN', 'KOYN']: TypeError("'NoneType' object is not subscriptable")
+
+17 Failed downloads:
+['ITRG', 'JOYY', 'JCTC', 'JAGX', 'JHS', 'JFU', 'JGH', 'JHI', 'IVVD', 'JFB', 'JUNS', 'KEY', 'JSPR', 'KEX', 'KB', 'KOPN', 'KOYN']: TypeError("'NoneType' object is not subscriptable")
+$KFII: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$K: possibly delisted; no timezone found
+$KBONW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$KTH: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$LCCC: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$LATA: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$LKSPR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+2 Failed downloads:
+['LATA', 'LKSPR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+2 Failed downloads:
+['LATA', 'LKSPR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+2 Failed downloads:
+['LATA', 'LKSPR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+2 Failed downloads:
+['LATA', 'LKSPR']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$LUCYW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['LUCYW']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+
+1 Failed download:
+['LUCYW']: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$MBAVU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$MLACR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$MESHW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$MLAAU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$N: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$NMPAR: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$NMP: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$OACCU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$NTRBW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$NEWTO: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$PAII: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$OYSEU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$PHXE: possibly delisted; no timezone found
+$PCTTU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$PLMKU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$PCAP: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$PAACU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$P: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$PRIF: possibly delisted; no timezone found
+$PRHIZ: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$QUMSU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$RNGTW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$RIBB: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SEATW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SCPQ: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SCPQW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SEAL: possibly delisted; no timezone found
+$SCE: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SIM: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SORN: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SSEA: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$TMTSU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$TACHU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$TDWD: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SVAQU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SVACU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$SVIVU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$VACI: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$WALDW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$VNME: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$WHLRD: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$WLIIU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$WHLRL: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$WTGUU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$XOMAP: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$ZKPU: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+$X: possibly delisted; no timezone found
+$ZKPW: possibly delisted; no price data found  (1d 2026-03-24 -> 2026-03-25)
+=== US Stock Data Downloader ===
+Fetching US ticker list from GitHub (rreichel3/US-Stock-Symbols)…
+  6694 symbols loaded
+
+Database has 6744 tickers — running daily update.
+
+Updating 6591 tickers with today's data (2026-03-24)
+  [batch error] dictionary changed size during iteration
+  [batch error] dictionary changed size during iteration
+  Batch 1/66 done — 0 saved, 100 skipped
+  Batch 2/66 done — 0 saved, 100 skipped
+  Batch 3/66 done — 20 saved, 80 skipped
+  Batch 4/66 done — 26 saved, 74 skipped
+  [batch error] dictionary changed size during iteration
+  Batch 5/66 done — 0 saved, 100 skipped
+  Batch 6/66 done — 0 saved, 100 skipped
+  Batch 7/66 done — 0 saved, 100 skipped
+  Batch 8/66 done — 14 saved, 86 skipped
+  Batch 9/66 done — 0 saved, 100 skipped
+  Batch 10/66 done — 0 saved, 100 skipped
+  Batch 11/66 done — 0 saved, 100 skipped
+  Batch 12/66 done — 4 saved, 96 skipped
+  Batch 13/66 done — 0 saved, 100 skipped
+  Batch 14/66 done — 0 saved, 100 skipped
+  Batch 15/66 done — 0 saved, 100 skipped
+  Batch 16/66 done — 0 saved, 100 skipped
+  [batch error] dictionary changed size during iteration
+  [batch error] dictionary changed size during iteration
+  Batch 17/66 done — 0 saved, 100 skipped
+  Batch 18/66 done — 0 saved, 100 skipped
+  Batch 19/66 done — 3 saved, 97 skipped
+  Batch 20/66 done — 2 saved, 98 skipped
+  [batch error] dictionary changed size during iteration
+  Batch 21/66 done — 0 saved, 100 skipped
+  Batch 22/66 done — 0 saved, 100 skipped
+  Batch 23/66 done — 0 saved, 100 skipped
+  Batch 24/66 done — 1 saved, 99 skipped
+  Batch 25/66 done — 0 saved, 100 skipped
+  Batch 26/66 done — 1 saved, 99 skipped
+  Batch 27/66 done — 4 saved, 96 skipped
+  Batch 28/66 done — 1 saved, 99 skipped
+  [batch error] dictionary changed size during iteration
+  Batch 29/66 done — 0 saved, 100 skipped
+  Batch 30/66 done — 0 saved, 100 skipped
+  Batch 31/66 done — 3 saved, 97 skipped
+  Batch 32/66 done — 5 saved, 95 skipped
+  [batch error] dictionary changed size during iteration
+  [batch error] dictionary changed size during iteration
+  Batch 33/66 done — 0 saved, 100 skipped
+  Batch 34/66 done — 0 saved, 100 skipped
+  Batch 35/66 done — 0 saved, 100 skipped
+  Batch 36/66 done — 3 saved, 97 skipped
+  Batch 37/66 done — 0 saved, 100 skipped
+  Batch 38/66 done — 0 saved, 100 skipped
+  Batch 39/66 done — 0 saved, 100 skipped
+  Batch 40/66 done — 1 saved, 99 skipped
+  [batch error] dictionary changed size during iteration
+  [batch error] dictionary changed size during iteration
+  Batch 41/66 done — 0 saved, 100 skipped
+  Batch 42/66 done — 0 saved, 100 skipped
+  Batch 43/66 done — 0 saved, 100 skipped
+  Batch 44/66 done — 2 saved, 98 skipped
+  [batch error] dictionary changed size during iteration
+  [batch error] dictionary changed size during iteration
+  Batch 45/66 done — 0 saved, 100 skipped
+  Batch 46/66 done — 0 saved, 100 skipped
+  Batch 47/66 done — 0 saved, 100 skipped
+  Batch 48/66 done — 0 saved, 100 skipped
+  [batch error] dictionary changed size during iteration
+  [batch error] dictionary changed size during iteration
+  Batch 49/66 done — 0 saved, 100 skipped
+  Batch 50/66 done — 0 saved, 100 skipped
+  Batch 51/66 done — 0 saved, 100 skipped
+  Batch 52/66 done — 1 saved, 99 skipped
+  Batch 53/66 done — 0 saved, 100 skipped
+  Batch 54/66 done — 0 saved, 100 skipped
+  Batch 55/66 done — 0 saved, 100 skipped
+  Batch 56/66 done — 1 saved, 99 skipped
+  Batch 57/66 done — 2 saved, 98 skipped
+  Batch 58/66 done — 1 saved, 99 skipped
+  Batch 59/66 done — 3 saved, 97 skipped
+  Batch 60/66 done — 2 saved, 98 skipped
+  [batch error] dictionary changed size during iteration
+  Batch 61/66 done — 0 saved, 100 skipped
+  Batch 62/66 done — 0 saved, 100 skipped
+  Batch 63/66 done — 1 saved, 99 skipped
+  Batch 64/66 done — 1 saved, 99 skipped
+  Batch 65/66 done — 0 saved, 91 skipped
+  Batch 66/66 done — 0 saved, 100 skipped
+
+Today's update complete: 102 appended, 6489 skipped (no data yet / market closed)
+
+Recomputing indicators for 6744 tickers...
+  100/6744 done
+  200/6744 done
+  300/6744 done
+  400/6744 done
+  500/6744 done
+  600/6744 done
+  700/6744 done
+  800/6744 done
+  900/6744 done
+  1000/6744 done
+  1100/6744 done
+  1200/6744 done
+  1300/6744 done
+  1400/6744 done
+  1500/6744 done
+  1600/6744 done
+  1700/6744 done
+  1800/6744 done
+  1900/6744 done
+  2000/6744 done
+  2100/6744 done
+  2200/6744 done
+  2300/6744 done
+  2400/6744 done
+  2500/6744 done
+  2600/6744 done
+  2700/6744 done
+  2800/6744 done
+  2900/6744 done
+  3000/6744 done
+  3100/6744 done
+  3200/6744 done
+  3300/6744 done
+  3400/6744 done
+  3500/6744 done
+  3600/6744 done
+  3700/6744 done
+  3800/6744 done
+  3900/6744 done
+  4000/6744 done
+  4100/6744 done
+  4200/6744 done
+  4300/6744 done
+  4400/6744 done
+  4500/6744 done
+  4600/6744 done
+  4700/6744 done
+  4800/6744 done
+  4900/6744 done
+  5000/6744 done
+  5100/6744 done
+  5200/6744 done
+  5300/6744 done
+  5400/6744 done
+  5500/6744 done
+  5600/6744 done
+  5700/6744 done
+  5800/6744 done
+  5900/6744 done
+  6000/6744 done
+  6100/6744 done
+  6200/6744 done
+  6300/6744 done
+  6400/6744 done
+  6500/6744 done
+  6600/6744 done
+  6700/6744 done
+  6744/6744 done
+Indicators recompute complete.
+
+Done.
+^C

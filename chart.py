@@ -3,9 +3,8 @@ Charting: plots candlestick charts with volume and moving averages
 for all tickers returned by the scanner.
 
 Each chart shows the last LOOKBACK trading days with:
-  - Candlestick OHLC bars
-  - Volume bars (subplot)
-  - MA10 (blue), MA20 (orange), MA50 (green), MA200 (red)
+  - Candlestick OHLC bars (hollow white=up, filled black=down)
+  - MA20 (orange), MA50 (gray), MA200 (red)
   - Entry line (current day high), Stop line (current day low)
   - Position sizing box: Entry, Stop, Risk=$100, Shares, Cost Basis
 
@@ -78,15 +77,30 @@ def _position_size(entry: float, stop: float) -> dict:
     }
 
 
-def plot_results(inside_bar_tickers: list[str], doji_tickers: list[str], show: bool = True):
+def plot_results(inside_bar_tickers: list[str], doji_tickers: list[str],
+                 red_candle_tickers: list[str] = None,
+                 momentum_tickers: list[str] = None,
+                 ibd_tickers: list[str] = None,
+                 stockbee_tickers: list[str] = None,
+                 double_trouble_tickers: list[str] = None,
+                 ti65_tickers: list[str] = None,
+                 parabolic_tickers: list[str] = None,
+                 show: bool = True):
     """
     Save candlestick charts for all scan results into a single PDF.
     Skips tickers below MIN_PRICE or with too-narrow a range.
     If show=True, opens the PDF with the default viewer when done.
     """
     all_tickers = (
-        [(t, "Inside Bar") for t in inside_bar_tickers] +
-        [(t, "Doji-NR near MA") for t in doji_tickers]
+        [(t, "Inside Bar")          for t in inside_bar_tickers] +
+        [(t, "Doji-NR near MA")     for t in doji_tickers] +
+        [(t, "Red Candle near MA")  for t in (red_candle_tickers or [])] +
+        [(t, "Momentum")            for t in (momentum_tickers or [])] +
+        [(t, "IBD Leader")          for t in (ibd_tickers or [])] +
+        [(t, "StockbeeMomentum")    for t in (stockbee_tickers or [])] +
+        [(t, "Double Trouble")      for t in (double_trouble_tickers or [])] +
+        [(t, "TI65")                for t in (ti65_tickers or [])] +
+        [(t, "Parabolic")           for t in (parabolic_tickers or [])]
     )
 
     if not all_tickers:
@@ -96,9 +110,21 @@ def plot_results(inside_bar_tickers: list[str], doji_tickers: list[str], show: b
     scan_date = datetime.date.today().strftime("%Y-%m-%d")
     out_dir   = os.path.join(CHARTS_DIR, scan_date)
     os.makedirs(out_dir, exist_ok=True)
-    pdf_path  = os.path.join(out_dir, "scan_results.pdf")
+    timestamp = datetime.datetime.now().strftime("%H%M")
+    pdf_path  = os.path.join(out_dir, f"scan_results_{timestamp}.pdf")
 
-    style      = mpf.make_mpf_style(base_mpf_style="yahoo", gridstyle=":")
+    mc = mpf.make_marketcolors(
+        up='green', down='red',
+        edge='inherit',
+        wick='inherit',
+        volume='gray',
+    )
+    style = mpf.make_mpf_style(
+        marketcolors=mc,
+        gridstyle='',
+        facecolor='white',
+        figcolor='white',
+    )
     chart_count = 0
     skipped     = []
 
@@ -127,28 +153,34 @@ def plot_results(inside_bar_tickers: list[str], doji_tickers: list[str], show: b
             pos = _position_size(entry, stop)
 
             ap = [
-                mpf.make_addplot(df["ma10"],  color="#1f77b4", width=0.9, label="MA10"),
-                mpf.make_addplot(df["ma20"],  color="#ff7f0e", width=0.9, label="MA20"),
-                mpf.make_addplot(df["ma50"],  color="#2ca02c", width=1.2, label="MA50"),
-                mpf.make_addplot(df["ma200"], color="#d62728", width=1.5, label="MA200"),
+                mpf.make_addplot(df["ma20"],  color="#ff7f0e", width=1.0, label="MA20"),
+                mpf.make_addplot(df["ma50"],  color="#888888", width=1.2, label="MA50"),
+                mpf.make_addplot(df["ma200"], color="#d62728", width=1.2, label="MA200"),
             ]
 
             fig, axes = mpf.plot(
                 df,
                 type="candle",
                 style=style,
-                volume=True,
+                volume=False,
                 addplot=ap,
                 title=f"\n[{scan_type}]  {ticker}",
-                figsize=(14, 8),
+                figsize=(14, 7),
                 tight_layout=True,
                 returnfig=True,
             )
 
             ax = axes[0]
 
+            # Fix y-axis: scale to the OHLCV price range so distant MAs
+            # (e.g. MA200 far below price on recently-spiked stocks) don't
+            # compress the candlestick portion of the chart.
+            ohlc_low  = df["Low"].min()
+            ohlc_high = df["High"].max()
+            margin    = (ohlc_high - ohlc_low) * 0.05
+            ax.set_ylim(ohlc_low - margin, ohlc_high + margin)
+
             ax.legend(
-                ["MA10", "MA20", "MA50", "MA200"],
                 loc="upper left",
                 fontsize=8,
                 framealpha=0.7,
@@ -202,9 +234,35 @@ if __name__ == "__main__":
     doji_tickers = [r[0] for r in conn.execute(
         "SELECT ticker FROM doji_scan_results ORDER BY ticker"
     ).fetchall()]
+    red_candle_tickers = [r[0] for r in conn.execute(
+        "SELECT ticker FROM red_candle_scan_results ORDER BY ticker"
+    ).fetchall()]
+    momentum_tickers = [r[0] for r in conn.execute(
+        "SELECT ticker FROM momentum_scan_results ORDER BY ticker"
+    ).fetchall()]
+    ibd_tickers = [r[0] for r in conn.execute(
+        "SELECT ticker FROM ibd_scan_results ORDER BY ticker"
+    ).fetchall()]
+    stockbee_tickers = [r[0] for r in conn.execute(
+        "SELECT ticker FROM stockbee_scan_results ORDER BY ticker"
+    ).fetchall()]
+    double_trouble_tickers = [r[0] for r in conn.execute(
+        "SELECT ticker FROM double_trouble_scan_results ORDER BY ticker"
+    ).fetchall()]
+    ti65_tickers = [r[0] for r in conn.execute(
+        "SELECT ticker FROM ti65_scan_results ORDER BY ticker"
+    ).fetchall()]
     conn.close()
 
-    print(f"Inside bar tickers : {inside_tickers or 'none'}")
-    print(f"Doji/NR tickers    : {doji_tickers or 'none'}")
+    print(f"Inside bar tickers  : {inside_tickers or 'none'}")
+    print(f"Doji/NR tickers     : {doji_tickers or 'none'}")
+    print(f"Red candle tickers  : {red_candle_tickers or 'none'}")
+    print(f"Momentum tickers    : {momentum_tickers or 'none'}")
+    print(f"IBD tickers         : {ibd_tickers or 'none'}")
+    print(f"StockbeeMomentum    : {stockbee_tickers or 'none'}")
+    print(f"Double Trouble      : {double_trouble_tickers or 'none'}")
+    print(f"TI65                : {ti65_tickers or 'none'}")
     print()
-    plot_results(inside_tickers, doji_tickers, show=True)
+    plot_results(inside_tickers, doji_tickers, red_candle_tickers,
+                 momentum_tickers, ibd_tickers, stockbee_tickers,
+                 double_trouble_tickers, ti65_tickers, show=True)

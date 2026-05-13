@@ -1,0 +1,23 @@
+date=2026-05-01
+signal=BUY_TQQQ
+action=HOLD
+instrument=TQQQ
+ema_5=665.7892
+ema_20=642.1725
+ema_direction=BULLISH
+adx_14=29.71
+adx_valid=True
+rsi_14=74.9
+rsi_confirms=True
+all_conditions_met=True
+whipsaw_filtered=False
+filter_reason=None
+confidence=MEDIUM
+hold_days_current=17
+etf_price=65.3
+qqq_stop_level=642.17
+risk_per_share=9.3006
+shares=10
+estimated_cost=653.0
+risk_dollars=100.0
+notes=5-EMA=665.79 > 20-EMA=642.17 (BULLISH). ADX=29.7 (valid). RSI=74.9 (confirms). Hold BUY_TQQQ (17 day(s)).

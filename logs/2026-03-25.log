@@ -1,0 +1,473 @@
+ 
+=== Run started: Wed 03/25/2026 19:53:35.10 === 
+$BEBE: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$DBRG^I: possibly delisted; no timezone found
+$BEP^A: possibly delisted; no timezone found
+$BAC^B: possibly delisted; no timezone found
+$CTA^B: possibly delisted; no timezone found
+$BHR^B: possibly delisted; no timezone found
+$ATH^A: possibly delisted; no timezone found
+$KBONW: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$NTWO: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$DX^C: possibly delisted; no timezone found
+$ANG^D: possibly delisted; no timezone found
+$ESHAR: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: AHT^I"}}}
+$BAC^N: possibly delisted; no timezone found
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: FHN^C"}}}
+$JBK: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$JXN^A: possibly delisted; no timezone found
+$JPM^C: possibly delisted; no timezone found
+$OPP^C: possibly delisted; no timezone found
+$ACR^D: possibly delisted; no timezone found
+$AGM^D: possibly delisted; no timezone found
+$AHT^I: possibly delisted; no timezone found
+$FHN^C: possibly delisted; no timezone found
+$AHL^E: possibly delisted; no timezone found
+$KEY^L: possibly delisted; no timezone found
+$MS^A: possibly delisted; no timezone found
+$CFG^I: possibly delisted; no timezone found
+$AHL^F: possibly delisted; no timezone found
+$GGT^G: possibly delisted; no timezone found
+$AUB^A: possibly delisted; no timezone found
+$ALL^H: possibly delisted; no timezone found
+$AGM^H: possibly delisted; no timezone found
+$GDV^K: possibly delisted; no timezone found
+$AMH^G: possibly delisted; no timezone found
+$MS^F: possibly delisted; no timezone found
+$CIM^C: possibly delisted; no timezone found
+$IVR^C: possibly delisted; no timezone found
+$OPP^A: possibly delisted; no timezone found
+$GAM^B: possibly delisted; no timezone found
+$HFRO^B: possibly delisted; no timezone found
+$AHT^H: possibly delisted; no timezone found
+$EFC^C: possibly delisted; no timezone found
+$ICR^A: possibly delisted; no timezone found
+$BCV^A: possibly delisted; no timezone found
+$F^B: possibly delisted; no timezone found
+$MET^A: possibly delisted; no timezone found
+$BAC^L: possibly delisted; no timezone found
+$NEE^U: possibly delisted; no timezone found
+$GLP^B: possibly delisted; no timezone found
+$AGM^E: possibly delisted; no timezone found
+$GLU^B: possibly delisted; no timezone found
+$NEN: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$ALB^A: possibly delisted; no timezone found
+$OPP^B: possibly delisted; no timezone found
+$BAC^P: possibly delisted; no timezone found
+$CFG^H: possibly delisted; no timezone found
+$AFJKU: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$INN^F: possibly delisted; no timezone found
+$CTA^A: possibly delisted; no timezone found
+$EPR^G: possibly delisted; no timezone found
+$LNC^D: possibly delisted; no timezone found
+$BAC^Q: possibly delisted; no timezone found
+$DBRG^J: possibly delisted; no timezone found
+$MDV^A: possibly delisted; no timezone found
+$AHT^G: possibly delisted; no timezone found
+$BML^L: possibly delisted; no timezone found
+$CDR^B: possibly delisted; no timezone found
+$NCZ^A: possibly delisted; no timezone found
+$MAA^I: possibly delisted; no timezone found
+
+67 Failed downloads:
+['BEBE', 'KBONW', 'NTWO', 'ESHAR', 'JBK', 'NEN', 'AFJKU']: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+['DBRG^I', 'BEP^A', 'BAC^B', 'CTA^B', 'BHR^B', 'ATH^A', 'DX^C', 'ANG^D', 'BAC^N', 'JXN^A', 'JPM^C', 'OPP^C', 'ACR^D', 'AGM^D', 'AHT^I', 'FHN^C', 'AHL^E', 'KEY^L', 'MS^A', 'CFG^I', 'AHL^F', 'GGT^G', 'AUB^A', 'ALL^H', 'AGM^H', 'GDV^K', 'AMH^G', 'MS^F', 'CIM^C', 'IVR^C', 'OPP^A', 'GAM^B', 'HFRO^B', 'AHT^H', 'EFC^C', 'ICR^A', 'BCV^A', 'F^B', 'MET^A', 'BAC^L', 'NEE^U', 'GLP^B', 'AGM^E', 'GLU^B', 'ALB^A', 'OPP^B', 'BAC^P', 'CFG^H', 'INN^F', 'CTA^A', 'EPR^G', 'LNC^D', 'BAC^Q', 'DBRG^J', 'MDV^A', 'AHT^G', 'BML^L', 'CDR^B', 'NCZ^A', 'MAA^I']: possibly delisted; no timezone found
+
+67 Failed downloads:
+['BEBE', 'KBONW', 'NTWO', 'ESHAR', 'JBK', 'NEN', 'AFJKU']: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+['DBRG^I', 'BEP^A', 'BAC^B', 'CTA^B', 'BHR^B', 'ATH^A', 'DX^C', 'ANG^D', 'BAC^N', 'JXN^A', 'JPM^C', 'OPP^C', 'ACR^D', 'AGM^D', 'AHT^I', 'FHN^C', 'AHL^E', 'KEY^L', 'MS^A', 'CFG^I', 'AHL^F', 'GGT^G', 'AUB^A', 'ALL^H', 'AGM^H', 'GDV^K', 'AMH^G', 'MS^F', 'CIM^C', 'IVR^C', 'OPP^A', 'GAM^B', 'HFRO^B', 'AHT^H', 'EFC^C', 'ICR^A', 'BCV^A', 'F^B', 'MET^A', 'BAC^L', 'NEE^U', 'GLP^B', 'AGM^E', 'GLU^B', 'ALB^A', 'OPP^B', 'BAC^P', 'CFG^H', 'INN^F', 'CTA^A', 'EPR^G', 'LNC^D', 'BAC^Q', 'DBRG^J', 'MDV^A', 'AHT^G', 'BML^L', 'CDR^B', 'NCZ^A', 'MAA^I']: possibly delisted; no timezone found
+$ARR^C: possibly delisted; no timezone found
+
+68 Failed downloads:
+['BEBE', 'KBONW', 'NTWO', 'ESHAR', 'JBK', 'NEN', 'AFJKU']: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+['DBRG^I', 'BEP^A', 'BAC^B', 'CTA^B', 'BHR^B', 'ATH^A', 'DX^C', 'ANG^D', 'BAC^N', 'JXN^A', 'JPM^C', 'OPP^C', 'ACR^D', 'AGM^D', 'AHT^I', 'FHN^C', 'AHL^E', 'KEY^L', 'MS^A', 'CFG^I', 'AHL^F', 'GGT^G', 'AUB^A', 'ALL^H', 'AGM^H', 'GDV^K', 'AMH^G', 'MS^F', 'CIM^C', 'IVR^C', 'OPP^A', 'GAM^B', 'HFRO^B', 'AHT^H', 'EFC^C', 'ICR^A', 'BCV^A', 'F^B', 'MET^A', 'BAC^L', 'NEE^U', 'GLP^B', 'AGM^E', 'GLU^B', 'ALB^A', 'OPP^B', 'BAC^P', 'CFG^H', 'INN^F', 'CTA^A', 'EPR^G', 'LNC^D', 'BAC^Q', 'DBRG^J', 'MDV^A', 'AHT^G', 'BML^L', 'CDR^B', 'NCZ^A', 'MAA^I', 'ARR^C']: possibly delisted; no timezone found
+
+68 Failed downloads:
+['BEBE', 'KBONW', 'NTWO', 'ESHAR', 'JBK', 'NEN', 'AFJKU']: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$LFT^A: possibly delisted; no timezone found
+['DBRG^I', 'BEP^A', 'BAC^B', 'CTA^B', 'BHR^B', 'ATH^A', 'DX^C', 'ANG^D', 'BAC^N', 'JXN^A', 'JPM^C', 'OPP^C', 'ACR^D', 'AGM^D', 'AHT^I', 'FHN^C', 'AHL^E', 'KEY^L', 'MS^A', 'CFG^I', 'AHL^F', 'GGT^G', 'AUB^A', 'ALL^H', 'AGM^H', 'GDV^K', 'AMH^G', 'MS^F', 'CIM^C', 'IVR^C', 'OPP^A', 'GAM^B', 'HFRO^B', 'AHT^H', 'EFC^C', 'ICR^A', 'BCV^A', 'F^B', 'MET^A', 'BAC^L', 'NEE^U', 'GLP^B', 'AGM^E', 'GLU^B', 'ALB^A', 'OPP^B', 'BAC^P', 'CFG^H', 'INN^F', 'CTA^A', 'EPR^G', 'LNC^D', 'BAC^Q', 'DBRG^J', 'MDV^A', 'AHT^G', 'BML^L', 'CDR^B', 'NCZ^A', 'MAA^I', 'ARR^C']: possibly delisted; no timezone found
+$HPE^C: possibly delisted; no timezone found
+$GLOP^A: possibly delisted; no timezone found
+$MS^E: possibly delisted; no timezone found
+$BANC^F: possibly delisted; no timezone found
+$EQH^C: possibly delisted; no timezone found
+$EPR^C: possibly delisted; no timezone found
+$AXS^E: possibly delisted; no timezone found
+$AHT^D: possibly delisted; no timezone found
+$GDV^H: possibly delisted; no timezone found
+$MS^I: possibly delisted; no timezone found
+$BC^C: possibly delisted; no timezone found
+$EPR^E: possibly delisted; no timezone found
+$GS^D: possibly delisted; no timezone found
+$ABR^D: possibly delisted; no timezone found
+$MS^P: possibly delisted; no timezone found
+$APO^A: possibly delisted; no timezone found
+$AGM^G: possibly delisted; no timezone found
+$NLY^I: possibly delisted; no timezone found
+$CLDT^A: possibly delisted; no timezone found
+$KIM^L: possibly delisted; no timezone found
+$CTO^A: possibly delisted; no timezone found
+$FHN^E: possibly delisted; no timezone found
+$NLY^F: possibly delisted; no timezone found
+$DSX^B: possibly delisted; no timezone found
+$CHARU: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$MET^E: possibly delisted; no timezone found
+$GPMT^A: possibly delisted; no timezone found
+$ALL^I: possibly delisted; no timezone found
+$GNL^E: possibly delisted; no timezone found
+$COF^N: possibly delisted; no timezone found
+$GNT^A: possibly delisted; no timezone found
+$F^D: possibly delisted; no timezone found
+$LOB^A: possibly delisted; no timezone found
+$C^N: possibly delisted; no timezone found
+$MER^K: possibly delisted; no timezone found
+$GSHRU: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$EFC^D: possibly delisted; no timezone found
+$MTB^H: possibly delisted; no timezone found
+$BAC^K: possibly delisted; no timezone found
+$CMRE^D: possibly delisted; no timezone found
+$GNL^D: possibly delisted; no timezone found
+$GNL^A: possibly delisted; no timezone found
+$NLY^J: possibly delisted; no timezone found
+$ABR^F: possibly delisted; no timezone found
+$JPM^K: possibly delisted; no timezone found
+$GGN^B: possibly delisted; no timezone found
+$GUT^C: possibly delisted; no timezone found
+$FHN^H: possibly delisted; no timezone found
+$MS^O: possibly delisted; no timezone found
+$ET^I: possibly delisted; no timezone found
+$ADC^A: possibly delisted; no timezone found
+$JPM^L: possibly delisted; no timezone found
+$BML^G: possibly delisted; no timezone found
+$IIPR^A: possibly delisted; no timezone found
+$JPM^J: possibly delisted; no timezone found
+$ECC^D: possibly delisted; no timezone found
+$COF^L: possibly delisted; no timezone found
+$NEE^V: possibly delisted; no timezone found
+$NGL^C: possibly delisted; no timezone found
+$FHN^F: possibly delisted; no timezone found
+$AHRT^A: possibly delisted; no timezone found
+$GSL^B: possibly delisted; no timezone found
+$BHR^D: possibly delisted; no timezone found
+$KCHVU: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$DLR^K: possibly delisted; no timezone found
+$BFH^A: possibly delisted; no timezone found
+$KEY^I: possibly delisted; no timezone found
+$ACP^A: possibly delisted; no timezone found
+$HL^B: possibly delisted; no timezone found
+$NGL^B: possibly delisted; no timezone found
+$ALL^J: possibly delisted; no timezone found
+$ATH^D: possibly delisted; no timezone found
+$ORCL^D: possibly delisted; no timezone found
+$TFC^I: possibly delisted; no timezone found
+$SRG^A: possibly delisted; no timezone found
+$BAC^M: possibly delisted; no timezone found
+$AGM^F: possibly delisted; no timezone found
+$AMH^H: possibly delisted; no timezone found
+$ASB^F: possibly delisted; no timezone found
+$CIM^D: possibly delisted; no timezone found
+$BAC^E: possibly delisted; no timezone found
+$GS^C: possibly delisted; no timezone found
+$F^C: possibly delisted; no timezone found
+$EFC^B: possibly delisted; no timezone found
+$DLR^L: possibly delisted; no timezone found
+$BK^K: possibly delisted; no timezone found
+$AXIA^: possibly delisted; no timezone found
+$NLY^G: possibly delisted; no timezone found
+$GAB^G: possibly delisted; no timezone found
+$GLOP^B: possibly delisted; no timezone found
+$LXP^C: possibly delisted; no timezone found
+$GS^A: possibly delisted; no timezone found
+$BIP^A: possibly delisted; no timezone found
+$BPACU: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$ABR^E: possibly delisted; no timezone found
+$GPUS^D: possibly delisted; no timezone found
+$CDR^C: possibly delisted; no timezone found
+$OAK^B: possibly delisted; no timezone found
+$FLG^A: possibly delisted; no timezone found
+$JPM^D: possibly delisted; no timezone found
+$NSA^A: possibly delisted; no timezone found
+$CFR^B: possibly delisted; no timezone found
+$ASB^E: possibly delisted; no timezone found
+$BML^J: possibly delisted; no timezone found
+$GLOP^C: possibly delisted; no timezone found
+$AXIA^C: possibly delisted; no timezone found
+$IGAC: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$DBRG^H: possibly delisted; no timezone found
+$BOH^A: possibly delisted; no timezone found
+$NSA^B: possibly delisted; no timezone found
+$ACR^C: possibly delisted; no timezone found
+$BFS^D: possibly delisted; no timezone found
+$CMRE^B: possibly delisted; no timezone found
+$CODI^C: possibly delisted; no timezone found
+$DLNG^A: possibly delisted; no timezone found
+$DUK^A: possibly delisted; no timezone found
+$BAC^O: possibly delisted; no timezone found
+$ALL^B: possibly delisted; no timezone found
+$GAB^H: possibly delisted; no timezone found
+$CODI^A: possibly delisted; no timezone found
+$KEY^K: possibly delisted; no timezone found
+$CNO^A: possibly delisted; no timezone found
+$BIP^B: possibly delisted; no timezone found
+$GAB^K: possibly delisted; no timezone found
+$AHT^F: possibly delisted; no timezone found
+$C^R: possibly delisted; no timezone found
+$NEE^W: possibly delisted; no timezone found
+
+62 Failed downloads:
+['BFH^A', 'KEY^I', 'ACP^A', 'HL^B', 'NGL^B', 'ALL^J', 'ATH^D', 'ORCL^D', 'TFC^I', 'SRG^A', 'BAC^M', 'AGM^F', 'AMH^H', 'ASB^F', 'CIM^D', 'BAC^E', 'GS^C', 'F^C', 'EFC^B', 'DLR^L', 'BK^K', 'AXIA^', 'NLY^G', 'GAB^G', 'GLOP^B', 'LXP^C', 'GS^A', 'BIP^A', 'ABR^E', 'GPUS^D', 'CDR^C', 'OAK^B', 'FLG^A', 'JPM^D', 'NSA^A', 'CFR^B', 'ASB^E', 'BML^J', 'GLOP^C', 'AXIA^C', 'DBRG^H', 'BOH^A', 'NSA^B', 'ACR^C', 'BFS^D', 'CMRE^B', 'CODI^C', 'DLNG^A', 'DUK^A', 'BAC^O', 'ALL^B', 'GAB^H', 'CODI^A', 'KEY^K', 'CNO^A', 'BIP^B', 'GAB^K', 'AHT^F', 'C^R', 'NEE^W']: possibly delisted; no timezone found
+['BPACU', 'IGAC']: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$LPCV: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$GTERU: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$ARES^B: possibly delisted; no timezone found
+$HFRO^A: possibly delisted; no timezone found
+$CFG^E: possibly delisted; no timezone found
+$BAC^S: possibly delisted; no timezone found
+$NEE^S: possibly delisted; no timezone found
+$KIM^M: possibly delisted; no timezone found
+
+70 Failed downloads:
+['BFH^A', 'KEY^I', 'ACP^A', 'HL^B', 'NGL^B', 'ALL^J', 'ATH^D', 'ORCL^D', 'TFC^I', 'SRG^A', 'BAC^M', 'AGM^F', 'AMH^H', 'ASB^F', 'CIM^D', 'BAC^E', 'GS^C', 'F^C', 'EFC^B', 'DLR^L', 'BK^K', 'AXIA^', 'NLY^G', 'GAB^G', 'GLOP^B', 'LXP^C', 'GS^A', 'BIP^A', 'ABR^E', 'GPUS^D', 'CDR^C', 'OAK^B', 'FLG^A', 'JPM^D', 'NSA^A', 'CFR^B', 'ASB^E', 'BML^J', 'GLOP^C', 'AXIA^C', 'DBRG^H', 'BOH^A', 'NSA^B', 'ACR^C', 'BFS^D', 'CMRE^B', 'CODI^C', 'DLNG^A', 'DUK^A', 'BAC^O', 'ALL^B', 'GAB^H', 'CODI^A', 'KEY^K', 'CNO^A', 'BIP^B', 'GAB^K', 'AHT^F', 'C^R', 'NEE^W', 'ARES^B', 'HFRO^A', 'CFG^E', 'BAC^S', 'NEE^S', 'KIM^M']: possibly delisted; no timezone found
+['BPACU', 'IGAC', 'LPCV', 'GTERU']: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$APXT: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$HIG^G: possibly delisted; no timezone found
+$FOUR^A: possibly delisted; no timezone found
+$COF^K: possibly delisted; no timezone found
+$JPM^M: possibly delisted; no timezone found
+$BML^H: possibly delisted; no timezone found
+$BFS^E: possibly delisted; no timezone found
+$CODI^B: possibly delisted; no timezone found
+$NEE^N: possibly delisted; no timezone found
+$CIM^A: possibly delisted; no timezone found
+$ALTG^A: possibly delisted; no timezone found
+$MITT^A: possibly delisted; no timezone found
+$FRT^C: possibly delisted; no timezone found
+$GSRFU: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$AHL^D: possibly delisted; no timezone found
+$KEY^J: possibly delisted; no timezone found
+$ATH^B: possibly delisted; no timezone found
+$GNL^B: possibly delisted; no timezone found
+$MS^Q: possibly delisted; no timezone found
+$MNYWW: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$BA^A: possibly delisted; no timezone found
+$FLG^U: possibly delisted; no timezone found
+$MFA^C: possibly delisted; no timezone found
+$ECF^A: possibly delisted; no timezone found
+$ATH^E: possibly delisted; no timezone found
+$CMS^B: possibly delisted; no timezone found
+$MITT^B: possibly delisted; no timezone found
+$KREF^A: possibly delisted; no timezone found
+$NEWTO: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$MITT^C: possibly delisted; no timezone found
+$BOH^B: possibly delisted; no timezone found
+$KIM^N: possibly delisted; no timezone found
+$INN^E: possibly delisted; no timezone found
+$EP^C: possibly delisted; no timezone found
+$FBRT^E: possibly delisted; no timezone found
+$KKR^D: possibly delisted; no timezone found
+$MKLYU: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$COF^I: possibly delisted; no timezone found
+$GRBK^A: possibly delisted; no timezone found
+$MFA^B: possibly delisted; no timezone found
+$DLR^J: possibly delisted; no timezone found
+$EQH^A: possibly delisted; no timezone found
+$CHMI^B: possibly delisted; no timezone found
+$NCV^A: possibly delisted; no timezone found
+$GGT^E: possibly delisted; no timezone found
+$NEE^T: possibly delisted; no timezone found
+$OAK^A: possibly delisted; no timezone found
+$CMRE^C: possibly delisted; no timezone found
+$CIM^B: possibly delisted; no timezone found
+$HPP^C: possibly delisted; no timezone found
+$GL^D: possibly delisted; no timezone found
+$NXDT^A: possibly delisted; no timezone found
+$MTB^K: possibly delisted; no timezone found
+$ETI^: possibly delisted; no timezone found
+$COF^J: possibly delisted; no timezone found
+$BW^A: possibly delisted; no timezone found
+$MTB^J: possibly delisted; no timezone found
+$MS^L: possibly delisted; no timezone found
+$CHMI^A: possibly delisted; no timezone found
+$CMS^C: possibly delisted; no timezone found
+$NREF^A: possibly delisted; no timezone found
+$RSVRW: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$MS^K: possibly delisted; no timezone found
+$MET^F: possibly delisted; no timezone found
+$PSA^S: possibly delisted; no timezone found
+$PMT^C: possibly delisted; no timezone found
+$SCE^M: possibly delisted; no timezone found
+$QUMSU: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$SB^D: possibly delisted; no timezone found
+$RC^C: possibly delisted; no timezone found
+$RITM^F: possibly delisted; no timezone found
+$SCE^L: possibly delisted; no timezone found
+$PSEC^A: possibly delisted; no timezone found
+$RITM^A: possibly delisted; no timezone found
+$PSA^R: possibly delisted; no timezone found
+$PRIF^K: possibly delisted; no timezone found
+$PNFP^A: possibly delisted; no timezone found
+$PBI^B: possibly delisted; no timezone found
+$PW^A: possibly delisted; no timezone found
+$RIV^A: possibly delisted; no timezone found
+$RPT^C: possibly delisted; no timezone found
+$SCHW^D: possibly delisted; no timezone found
+$RITM^D: possibly delisted; no timezone found
+$PSA^M: possibly delisted; no timezone found
+$PCG^A: possibly delisted; no timezone found
+$SCHW^J: possibly delisted; no timezone found
+$RWT^A: possibly delisted; no timezone found
+$PEB^E: possibly delisted; no timezone found
+$RITM^B: possibly delisted; no timezone found
+$PRIF^L: possibly delisted; no timezone found
+$PEB^H: possibly delisted; no timezone found
+$PINE^A: possibly delisted; no timezone found
+$PSA^H: possibly delisted; no timezone found
+$QXO^B: possibly delisted; no timezone found
+$RLJ^A: possibly delisted; no timezone found
+$REXR^B: possibly delisted; no timezone found
+$PCG^D: possibly delisted; no timezone found
+$PCG^X: possibly delisted; no timezone found
+$RITM^E: possibly delisted; no timezone found
+$RAC: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$PMTRU: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$RITM^C: possibly delisted; no timezone found
+$PSA^O: possibly delisted; no timezone found
+$PSA^G: possibly delisted; no timezone found
+$SB^C: possibly delisted; no timezone found
+$PSA^I: possibly delisted; no timezone found
+$RF^C: possibly delisted; no timezone found
+$SAC: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$PSA^F: possibly delisted; no timezone found
+$PSA^K: possibly delisted; no timezone found
+$PCG^E: possibly delisted; no timezone found
+$PSA^Q: possibly delisted; no timezone found
+$PHXE^: possibly delisted; no timezone found
+$PSA^N: possibly delisted; no timezone found
+$PEB^G: possibly delisted; no timezone found
+$PMT^B: possibly delisted; no timezone found
+$PMT^A: possibly delisted; no timezone found
+$RNR^F: possibly delisted; no timezone found
+$RNR^G: possibly delisted; no timezone found
+$PCG^B: possibly delisted; no timezone found
+$SCE^G: possibly delisted; no timezone found
+$PNFP^C: possibly delisted; no timezone found
+$PCG^I: possibly delisted; no timezone found
+$PNFP^B: possibly delisted; no timezone found
+$RC^E: possibly delisted; no timezone found
+$PCG^G: possibly delisted; no timezone found
+$PSA^L: possibly delisted; no timezone found
+$REXR^C: possibly delisted; no timezone found
+$RF^E: possibly delisted; no timezone found
+$SCE^N: possibly delisted; no timezone found
+$RF^F: possibly delisted; no timezone found
+$PCG^C: possibly delisted; no timezone found
+$PSA^J: possibly delisted; no timezone found
+$SACH^A: possibly delisted; no timezone found
+$PRIF^J: possibly delisted; no timezone found
+$PEB^F: possibly delisted; no timezone found
+$PCG^H: possibly delisted; no timezone found
+$STT^G: possibly delisted; no timezone found
+$PRIF^D: possibly delisted; no timezone found
+$PSA^P: possibly delisted; no timezone found
+$JENA: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$SHO^I: possibly delisted; no timezone found
+$TRTN^A: possibly delisted; no timezone found
+$USB^A: possibly delisted; no timezone found
+$SPG^J: possibly delisted; no timezone found
+$SHO^H: possibly delisted; no timezone found
+$TWO^B: possibly delisted; no timezone found
+$WRB^H: possibly delisted; no timezone found
+$TFIN^: possibly delisted; no timezone found
+$WRB^E: possibly delisted; no timezone found
+$TY^: possibly delisted; no timezone found
+$TRTN^C: possibly delisted; no timezone found
+$SF^B: possibly delisted; no timezone found
+$WRB^F: possibly delisted; no timezone found
+$T^A: possibly delisted; no timezone found
+$WFC^L: possibly delisted; no timezone found
+$VNO^O: possibly delisted; no timezone found
+$SPEGU: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$VNO^N: possibly delisted; no timezone found
+$TWO^C: possibly delisted; no timezone found
+$WFC^D: possibly delisted; no timezone found
+$TWO^A: possibly delisted; no timezone found
+$TDS^V: possibly delisted; no timezone found
+$SYF^A: possibly delisted; no timezone found
+$SF^C: possibly delisted; no timezone found
+$TRTX^C: possibly delisted; no timezone found
+$TDS^U: possibly delisted; no timezone found
+$VNO^M: possibly delisted; no timezone found
+$TRTN^D: possibly delisted; no timezone found
+$TRTN^E: possibly delisted; no timezone found
+$USB^H: possibly delisted; no timezone found
+$TFC^O: possibly delisted; no timezone found
+$WTGUU: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$SPE^C: possibly delisted; no timezone found
+$TRTN^F: possibly delisted; no timezone found
+$VNO^L: possibly delisted; no timezone found
+$WFC^C: possibly delisted; no timezone found
+$WRB^G: possibly delisted; no timezone found
+$SEAL^A: possibly delisted; no timezone found
+$XRN^B: possibly delisted; no timezone found
+$UMH^D: possibly delisted; no timezone found
+$SIM: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$WBS^G: possibly delisted; no timezone found
+$SYF^B: possibly delisted; no timezone found
+$SF^D: possibly delisted; no timezone found
+$WAL^A: possibly delisted; no timezone found
+$USB^P: possibly delisted; no timezone found
+$TRTN^B: possibly delisted; no timezone found
+$TEN^E: possibly delisted; no timezone found
+$SEAL^B: possibly delisted; no timezone found
+$TRTN^G: possibly delisted; no timezone found
+$VACI: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$UAC: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$SPEG: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$XRN^A: possibly delisted; no timezone found
+$TEN^F: possibly delisted; no timezone found
+$TFC^R: possibly delisted; no timezone found
+$WBS^F: possibly delisted; no timezone found
+$WHR^A: possibly delisted; no timezone found
+$SCPQ: possibly delisted; no price data found  (1d 2026-03-25 -> 2026-03-26)
+$USB^R: possibly delisted; no timezone found
+$T^C: possibly delisted; no timezone found
+$WFC^Y: possibly delisted; no timezone found
+$VOYA^B: possibly delisted; no timezone found
+$USB^S: possibly delisted; no timezone found
+$USB^Q: possibly delisted; no timezone found
+$WFC^Z: possibly delisted; no timezone found
+$WFC^A: possibly delisted; no timezone found
+$SLG^I: possibly delisted; no timezone found
+=== US Stock Data Downloader ===
+Fetching US ticker list from NASDAQ Screener API...
+  7070 symbols loaded
+Skipping 3779 known failed/delisted tickers (3291 remaining)
+
+Database has 6744 tickers — running daily update.
+
+Updating 590 tickers with today's data (2026-03-25)
+  [batch error] dictionary changed size during iteration
+  Batch 1/6 done — 0 saved, 100 skipped
+  Batch 2/6 done — 7 saved, 93 skipped
+  Batch 3/6 done — 9 saved, 91 skipped
+  Batch 4/6 done — 11 saved, 89 skipped
+  Batch 5/6 done — 0 saved, 90 skipped
+  Batch 6/6 done — 0 saved, 100 skipped
+  Marking 419 tickers as failed (no data ever returned)
+
+Today's update complete: 27 appended, 563 skipped (no data yet / market closed)
+
+Recomputing indicators for 6747 tickers...
+  100/6747 done
+Traceback (most recent call last):
+  File "E:\work\Stockdata\main.py", line 58, in <module>
+    main()
+  File "E:\work\Stockdata\main.py", line 53, in main
+    indicators.recompute_all()
+  File "E:\work\Stockdata\indicators.py", line 43, in recompute_all
+    database.upsert_indicators(ticker, ind_df)
+  File "E:\work\Stockdata\database.py", line 142, in upsert_indicators
+    conn.close()
+KeyboardInterrupt
+^C

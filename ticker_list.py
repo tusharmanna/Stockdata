@@ -1,23 +1,32 @@
 """
 Fetches the list of all US-listed stocks.
 Sources (tried in order):
-  1. GitHub: rreichel3/US-Stock-Symbols  — comprehensive all-exchange list
-  2. GitHub: datasets/s-and-p-500-companies — S&P 500 fallback
+  1. NASDAQ Screener API  — ~7 000 NYSE/NASDAQ/AMEX tickers with metadata
+  2. GitHub: rreichel3/US-Stock-Symbols  — comprehensive all-exchange fallback
+  3. GitHub: datasets/s-and-p-500-companies — S&P 500 last-resort fallback
 """
 
 import requests
 
-# ~10 000 US tickers across NYSE, NASDAQ, AMEX, OTC
-PRIMARY_URL = (
+NASDAQ_URL = (
+    "https://api.nasdaq.com/api/screener/stocks"
+    "?tableonly=true&limit=10000&download=true"
+)
+
+GITHUB_ALL_URL = (
     "https://raw.githubusercontent.com/rreichel3/US-Stock-Symbols"
     "/main/all/all_tickers.txt"
 )
 
-# Fallback: S&P 500 CSV
 FALLBACK_URL = (
     "https://raw.githubusercontent.com/datasets/s-and-p-500-companies"
     "/main/data/constituents.csv"
 )
+
+# Always included regardless of what the API returns
+PINNED_TICKERS = ["PSQ", "QQQ", "SQQQ", "TQQQ"]
+
+_HEADERS = {"User-Agent": "Mozilla/5.0"}
 
 
 def _clean(symbols: list[str]) -> list[str]:
@@ -29,11 +38,18 @@ def _clean(symbols: list[str]) -> list[str]:
     ]
 
 
-def _fetch_primary() -> list[str]:
-    resp = requests.get(PRIMARY_URL, timeout=30)
+def _fetch_nasdaq() -> list[str]:
+    resp = requests.get(NASDAQ_URL, headers=_HEADERS, timeout=30)
     resp.raise_for_status()
-    symbols = resp.text.splitlines()
+    rows = resp.json()["data"]["rows"]
+    symbols = [r["symbol"] for r in rows if r.get("symbol")]
     return _clean(symbols)
+
+
+def _fetch_github_all() -> list[str]:
+    resp = requests.get(GITHUB_ALL_URL, timeout=30)
+    resp.raise_for_status()
+    return _clean(resp.text.splitlines())
 
 
 def _fetch_fallback() -> list[str]:
@@ -45,18 +61,24 @@ def _fetch_fallback() -> list[str]:
 
 
 def get_all_us_tickers() -> list[str]:
-    """Return a deduplicated, clean list of US stock tickers."""
+    """Return a deduplicated, clean list of US stock tickers (pinned tickers always included)."""
     try:
-        print("Fetching US ticker list from GitHub (rreichel3/US-Stock-Symbols)…")
-        tickers = _fetch_primary()
+        print("Fetching US ticker list from NASDAQ Screener API...")
+        tickers = _fetch_nasdaq()
         print(f"  {len(tickers)} symbols loaded")
-        return tickers
     except Exception as e:
-        print(f"  Primary source failed ({e}), trying S&P 500 fallback…")
+        print(f"  NASDAQ API failed ({e}), trying GitHub fallback...")
+        try:
+            tickers = _fetch_github_all()
+            print(f"  {len(tickers)} symbols loaded (GitHub fallback)")
+        except Exception as e:
+            print(f"  GitHub fallback failed ({e}), trying S&P 500 fallback...")
+            try:
+                tickers = _fetch_fallback()
+                print(f"  {len(tickers)} S&P 500 symbols loaded (last-resort fallback)")
+            except Exception as e:
+                raise RuntimeError(f"All ticker sources failed: {e}")
 
-    try:
-        tickers = _fetch_fallback()
-        print(f"  {len(tickers)} S&P 500 symbols loaded (fallback)")
-        return tickers
-    except Exception as e:
-        raise RuntimeError(f"All ticker sources failed: {e}")
+    merged = sorted(set(tickers) | set(PINNED_TICKERS))
+    print(f"  Pinned tickers added: {PINNED_TICKERS}")
+    return merged
