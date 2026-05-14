@@ -36,7 +36,7 @@ import yfinance as yf
 QQQ_TICKER       = "QQQ"
 TQQQ_TICKER      = "TQQQ"
 DEFAULT_CAPITAL  = 100_000.0
-HIGH_PERIOD      = 252          # trading days in rolling high window
+HIGH_PERIOD      = 189           # days to look back for 252d-high
 SIGNAL_THRESHOLD = 15.0         # % below 252d-high triggers CASH regime
 REENTRY_DAYS     = 3            # consecutive days below threshold to re-enter TQQQ
 DATA_START       = "2015-01-01" # warmup start for accurate 252d-high

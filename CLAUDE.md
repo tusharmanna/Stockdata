@@ -48,7 +48,13 @@ ticker_list.py   →  downloader.py  →  database.py (prices table)
                                       chart.py     →  charts/YYYY-MM-DD/scan_results.pdf
 ```
 
-**`ticker_list.py`** — fetches ~7,000 US tickers from the NASDAQ Screener API (`api.nasdaq.com/api/screener/stocks`) as the primary source. Falls back to GitHub (rreichel3/US-Stock-Symbols, ~10k tickers) then S&P 500 CSV if the API is unavailable. Requires `User-Agent` header to avoid 403s.
+**`ticker_list.py`** — fetches US tickers from multiple sources in order (optimized for daily use):
+1. **NASDAQ Screener API** (`api.nasdaq.com/api/screener/stocks`) — ~7,000 NYSE/NASDAQ/AMEX tickers (primary: fast, reliable)
+2. **GitHub fallback** (rreichel3/US-Stock-Symbols, ~10k tickers) — comprehensive all-exchange source
+3. **SEC company_tickers.json** (`sec.gov/files/company_tickers.json`) — official but rate-limited, fallback only
+4. **S&P 500 CSV** (datasets/s-and-p-500-companies) — last-resort fallback
+
+Requires `User-Agent` header to avoid 403s. Uses NASDAQ as primary for daily reliability; SEC is authoritative for one-time comprehensive lists.
 
 **`downloader.py`** — downloads OHLCV via `yfinance.download()` in batches of 100 tickers (`BATCH_SIZE`). Uses `group_by="ticker"` for multi-ticker batches, which returns a MultiIndex DataFrame that must be flattened with `_flatten_columns()`. Single-ticker batches return a flat DataFrame directly. Data is upserted via `database.upsert_prices()`.
 

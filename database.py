@@ -290,6 +290,44 @@ def init_db():
             PRIMARY KEY (scan_date, ticker)
         );
 
+        CREATE TABLE IF NOT EXISTS higher_lows_scan_results (
+            scan_date   TEXT NOT NULL,
+            ticker      TEXT NOT NULL,
+            price_date  TEXT,
+            close       REAL,
+            high        REAL,
+            low         REAL,
+            volume      INTEGER,
+            ma20        REAL,
+            ma50        REAL,
+            ma200       REAL,
+            vol_avg30   REAL,
+            low_10d     REAL,
+            low_20d     REAL,
+            high_10d    REAL,
+            high_20d    REAL,
+            pattern     TEXT,
+            PRIMARY KEY (scan_date, ticker)
+        );
+
+        CREATE TABLE IF NOT EXISTS ma_pullback_scan_results (
+            scan_date      TEXT NOT NULL,
+            ticker         TEXT NOT NULL,
+            price_date     TEXT,
+            close          REAL,
+            high           REAL,
+            low            REAL,
+            volume         INTEGER,
+            ma20           REAL,
+            ma50           REAL,
+            ma200          REAL,
+            vol_avg30      REAL,
+            pct_from_ma20  REAL,
+            pct_from_ma50  REAL,
+            support_ma     TEXT,
+            PRIMARY KEY (scan_date, ticker)
+        );
+
         CREATE TABLE IF NOT EXISTS failed_tickers (
             ticker    TEXT PRIMARY KEY,
             fail_date TEXT NOT NULL,

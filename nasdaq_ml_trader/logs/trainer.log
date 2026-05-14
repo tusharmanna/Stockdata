@@ -831,3 +831,36 @@
 2026-05-09 00:16:13,341 INFO [nasdaq_ml.trainer] RF fold 70: loading cached model
 2026-05-09 00:16:13,531 INFO [nasdaq_ml.trainer] XGB fold 70: loading cached model
 2026-05-09 00:16:13,630 INFO [nasdaq_ml.trainer] LSTM fold 70: loading cached model
+2026-05-10 12:05:27,460 INFO [nasdaq_ml.trainer] Generated 71 walk-forward folds
+2026-05-10 12:05:27,641 INFO [nasdaq_ml.trainer] Generated 71 walk-forward folds
+2026-05-10 12:05:27,665 INFO [nasdaq_ml.trainer] RF fold 61: loading cached model
+2026-05-10 12:05:27,867 INFO [nasdaq_ml.trainer] XGB fold 61: loading cached model
+2026-05-10 12:05:27,908 INFO [nasdaq_ml.trainer] LSTM fold 61: loading cached model
+2026-05-10 12:05:28,107 INFO [nasdaq_ml.trainer] RF fold 62: loading cached model
+2026-05-10 12:05:28,385 INFO [nasdaq_ml.trainer] XGB fold 62: loading cached model
+2026-05-10 12:05:28,438 INFO [nasdaq_ml.trainer] LSTM fold 62: loading cached model
+2026-05-10 12:05:28,624 INFO [nasdaq_ml.trainer] RF fold 63: loading cached model
+2026-05-10 12:05:28,992 INFO [nasdaq_ml.trainer] XGB fold 63: loading cached model
+2026-05-10 12:05:29,091 INFO [nasdaq_ml.trainer] LSTM fold 63: loading cached model
+2026-05-10 12:05:29,274 INFO [nasdaq_ml.trainer] RF fold 64: loading cached model
+2026-05-10 12:05:29,446 INFO [nasdaq_ml.trainer] XGB fold 64: loading cached model
+2026-05-10 12:05:29,510 INFO [nasdaq_ml.trainer] LSTM fold 64: loading cached model
+2026-05-10 12:05:29,688 INFO [nasdaq_ml.trainer] RF fold 65: loading cached model
+2026-05-10 12:05:29,856 INFO [nasdaq_ml.trainer] XGB fold 65: loading cached model
+2026-05-10 12:05:29,882 INFO [nasdaq_ml.trainer] LSTM fold 65: loading cached model
+2026-05-10 12:05:30,050 INFO [nasdaq_ml.trainer] RF fold 66: loading cached model
+2026-05-10 12:05:30,268 INFO [nasdaq_ml.trainer] XGB fold 66: loading cached model
+2026-05-10 12:05:30,295 INFO [nasdaq_ml.trainer] LSTM fold 66: loading cached model
+2026-05-10 12:05:30,468 INFO [nasdaq_ml.trainer] RF fold 67: loading cached model
+2026-05-10 12:05:30,689 INFO [nasdaq_ml.trainer] XGB fold 67: loading cached model
+2026-05-10 12:05:30,726 INFO [nasdaq_ml.trainer] LSTM fold 67: loading cached model
+2026-05-10 12:05:30,898 INFO [nasdaq_ml.trainer] RF fold 68: loading cached model
+2026-05-10 12:05:31,078 INFO [nasdaq_ml.trainer] XGB fold 68: loading cached model
+2026-05-10 12:05:31,109 INFO [nasdaq_ml.trainer] LSTM fold 68: loading cached model
+2026-05-10 12:05:31,290 INFO [nasdaq_ml.trainer] RF fold 69: loading cached model
+2026-05-10 12:05:31,499 INFO [nasdaq_ml.trainer] XGB fold 69: loading cached model
+2026-05-10 12:05:31,530 INFO [nasdaq_ml.trainer] LSTM fold 69: loading cached model
+2026-05-10 12:05:31,710 INFO [nasdaq_ml.trainer] RF fold 70: loading cached model
+2026-05-10 12:05:31,911 INFO [nasdaq_ml.trainer] XGB fold 70: loading cached model
+2026-05-10 12:05:31,958 INFO [nasdaq_ml.trainer] LSTM fold 70: loading cached model
+2026-05-10 12:07:24,477 INFO [nasdaq_ml.trainer] Generated 71 walk-forward folds

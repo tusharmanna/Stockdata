@@ -22,7 +22,14 @@
       "Bash(Get-ChildItem -Path \"E:\\\\work\\\\Stockdata\" -Recurse -Filter \"*.py\")",
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(dir E:\\\\work\\\\Stockdata *)",
-      "Bash(dir \"E:\\\\work\\\\Stockdata\\\\data\" /b)"
+      "Bash(dir \"E:\\\\work\\\\Stockdata\\\\data\" /b)",
+      "Bash(Out-File -FilePath \"E:\\\\work\\\\Stockdata\\\\pdf_extract_1.txt\" -Encoding utf8)",
+      "Bash(del *)",
+      "PowerShell(cd E:\\\\work\\\\Stockdata; python oliver_strategy.py --compare --all --mode ema20 2>&1 | Select-String -Pattern \"^  \\(20[0-9][0-9]|ANNUAL|CAGR|Max DD|Exits|Final|Total\\)\" | ForEach-Object { $_.Line })",
+      "Bash(Get-Content logs\\\\engine.log -Tail 30)",
+      "Bash(Get-Content logs\\\\trainer.log -Tail 20)",
+      "Bash(git *)",
+      "Bash(curl -s -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\" \"https://www.sec.gov/files/company_tickers.json\")"
     ]
   }
 }

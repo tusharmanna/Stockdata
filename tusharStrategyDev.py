@@ -57,7 +57,12 @@ MA200_PERIOD      = 200
 MA_CONFIRM_DAYS   = 3             # consecutive closes above/below MA to trigger
 MA20_PERIOD       = 20            # v3 short-term MA
 # v3 position sizes: 30% (0 MAs), 60% (1 MA), 85% (2 MAs), 110% (3 MAs)
-DATA_START        = "2015-01-01"  # warmup start for accurate rolling high (matches tushar_strategy.py)
+BB_PERIOD         = 20            # Bollinger Band MA period
+BB_STD_MULT       = 2             # Bollinger Band standard deviations
+RSI_PERIOD        = 14            # RSI period for momentum
+BB_CONSEC_DAYS    = 2             # consecutive days above upper BB for momentum
+MA_SLOPE_DAYS     = 5             # lookback for BB-width and MA slope checks
+DATA_START        = "2010-01-01"  # warmup start for accurate rolling high
 
 MONTHS = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
@@ -77,6 +82,15 @@ def _load(ticker: str, start: str = DATA_START) -> pd.DataFrame:
     df.index = pd.to_datetime(df.index).tz_localize(None)
     df.index.name = "date"
     return df[["open", "high", "low", "close", "volume"]]
+
+
+def _calculate_rsi(prices: pd.Series, period: int = RSI_PERIOD) -> pd.Series:
+    """Calculate RSI using Wilder's EWM smoothing."""
+    delta = prices.diff()
+    gain = delta.where(delta > 0, 0).ewm(alpha=1/period, min_periods=period).mean()
+    loss = (-delta.where(delta < 0, 0)).ewm(alpha=1/period, min_periods=period).mean()
+    rs = gain / (loss + 1e-10)
+    return 100 - (100 / (1 + rs))
 
 
 # -- Strategy 1: TusharStrategy v1 (fixed position sizing) --------------------
@@ -388,6 +402,81 @@ def compute_signal_v4(qqq_df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def compute_signal_v5(qqq_df: pd.DataFrame) -> pd.DataFrame:
+    """v5: v1 exit logic + RSI protection + 15% profit-taking (lock 50% at +15%)."""
+    df = qqq_df.copy()
+
+    # v1 indicators
+    df["high189"] = df["close"].rolling(HIGH_PERIOD, min_periods=1).max()
+    df["pcthi"]   = (df["high189"] - df["close"]) / df["high189"] * 100
+
+    # RSI for overbought protection
+    df["rsi"] = _calculate_rsi(df["close"], RSI_PERIOD)
+
+    position_list, action_list = [], []
+    days_below = 0
+    in_tqqq = True
+    prev_position = 1.0
+    position_size = 1.0
+    entry_price = None
+    profit_taken = False
+    profit_threshold = 0.15  # 15% gain triggers profit-taking
+
+    for _, row in df.iterrows():
+        pcthi = row["pcthi"]
+        rsi = row["rsi"]
+        close = row["close"]
+
+        # v1 state machine (unchanged)
+        if pcthi >= SIGNAL_THRESHOLD:
+            days_below = 0
+            in_tqqq = False
+            entry_price = None  # Reset entry price on exit
+            profit_taken = False
+        else:
+            days_below += 1
+            if days_below >= REENTRY_DAYS:
+                in_tqqq = True
+
+        # Track entry price on first day of position
+        if in_tqqq and entry_price is None:
+            entry_price = close
+
+        # Simple RSI-based position sizing with profit-taking at resistance
+        if in_tqqq:
+            # Check for profit-taking: +15% gain AND overbought (RSI >= 70)
+            if entry_price is not None and not profit_taken:
+                gain = (close - entry_price) / entry_price
+                if gain >= profit_threshold and rsi >= 70:
+                    # Lock profits at natural resistance: reduce to 50%, keep 50%
+                    position_size = 0.50
+                    profit_taken = True
+                elif rsi >= 70:
+                    position_size = 0.70  # Overbought but no profit yet: standard RSI cut
+                else:
+                    position_size = 1.00  # Normal: full position
+            else:
+                # Already locked profits or no entry yet: use RSI rule
+                position_size = 0.70 if rsi >= 70 else 1.00
+        else:
+            position_size = 0.0
+
+        # Action detection
+        act = "BUY" if (position_size > 0 and prev_position == 0) else \
+              "SELL" if (position_size == 0 and prev_position > 0) else "HOLD"
+
+        position_list.append(position_size)
+        action_list.append(act)
+        prev_position = position_size
+
+    df["position_size"] = position_list
+    df["action"] = action_list
+    df["regime"] = ["BUY_TQQQ" if p > 0 else "CASH" for p in position_list]
+    df["pcthi"] = df["pcthi"]
+    df["rsi"] = df["rsi"]
+    return df
+
+
 def _price_on(df: pd.DataFrame, dt) -> float | None:
     if dt in df.index:
         return float(df.loc[dt, "close"])
@@ -455,6 +544,96 @@ def run_buyhold(price_df: pd.DataFrame, capital: float) -> list[dict]:
                       "regime": "BUY_TQQQ", "action": "HOLD",
                       "pcthi": 0.0, "exposure": 50.0, "position_mult": 1.0})
     return daily
+
+
+def optimize_v1(qqq_df: pd.DataFrame, tqqq_df: pd.DataFrame, capital: float) -> list[tuple]:
+    """Grid search over HIGH_PERIOD, SIGNAL_THRESHOLD, REENTRY_DAYS for v1."""
+    from itertools import product
+
+    high_periods      = [63, 126, 189, 252]
+    thresholds        = [8.0, 10.0, 12.0, 15.0, 18.0]
+    reentry_days_list = [1, 2, 3, 5]
+
+    results = []
+    common = qqq_df.index.intersection(tqqq_df.index)
+    tqqq_al = tqqq_df.loc[common]
+    qqq_al = qqq_df.loc[common]
+
+    print(f"  Running grid search over {len(high_periods)} × {len(thresholds)} × {len(reentry_days_list)} = {len(high_periods) * len(thresholds) * len(reentry_days_list)} combinations...\n")
+
+    combo_count = 0
+    for hp, thresh, rdays in product(high_periods, thresholds, reentry_days_list):
+        combo_count += 1
+        if combo_count % 20 == 0:
+            print(f"  Processed {combo_count} combinations...")
+
+        # Inline v1 signal with custom params
+        df = qqq_al.copy()
+        df["high_hp"] = df["close"].rolling(hp, min_periods=1).max()
+        df["pcthi"]   = (df["high_hp"] - df["close"]) / df["high_hp"] * 100
+
+        position_list = []
+        days_below = 0
+        position = 1.0
+
+        for pcthi in df["pcthi"]:
+            if pcthi >= thresh:
+                days_below = 0
+                position = 0.0
+            else:
+                days_below += 1
+                if days_below >= rdays:
+                    position = 1.0
+            position_list.append(position)
+
+        df["position_size"] = position_list
+        df["regime"] = ["BUY_TQQQ" if p > 0 else "CASH" for p in position_list]
+        df["action"] = "HOLD"
+
+        daily = run_backtest(df, tqqq_al, capital)
+
+        # Calculate CAGR and max drawdown
+        portfolios = [d["portfolio"] for d in daily]
+        final = portfolios[-1]
+        n_yr = len(daily) / 252
+        cagr = ((final / capital) ** (1 / n_yr) - 1) * 100 if n_yr > 0 and final > 0 else -100
+
+        # Max drawdown
+        peak = capital
+        max_dd = 0.0
+        for p in portfolios:
+            if p > peak:
+                peak = p
+            dd = (peak - p) / peak * 100
+            if dd > max_dd:
+                max_dd = dd
+
+        # Results: (cagr, -max_dd for sorting, hp, thresh, rdays, final, max_dd)
+        results.append((cagr, -max_dd, hp, thresh, rdays, final, max_dd))
+
+    # Sort by CAGR (descending), then by max_dd (ascending)
+    results.sort(key=lambda x: (x[0], x[1]), reverse=True)
+    return results
+
+
+def print_optimize_results(results: list[tuple], top_n: int = 20) -> None:
+    """Print top N optimization results ranked by CAGR."""
+    W = 95
+    SEP = "=" * W
+    DIV = "-" * W
+
+    print(f"\n{SEP}")
+    print(f"  v1 Parameter Optimization — Top {top_n} by CAGR")
+    print(f"{SEP}\n")
+    print(f"  {'Rank':<5} {'HIGH_PERIOD':>12} {'THRESH%':>10} {'REENTRY':>8} {'CAGR':>10} {'MaxDD':>10} {'Final $':>15}")
+    print(DIV)
+
+    for i, (cagr, _, hp, thresh, rdays, final, max_dd) in enumerate(results[:top_n], 1):
+        print(f"  {i:<5} {hp:>12} {thresh:>9.1f}% {rdays:>8} {cagr:>9.1f}% {-max_dd:>9.1f}% ${final:>14,.0f}")
+
+    print(f"\n{SEP}")
+    print(f"  Current v1 defaults: HIGH_PERIOD=189, THRESHOLD=15.0%, REENTRY_DAYS=3")
+    print(f"  To apply best combo, update the constants at the top of the file.\n")
 
 
 # -- Reporting helpers ---------------------------------------------------------
@@ -735,6 +914,130 @@ def print_v4_comparison(daily_v1: list[dict], daily_v2: list[dict], daily_v3: li
         print(f"\n{SEP}\n")
 
 
+def print_qqq_v4_comparison(daily_v1: list[dict], daily_v4: list[dict],
+                             daily_qqq_bh: list[dict], years: list[int], capital: float) -> None:
+    """v1 vs v4 on QQQ (non-leveraged) annual comparison."""
+    r_v1  = _monthly_rets(daily_v1)
+    r_v4  = _monthly_rets(daily_v4)
+    r_bh  = _monthly_rets(daily_qqq_bh)
+
+    W   = 90
+    SEP = "=" * W
+    DIV = "-" * W
+
+    print(f"\n{SEP}")
+    print(f"  v4 Strategy on QQQ (Non-Leveraged)  |  Capital: ${capital:,.0f}")
+    print(f"{SEP}\n")
+
+    yr_totals = []
+    cum_v1 = cum_v4 = cum_bh = capital
+
+    for year in years:
+        yv10 = cum_v1
+        yv40 = cum_v4
+        ybh0 = cum_bh
+
+        for m in range(1, 13):
+            ym = (year, m)
+            bh = r_bh.get(ym)
+            v1 = r_v1.get(ym)
+            v4 = r_v4.get(ym)
+
+            if bh: cum_bh *= 1 + bh / 100
+            if v1: cum_v1 *= 1 + v1 / 100
+            if v4: cum_v4 *= 1 + v4 / 100
+
+        fy_bh = round((cum_bh / ybh0 - 1) * 100, 1)
+        fy_v1 = round((cum_v1 / yv10 - 1) * 100, 1)
+        fy_v4 = round((cum_v4 / yv40 - 1) * 100, 1)
+
+        yr_totals.append((year, fy_bh, fy_v1, fy_v4))
+        if yr_totals == [(years[0], fy_bh, fy_v1, fy_v4)]:
+            print(f"  {'Year':<7} {'QQQ B&H':>10} {'v1':>10} {'v4':>10}")
+            print(DIV)
+
+        print(f"  {year:<7} {_fmt(fy_bh):>10} {_fmt(fy_v1):>10} {_fmt(fy_v4):>10}")
+
+    if len(yr_totals) > 1:
+        print(f"\n{SEP}")
+        n_yr = (date.today().year - min(y for y, _, _, _ in yr_totals)) + \
+               (date.today().month - 1) / 12 + (date.today().day - 1) / 365
+        cagr = lambda x: round(((x / capital) ** (1 / n_yr) - 1) * 100, 1) if n_yr > 0 and x > 0 else 0.0
+
+        ov_bh = round((cum_bh / capital - 1) * 100, 1)
+        ov_v1 = round((cum_v1 / capital - 1) * 100, 1)
+        ov_v4 = round((cum_v4 / capital - 1) * 100, 1)
+
+        print(f"  {'CAGR':<7} {_fmt(cagr(cum_bh)):>10} {_fmt(cagr(cum_v1)):>10} {_fmt(cagr(cum_v4)):>10}")
+        print(f"  {'Final':<7} ${cum_bh:>9,.0f} ${cum_v1:>9,.0f} ${cum_v4:>9,.0f}")
+        print(f"\n{SEP}\n")
+
+
+def print_v5_comparison(daily_v1: list[dict], daily_v4: list[dict], daily_v5: list[dict],
+                        daily_tbh: list[dict], years: list[int], capital: float) -> None:
+    """v1 vs v4 vs v5 annual comparison."""
+    r_v1  = _monthly_rets(daily_v1)
+    r_v4  = _monthly_rets(daily_v4)
+    r_v5  = _monthly_rets(daily_v5)
+    r_tbh = _monthly_rets(daily_tbh)
+
+    W   = 115
+    SEP = "=" * W
+    DIV = "-" * W
+
+    print(f"\n{SEP}")
+    print(f"  v1 vs v4 vs v5 (Price-Location Sizing: 70%–120%)  |  Capital: ${capital:,.0f}")
+    print(f"{SEP}\n")
+
+    yr_totals = []
+    cum_v1 = cum_v4 = cum_v5 = cum_tbh = capital
+
+    for year in years:
+        yv10 = cum_v1
+        yv40 = cum_v4
+        yv50 = cum_v5
+        ytbh0 = cum_tbh
+
+        for m in range(1, 13):
+            ym = (year, m)
+            tbh = r_tbh.get(ym)
+            v1  = r_v1.get(ym)
+            v4  = r_v4.get(ym)
+            v5  = r_v5.get(ym)
+
+            if tbh: cum_tbh *= 1 + tbh / 100
+            if v1:  cum_v1  *= 1 + v1  / 100
+            if v4:  cum_v4  *= 1 + v4  / 100
+            if v5:  cum_v5  *= 1 + v5  / 100
+
+        fy_tbh = round((cum_tbh / ytbh0 - 1) * 100, 1)
+        fy_v1  = round((cum_v1  / yv10  - 1) * 100, 1)
+        fy_v4  = round((cum_v4  / yv40  - 1) * 100, 1)
+        fy_v5  = round((cum_v5  / yv50  - 1) * 100, 1)
+
+        yr_totals.append((year, fy_tbh, fy_v1, fy_v4, fy_v5))
+        if yr_totals == [(years[0], fy_tbh, fy_v1, fy_v4, fy_v5)]:
+            print(f"  {'Year':<7} {'TQQQ B&H':>10} {'v1':>10} {'v4':>10} {'v5':>10}")
+            print(DIV)
+
+        print(f"  {year:<7} {_fmt(fy_tbh):>10} {_fmt(fy_v1):>10} {_fmt(fy_v4):>10} {_fmt(fy_v5):>10}")
+
+    if len(yr_totals) > 1:
+        print(f"\n{SEP}")
+        n_yr = (date.today().year - min(y for y, _, _, _, _ in yr_totals)) + \
+               (date.today().month - 1) / 12 + (date.today().day - 1) / 365
+        cagr = lambda x: round(((x / capital) ** (1 / n_yr) - 1) * 100, 1) if n_yr > 0 and x > 0 else 0.0
+
+        ov_tbh = round((cum_tbh / capital - 1) * 100, 1)
+        ov_v1  = round((cum_v1  / capital - 1) * 100, 1)
+        ov_v4  = round((cum_v4  / capital - 1) * 100, 1)
+        ov_v5  = round((cum_v5  / capital - 1) * 100, 1)
+
+        print(f"  {'CAGR':<7} {_fmt(cagr(cum_tbh)):>10} {_fmt(cagr(cum_v1)):>10} {_fmt(cagr(cum_v4)):>10} {_fmt(cagr(cum_v5)):>10}")
+        print(f"  {'Final':<7} ${cum_tbh:>9,.0f} ${cum_v1:>9,.0f} ${cum_v4:>9,.0f} ${cum_v5:>9,.0f}")
+        print(f"\n{SEP}\n")
+
+
 def print_v2_trade_log(sig_v2: pd.DataFrame, tqqq_df: pd.DataFrame) -> None:
     """Print v2 (hybrid) trade log with position sizing."""
     trades = []
@@ -840,6 +1143,48 @@ def print_v4_trade_log(sig_v4: pd.DataFrame, tqqq_df: pd.DataFrame) -> None:
         print(f"\n  Total: {len(trades)} signals ({sum(1 for t in trades if t['action']=='BUY')} buys, {sum(1 for t in trades if t['action']=='SELL')} sells)\n")
 
 
+def print_v5_trade_log(sig_v5: pd.DataFrame, tqqq_df: pd.DataFrame) -> None:
+    """Print v5 (v1 exits + RSI protection + profit-taking) trade log."""
+    trades = []
+    for dt, row in sig_v5.iterrows():
+        if row["action"] in ("BUY", "SELL"):
+            tqqq_p = _price_on(tqqq_df, dt)
+            if tqqq_p is None:
+                continue
+
+            pcthi = row.get("pcthi", 0)
+            rsi = row.get("rsi", 50)
+            pos_size = row.get("position_size", 0)
+
+            # Determine trigger
+            if row["action"] == "SELL":
+                if pcthi >= SIGNAL_THRESHOLD:
+                    trigger = "v1 exit (15%)"
+                else:
+                    trigger = "profit lock"
+            else:  # BUY
+                trigger = "v1 re-entry"
+
+            trades.append({
+                "date": dt,
+                "action": row["action"],
+                "price": tqqq_p,
+                "trigger": trigger,
+                "rsi": rsi,
+                "pos": pos_size
+            })
+
+    if trades:
+        print(f"\n  v5 (RSI Protection + Profit-Taking) Trade Log:")
+        print(f"  {'Date':<12} {'Act':<4} {'TQQQ Price':>12} {'Trigger':<18} {'RSI':>6} {'Target%':<8}")
+        print(f"  {'-'*70}")
+        for t in trades:
+            print(f"  {t['date'].date()} {t['action']:<4} ${t['price']:>10.2f}  {t['trigger']:<18} {t['rsi']:>5.1f} {t['pos']*100:>6.0f}%")
+        buys = sum(1 for t in trades if t['action']=='BUY')
+        sells = sum(1 for t in trades if t['action']=='SELL')
+        print(f"\n  Total: {len(trades)} trades ({buys} buys, {sells} sells)\n")
+
+
 def print_daily_signal(sig_df: pd.DataFrame, tqqq_df: pd.DataFrame) -> None:
     row       = sig_df.iloc[-1]
     today     = sig_df.index[-1].date()
@@ -876,6 +1221,12 @@ def main():
                     help="Compare v1 vs v2 vs v3 graduated MA exposure")
     ap.add_argument("--v4",       action="store_true",
                     help="Compare v1 vs v2 vs v3 vs v4 (v2 signals + v3 sizing)")
+    ap.add_argument("--qqq",      action="store_true",
+                    help="Backtest v4 strategy on QQQ (non-leveraged)")
+    ap.add_argument("--v5",       action="store_true",
+                    help="v1 exits + Bollinger/RSI momentum sizing (50%–120%)")
+    ap.add_argument("--optimize", action="store_true",
+                    help="Grid search optimal HIGH_PERIOD, SIGNAL_THRESHOLD, REENTRY_DAYS for v1")
     ap.add_argument("--all",      action="store_true",
                     help="Backtest all years")
     ap.add_argument("--year",     type=int,
@@ -889,7 +1240,28 @@ def main():
     print("Computing v1 signal...")
     sig_v1 = compute_signal_v1(qqq_df)
 
-    if args.v4:
+    if args.v5:
+        print("Computing v1, v4, and v5 signals...")
+        sig_v4 = compute_signal_v4(qqq_df)
+        sig_v5 = compute_signal_v5(qqq_df)
+        common = sig_v1.index.intersection(tqqq_df.index)
+        tqqq_al = tqqq_df.loc[common]
+        sig_v1 = sig_v1.loc[common]
+        sig_v4 = sig_v4.loc[common]
+        sig_v5 = sig_v5.loc[common]
+        daily_v1 = run_backtest(sig_v1, tqqq_al, args.capital)
+        daily_v4 = run_backtest(sig_v4, tqqq_al, args.capital)
+        daily_v5 = run_backtest(sig_v5, tqqq_al, args.capital)
+        daily_tbh = run_buyhold(tqqq_al, args.capital)
+        if args.all:
+            years = sorted(set(d["date"].year for d in daily_v1))
+        elif args.year:
+            years = [args.year]
+        else:
+            years = [date.today().year]
+        print_v5_comparison(daily_v1, daily_v4, daily_v5, daily_tbh, years, args.capital)
+        print_v5_trade_log(sig_v5, tqqq_al)
+    elif args.v4:
         print("Computing v2, v3, and v4 signals...")
         sig_v2 = compute_signal_v2(qqq_df)
         sig_v3 = compute_signal_v3(qqq_df)
@@ -914,6 +1286,32 @@ def main():
             years = [date.today().year]
         print_v4_comparison(daily_v1, daily_v2, daily_v3, daily_v4, daily_tbh, years, args.capital)
         print_v4_trade_log(sig_v4, tqqq_al)
+    elif args.qqq:
+        print("Computing v4 signal for QQQ backtest...")
+        sig_v4 = compute_signal_v4(qqq_df)
+        # Align to common trading dates
+        common = sig_v1.index.intersection(qqq_df.index)
+        qqq_al = qqq_df.loc[common]
+        sig_v1 = sig_v1.loc[common]
+        sig_v4 = sig_v4.loc[common]
+        daily_v1 = run_backtest(sig_v1, qqq_al, args.capital)
+        daily_v4 = run_backtest(sig_v4, qqq_al, args.capital)
+        daily_qqq_bh = run_buyhold(qqq_al, args.capital)
+        if args.all:
+            years = sorted(set(d["date"].year for d in daily_v1))
+        elif args.year:
+            years = [args.year]
+        else:
+            years = [date.today().year]
+        print_qqq_v4_comparison(daily_v1, daily_v4, daily_qqq_bh, years, args.capital)
+        print_v4_trade_log(sig_v4, qqq_al)
+    elif args.optimize:
+        print("Running v1 parameter optimization on TQQQ...")
+        common = sig_v1.index.intersection(tqqq_df.index)
+        qqq_al = qqq_df.loc[common]
+        tqqq_al = tqqq_df.loc[common]
+        results = optimize_v1(qqq_al, tqqq_al, args.capital)
+        print_optimize_results(results)
     elif args.v3:
         print("Computing v2 and v3 signals...")
         sig_v2 = compute_signal_v2(qqq_df)

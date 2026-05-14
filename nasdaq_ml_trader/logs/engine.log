@@ -322,3 +322,15 @@
 2026-05-09 00:16:13,334 INFO [nasdaq_ml.engine] Fold  69 [2024-09-27 – 2025-09-27]: RF=0.341 XGB=0.293 LSTM=0.413
 2026-05-09 00:16:13,813 INFO [nasdaq_ml.engine] Fold  70 [2025-03-27 – 2026-03-27]: RF=0.488 XGB=0.252 LSTM=0.582
 2026-05-09 00:16:13,825 INFO [nasdaq_ml.engine] Backtest complete: CAGR=0.00% Sharpe=0.00 MaxDD=0.00%
+2026-05-10 12:05:27,641 INFO [nasdaq_ml.engine] Filtered to 10 folds with test_end > 2021-05-10
+2026-05-10 12:05:28,099 INFO [nasdaq_ml.engine] Fold  61 [2020-09-27 – 2021-09-27]: RF=0.424 XGB=0.320 LSTM=0.262
+2026-05-10 12:05:28,617 INFO [nasdaq_ml.engine] Fold  62 [2021-03-27 – 2022-03-27]: RF=0.357 XGB=0.532 LSTM=0.197
+2026-05-10 12:05:29,266 INFO [nasdaq_ml.engine] Fold  63 [2021-09-27 – 2022-09-27]: RF=0.365 XGB=0.365 LSTM=0.288
+2026-05-10 12:05:29,679 INFO [nasdaq_ml.engine] Fold  64 [2022-03-27 – 2023-03-27]: RF=0.389 XGB=0.341 LSTM=0.258
+2026-05-10 12:05:30,042 INFO [nasdaq_ml.engine] Fold  65 [2022-09-27 – 2023-09-27]: RF=0.339 XGB=0.387 LSTM=0.438
+2026-05-10 12:05:30,459 INFO [nasdaq_ml.engine] Fold  66 [2023-03-27 – 2024-03-27]: RF=0.425 XGB=0.339 LSTM=0.343
+2026-05-10 12:05:30,890 INFO [nasdaq_ml.engine] Fold  67 [2023-09-27 – 2024-09-27]: RF=0.496 XGB=0.384 LSTM=0.569
+2026-05-10 12:05:31,281 INFO [nasdaq_ml.engine] Fold  68 [2024-03-27 – 2025-03-27]: RF=0.465 XGB=0.433 LSTM=0.328
+2026-05-10 12:05:31,703 INFO [nasdaq_ml.engine] Fold  69 [2024-09-27 – 2025-09-27]: RF=0.341 XGB=0.293 LSTM=0.413
+2026-05-10 12:05:32,133 INFO [nasdaq_ml.engine] Fold  70 [2025-03-27 – 2026-03-27]: RF=0.488 XGB=0.252 LSTM=0.582
+2026-05-10 12:05:32,141 INFO [nasdaq_ml.engine] Backtest complete: CAGR=0.00% Sharpe=0.00 MaxDD=0.00%

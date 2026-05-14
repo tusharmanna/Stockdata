@@ -2,3 +2,4 @@
 2026-05-08 15:22:41,870 INFO [nasdaq_ml.generator] Signal: HOLD (raw=HOLD, conf=0.360, filtered=True)
 2026-05-08 15:39:02,928 INFO [nasdaq_ml.generator] Signal: HOLD (raw=SELL, conf=0.353, filtered=True)
 2026-05-09 00:17:09,272 INFO [nasdaq_ml.generator] Signal: HOLD (raw=HOLD, conf=0.360, filtered=True)
+2026-05-10 12:04:21,355 INFO [nasdaq_ml.generator] Signal: HOLD (raw=HOLD, conf=0.360, filtered=True)

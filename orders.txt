@@ -2,8 +2,3 @@
 # Example:
 # AAPL
 # MSFT
-sldb
-VST
-BABA
-
-

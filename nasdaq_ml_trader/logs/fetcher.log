@@ -47,3 +47,15 @@
 2026-05-09 00:16:07,681 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
 2026-05-09 00:17:07,577 INFO [nasdaq_ml.fetcher] Cache is up to date
 2026-05-09 00:17:07,644 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-10 12:04:18,492 INFO [nasdaq_ml.fetcher] Fetching incremental update from 2026-05-09
+2026-05-10 12:04:18,936 INFO [nasdaq_ml.fetcher] Downloaded 1 rows from 2026-05-08 to 2026-05-08
+2026-05-10 12:04:19,057 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-10 12:05:26,784 INFO [nasdaq_ml.fetcher] Fetching incremental update from 2026-05-09
+2026-05-10 12:05:27,180 INFO [nasdaq_ml.fetcher] Downloaded 1 rows from 2026-05-08 to 2026-05-08
+2026-05-10 12:05:27,247 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-10 12:05:43,967 INFO [nasdaq_ml.fetcher] Fetching incremental update from 2026-05-09
+2026-05-10 12:05:44,430 INFO [nasdaq_ml.fetcher] Downloaded 1 rows from 2026-05-08 to 2026-05-08
+2026-05-10 12:05:44,448 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet
+2026-05-10 12:07:23,834 INFO [nasdaq_ml.fetcher] Fetching incremental update from 2026-05-09
+2026-05-10 12:07:24,291 INFO [nasdaq_ml.fetcher] Downloaded 1 rows from 2026-05-08 to 2026-05-08
+2026-05-10 12:07:24,305 INFO [nasdaq_ml.fetcher] Cache saved: 10418 rows → E:\work\Stockdata\nasdaq_ml_trader\cache\ixic_ohlcv.parquet

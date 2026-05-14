@@ -7,8 +7,8 @@ No real-time data subscription required.
 
   Entry  : Market order (fills at current market price)
   Stop   : Today's low (from IB delayed data)
-  Target : Entry + 3 × risk/share (limit order, 3:1 reward/risk)
-  Shares : floor($100 / (last_price - today_low))
+  Target : Entry + 2 × risk/share (limit order, 1:2 reward/risk)
+  Shares : floor($50 / (last_price - today_low))
 
 Displays a full order summary and asks for per-order confirmation before sending.
 
@@ -293,7 +293,7 @@ def main():
     # 4. Build order list
     #    Entry : Market order
     #    Stop  : Today's low from IB
-    #    Shares: floor($100 / (live - today_low))
+    #    Shares: floor($50 / (live - today_low))
     # ------------------------------------------------------------------
     orders  = []
     skipped = []
@@ -320,7 +320,7 @@ def main():
             skipped.append((ticker, f"risk/share ${rps:.2f} > ${RISK_DOLLARS:.0f} budget"))
             continue
 
-        target = round(live + 3 * rps, 2)
+        target = round(live + 2 * rps, 2)
         orders.append({
             "ticker":    ticker,
             "live":      live,
@@ -330,7 +330,7 @@ def main():
             "shares":    shares,
             "cost":      round(shares * live, 2),
             "max_loss":  round(shares * rps, 2),
-            "max_gain":  round(shares * 3 * rps, 2),
+            "max_gain":  round(shares * 2 * rps, 2),
         })
 
     # ------------------------------------------------------------------
@@ -338,11 +338,11 @@ def main():
     # ------------------------------------------------------------------
     SEP = "=" * 88
     print(SEP)
-    print("ORDER SUMMARY  (Market entry + Stop at today's low + TP at 3R, Risk = $100)")
+    print("ORDER SUMMARY  (Market entry + Stop at today's low + TP at 2R, Risk = $50)")
     print(SEP)
 
     if orders:
-        hdr = (f"{'Ticker':<8}  {'Live':>8}  {'Stop':>8}  {'Target(3R)':>10}  "
+        hdr = (f"{'Ticker':<8}  {'Live':>8}  {'Stop':>8}  {'Target(2R)':>10}  "
                f"{'Rk/Sh':>6}  {'Shares':>6}  {'~Cost':>10}  {'MaxLoss':>8}  {'MaxGain':>8}")
         print(hdr)
         print("-" * len(hdr))
