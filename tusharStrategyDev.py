@@ -641,6 +641,127 @@ def print_optimize_results(results: list[tuple], top_n: int = 20) -> None:
     print(f"  To apply best combo, update the constants at the top of the file.\n")
 
 
+def optimize_dip_threshold(qqq_df: pd.DataFrame, tqqq_df: pd.DataFrame, capital: float) -> list[tuple]:
+    """Grid search over DIP_THRESHOLD (%) for v5 hybrid strategy."""
+    dip_thresholds = [0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08]  # 2% to 8%
+
+    results = []
+    common = qqq_df.index.intersection(tqqq_df.index)
+    tqqq_al = tqqq_df.loc[common]
+    qqq_al = qqq_df.loc[common]
+
+    print(f"  Running grid search over {len(dip_thresholds)} dip thresholds...\n")
+
+    for dip_pct in dip_thresholds:
+        # Inline v5 hybrid signal with custom dip threshold
+        df = qqq_al.copy()
+
+        # v1 indicators
+        df["high189"] = df["close"].rolling(HIGH_PERIOD, min_periods=1).max()
+        df["pcthi"]   = (df["high189"] - df["close"]) / df["high189"] * 100
+
+        position_list = []
+        dip_shares_list = []
+
+        days_below = 0
+        in_tqqq = True
+        base_position = 1.0
+        dip_shares = 0.0
+        recent_high = df["close"].iloc[0] if not df.empty else 100.0
+        last_dip_buy_price = None
+
+        for _, row in df.iterrows():
+            pcthi = row["pcthi"]
+            close = row["close"]
+
+            # v1 logic
+            if pcthi >= SIGNAL_THRESHOLD:
+                days_below = 0
+                in_tqqq = False
+                dip_shares = 0.0
+            else:
+                days_below += 1
+                if days_below >= REENTRY_DAYS:
+                    in_tqqq = True
+
+            base_position = 1.0 if in_tqqq else 0.0
+
+            # Dip buying with custom threshold
+            if in_tqqq:
+                if close > recent_high:
+                    recent_high = close
+
+                dip_level = recent_high * (1 - dip_pct)
+
+                if close <= dip_level and (last_dip_buy_price is None or close < last_dip_buy_price * 0.98):
+                    shares_to_buy = DIP_BUY_AMOUNT / close
+                    dip_shares += shares_to_buy
+                    last_dip_buy_price = close
+                    recent_high = max(close, recent_high * 1.02)
+            else:
+                dip_shares = 0.0
+                recent_high = close
+                last_dip_buy_price = None
+
+            dip_value = dip_shares * close
+            position_size = base_position + (dip_value / capital)
+
+            position_list.append(position_size)
+            dip_shares_list.append(dip_shares)
+
+        df["position_size"] = position_list
+        df["dip_shares"] = dip_shares_list
+        df["regime"] = ["BUY_TQQQ" if ps > 0 else "CASH" for ps in position_list]
+        df["action"] = "HOLD"
+
+        daily = run_backtest(df, tqqq_al, capital)
+
+        # Calculate CAGR and max drawdown
+        portfolios = [d["portfolio"] for d in daily]
+        final = portfolios[-1]
+        n_yr = len(daily) / 252
+        cagr = ((final / capital) ** (1 / n_yr) - 1) * 100 if n_yr > 0 and final > 0 else -100
+
+        # Max drawdown
+        peak = capital
+        max_dd = 0.0
+        for p in portfolios:
+            if p > peak:
+                peak = p
+            dd = (peak - p) / peak * 100
+            if dd > max_dd:
+                max_dd = dd
+
+        results.append((cagr, -max_dd, dip_pct, final, max_dd))
+
+    # Sort by CAGR (descending)
+    results.sort(key=lambda x: (x[0], x[1]), reverse=True)
+    return results
+
+
+def print_dip_optimize_results(results: list[tuple], top_n: int = 20) -> None:
+    """Print top N dip threshold optimization results ranked by CAGR."""
+    W = 85
+    SEP = "=" * W
+    DIV = "-" * W
+
+    print(f"\n{SEP}")
+    print(f"  v5 Dip Threshold Optimization — Top {top_n} by CAGR")
+    print(f"{SEP}\n")
+    print(f"  {'Rank':<5} {'DIP %':>8} {'CAGR':>10} {'MaxDD':>10} {'Final $':>15}")
+    print(DIV)
+
+    for i, (cagr, _, dip_pct, final, max_dd) in enumerate(results[:top_n], 1):
+        print(f"  {i:<5} {dip_pct*100:>7.1f}% {cagr:>9.1f}% {-max_dd:>9.1f}% ${final:>14,.0f}")
+
+    if results:
+        best_pct = results[0][2]
+        print(f"\n{SEP}")
+        print(f"  Best dip threshold: {best_pct*100:.1f}%")
+        print(f"  Current v5 default: DIP_THRESHOLD={DIP_THRESHOLD*100:.1f}%")
+        print(f"  To apply best threshold, update DIP_THRESHOLD constant at the top of the file.\n")
+
+
 # -- Reporting helpers ---------------------------------------------------------
 
 def _monthly_rets(daily: list[dict]) -> dict[tuple, float]:
@@ -1213,6 +1334,8 @@ def main():
                     help="Backtest v4 strategy on QQQ (non-leveraged)")
     ap.add_argument("--optimize", action="store_true",
                     help="Grid search optimal HIGH_PERIOD, SIGNAL_THRESHOLD, REENTRY_DAYS for v1")
+    ap.add_argument("--optimize-dip", action="store_true",
+                    help="Grid search optimal DIP_THRESHOLD (%) for v5 hybrid strategy")
     ap.add_argument("--all",      action="store_true",
                     help="Backtest all years")
     ap.add_argument("--year",     type=int,
@@ -1296,6 +1419,13 @@ def main():
         tqqq_al = tqqq_df.loc[common]
         results = optimize_v1(qqq_al, tqqq_al, args.capital)
         print_optimize_results(results)
+    elif args.optimize_dip:
+        print("Running v5 dip threshold optimization on TQQQ...")
+        common = sig_v1.index.intersection(tqqq_df.index)
+        qqq_al = qqq_df.loc[common]
+        tqqq_al = tqqq_df.loc[common]
+        results = optimize_dip_threshold(qqq_al, tqqq_al, args.capital)
+        print_dip_optimize_results(results)
     elif args.v3:
         print("Computing v2 and v3 signals...")
         sig_v2 = compute_signal_v2(qqq_df)
