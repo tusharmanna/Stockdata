@@ -328,6 +328,23 @@ def init_db():
             PRIMARY KEY (scan_date, ticker)
         );
 
+        CREATE TABLE IF NOT EXISTS large_volume_scan_results (
+            scan_date      TEXT NOT NULL,
+            ticker         TEXT NOT NULL,
+            price_date     TEXT,
+            close          REAL,
+            high           REAL,
+            low            REAL,
+            volume         INTEGER,
+            ma20           REAL,
+            ma50           REAL,
+            ma200          REAL,
+            vol_avg30      REAL,
+            vol_avg_15d    REAL,
+            volume_ratio   REAL,
+            PRIMARY KEY (scan_date, ticker)
+        );
+
         CREATE TABLE IF NOT EXISTS failed_tickers (
             ticker    TEXT PRIMARY KEY,
             fail_date TEXT NOT NULL,

@@ -1,14 +1,14 @@
 """
-EnterOrdersIB.py — Place Market + Stop Loss bracket orders on Interactive Brokers.
+EnterOrdersIB.py — Place Limit + Stop Loss bracket orders on Interactive Brokers.
 
-Reads tickers from orders.txt (one per line, # for comments).
-Fetches delayed price (~15 min) and today's low from IB market data (type 3).
+Reads tickers and prices from orders.txt (format: TICKER PRICE, one per line, # for comments).
+Fetches yesterday's low from the database (stockdata.db).
 No real-time data subscription required.
 
-  Entry  : Market order (fills at current market price)
-  Stop   : Today's low (from IB delayed data)
+  Entry  : Limit order at specified price from orders.txt
+  Stop   : Yesterday's low (from database)
   Target : Entry + 2 × risk/share (limit order, 1:2 reward/risk)
-  Shares : floor($50 / (last_price - today_low))
+  Shares : floor($50 / (entry - yesterday_low))
 
 Displays a full order summary and asks for per-order confirmation before sending.
 
@@ -28,6 +28,7 @@ import argparse
 import sys
 import time
 import threading
+import sqlite3
 from math import floor
 from pathlib import Path
 
@@ -67,18 +68,43 @@ _IB_INFO_CODES = {2104, 2106, 2107, 2108, 2119, 2158, 10167, 10197}
 # Helpers
 # ---------------------------------------------------------------------------
 
-def read_tickers(path: Path) -> list:
-    tickers = []
+def get_yesterday_low(ticker: str, db_path: str = "stockdata.db") -> float | None:
+    """Fetch yesterday's low from the database (most recent row)."""
+    try:
+        conn = sqlite3.connect(db_path)
+        cur = conn.execute(
+            "SELECT low FROM prices WHERE ticker=? ORDER BY date DESC LIMIT 1",
+            (ticker,)
+        )
+        row = cur.fetchone()
+        conn.close()
+        return row[0] if row else None
+    except Exception as e:
+        print(f"  Error fetching low for {ticker}: {e}")
+        return None
+
+
+def read_ticker_prices(path: Path) -> list:
+    """Read tickers and prices from orders.txt (format: TICKER PRICE)."""
+    orders = []
     with open(path) as fh:
         for raw in fh:
-            t = raw.strip().upper()
-            if t and not t.startswith("#"):
-                tickers.append(t)
-    return tickers
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split()
+            if len(parts) >= 2:
+                try:
+                    ticker = parts[0].upper()
+                    price = float(parts[1])
+                    orders.append({"ticker": ticker, "price": price})
+                except (ValueError, IndexError):
+                    print(f"  Warning: skipped invalid line: {line}")
+    return orders
 
 
-def calc_shares(live: float, today_low: float, risk: float = RISK_DOLLARS) -> int:
-    rps = live - today_low
+def calc_shares(entry: float, stop: float, risk: float = RISK_DOLLARS) -> int:
+    rps = entry - stop
     if rps <= 0:
         return 0
     return floor(risk / rps)
@@ -167,8 +193,8 @@ def make_contract(symbol: str) -> Contract:
 
 
 def make_bracket(parent_id: int, stop_id: int, tp_id: int,
-                 qty: int, stop: float, take_profit: float):
-    """Return (parent, stop_order, tp_order) for a Market + Stop + Take-Profit bracket.
+                 qty: int, entry: float, stop: float, take_profit: float):
+    """Return (parent, stop_order, tp_order) for a Limit + Stop + Take-Profit bracket.
 
     Stop and TP are linked via an OCA group so whichever fills first cancels the other.
     """
@@ -177,7 +203,8 @@ def make_bracket(parent_id: int, stop_id: int, tp_id: int,
     parent = Order()
     parent.orderId        = parent_id
     parent.action         = "BUY"
-    parent.orderType      = "MKT"
+    parent.orderType      = "LMT"
+    parent.lmtPrice       = round(entry, 2)
     parent.totalQuantity  = qty
     parent.transmit       = False
     parent.eTradeOnly     = False
@@ -234,19 +261,20 @@ def main():
     print(f"=== EnterOrdersIB ===  mode={mode}  host={args.host}:{port}  clientId={args.client_id}\n")
 
     # ------------------------------------------------------------------
-    # 1. Read tickers from orders.txt
+    # 1. Read tickers and prices from orders.txt
     # ------------------------------------------------------------------
     if not ORDERS_FILE.exists():
         print(f"ERROR: {ORDERS_FILE} not found.\n"
-              "Create orders.txt with one ticker per line (# = comment).")
+              "Create orders.txt with format: TICKER PRICE (one per line, # = comment).")
         sys.exit(1)
 
-    tickers = read_tickers(ORDERS_FILE)
+    tickers = read_ticker_prices(ORDERS_FILE)
     if not tickers:
         print("orders.txt is empty — nothing to do.")
         sys.exit(0)
 
-    print(f"Tickers from orders.txt: {', '.join(tickers)}\n")
+    ticker_list = [t["ticker"] for t in tickers]
+    print(f"Tickers from orders.txt: {', '.join(ticker_list)}\n")
 
     # ------------------------------------------------------------------
     # 2. Connect to IB
@@ -266,69 +294,57 @@ def main():
 
     print(f"Connected. Next order ID: {app._next_order_id}\n")
 
-    # Use delayed market data (type 3) — no real-time subscription required.
-    # Delayed data is ~15 min behind but includes today's live high/low/last.
-    app.reqMarketDataType(3)
-    time.sleep(0.5)  # give IB a moment to acknowledge the data type switch
-
     # ------------------------------------------------------------------
-    # 3. Fetch delayed price and today's low from IB market data snapshots
+    # 3. Fetch yesterday's low from database for each ticker
     # ------------------------------------------------------------------
-    print(f"Requesting delayed market data snapshots for {len(tickers)} ticker(s)...")
+    print(f"Fetching yesterday's lows from database for {len(tickers)} ticker(s)...")
 
-    req_base = 1000
-    req_ids  = {ticker: req_base + i for i, ticker in enumerate(tickers)}
-
-    for ticker, req_id in req_ids.items():
-        app.request_snapshot(req_id, ticker)
-        time.sleep(0.05)
-
-    snapshots = {}
-    for ticker, req_id in req_ids.items():
-        snapshots[ticker] = app.get_snapshot_prices(req_id)
+    db_path = Path(__file__).parent / "stockdata.db"
+    yesterday_lows = {}
+    for ticker_data in tickers:
+        ticker = ticker_data["ticker"]
+        low = get_yesterday_low(ticker, str(db_path))
+        yesterday_lows[ticker] = low
 
     print(f"  Done.\n")
 
     # ------------------------------------------------------------------
     # 4. Build order list
-    #    Entry : Market order
-    #    Stop  : Today's low from IB
-    #    Shares: floor($50 / (live - today_low))
+    #    Entry : Limit order at price from orders.txt
+    #    Stop  : Yesterday's low from database
+    #    Shares: floor($50 / (entry - yesterday_low))
     # ------------------------------------------------------------------
     orders  = []
     skipped = []
 
-    for ticker in tickers:
-        snap = snapshots.get(ticker, {})
-        live      = snap.get("last")
-        today_low = snap.get("low")
+    for ticker_data in tickers:
+        ticker = ticker_data["ticker"]
+        entry = ticker_data["price"]
+        yesterday_low = yesterday_lows.get(ticker)
 
-        if not live:
-            skipped.append((ticker, "no live price from IB"))
-            continue
-        if not today_low:
-            skipped.append((ticker, "no today's low from IB"))
+        if yesterday_low is None:
+            skipped.append((ticker, "no data in database"))
             continue
 
-        rps = round(live - today_low, 4)
+        rps = round(entry - yesterday_low, 4)
         if rps <= 0:
-            skipped.append((ticker, f"live {live:.2f} <= today_low {today_low:.2f}"))
+            skipped.append((ticker, f"entry {entry:.2f} <= yesterday_low {yesterday_low:.2f}"))
             continue
 
-        shares = calc_shares(live, today_low)
+        shares = calc_shares(entry, yesterday_low)
         if shares == 0:
             skipped.append((ticker, f"risk/share ${rps:.2f} > ${RISK_DOLLARS:.0f} budget"))
             continue
 
-        target = round(live + 2 * rps, 2)
+        target = round(entry + 2 * rps, 2)
         orders.append({
             "ticker":    ticker,
-            "live":      live,
-            "stop":      today_low,
+            "entry":     entry,
+            "stop":      yesterday_low,
             "target":    target,
             "rps":       rps,
             "shares":    shares,
-            "cost":      round(shares * live, 2),
+            "cost":      round(shares * entry, 2),
             "max_loss":  round(shares * rps, 2),
             "max_gain":  round(shares * 2 * rps, 2),
         })
@@ -338,17 +354,17 @@ def main():
     # ------------------------------------------------------------------
     SEP = "=" * 88
     print(SEP)
-    print("ORDER SUMMARY  (Market entry + Stop at today's low + TP at 2R, Risk = $50)")
+    print("ORDER SUMMARY  (Limit entry + Stop at yesterday's low + TP at 2R, Risk = $50)")
     print(SEP)
 
     if orders:
-        hdr = (f"{'Ticker':<8}  {'Live':>8}  {'Stop':>8}  {'Target(2R)':>10}  "
+        hdr = (f"{'Ticker':<8}  {'Entry':>8}  {'Stop':>8}  {'Target(2R)':>10}  "
                f"{'Rk/Sh':>6}  {'Shares':>6}  {'~Cost':>10}  {'MaxLoss':>8}  {'MaxGain':>8}")
         print(hdr)
         print("-" * len(hdr))
         for o in orders:
             print(
-                f"{o['ticker']:<8}  {o['live']:>8.2f}  {o['stop']:>8.2f}  {o['target']:>10.2f}  "
+                f"{o['ticker']:<8}  {o['entry']:>8.2f}  {o['stop']:>8.2f}  {o['target']:>10.2f}  "
                 f"{o['rps']:>6.2f}  {o['shares']:>6}  "
                 f"{o['cost']:>10,.2f}  {o['max_loss']:>8.2f}  {o['max_gain']:>8.2f}"
             )
@@ -388,13 +404,13 @@ def main():
             tp_id     = app.next_order_id()
             parent, stop_order, tp_order = make_bracket(
                 parent_id, stop_id, tp_id,
-                qty=o["shares"], stop=o["stop"], take_profit=o["target"]
+                qty=o["shares"], entry=o["entry"], stop=o["stop"], take_profit=o["target"]
             )
             app.placeOrder(parent_id, contract, parent)
             app.placeOrder(stop_id,   contract, stop_order)
             app.placeOrder(tp_id,     contract, tp_order)
             print(f"  Submitted {o['ticker']:<6}  "
-                  f"BUY {o['shares']} @ MKT  Stop: {o['stop']:.2f}  "
+                  f"BUY {o['shares']} @ LMT {o['entry']:.2f}  Stop: {o['stop']:.2f}  "
                   f"Target: {o['target']:.2f}  "
                   f"(orderId={parent_id}/{stop_id}/{tp_id})")
             placed += 1
@@ -403,9 +419,9 @@ def main():
         print(f"Stepping through {len(orders)} order(s). [y]=send  [n]=skip  [q]=quit\n")
         for i, o in enumerate(orders, 1):
             print(f"  [{i}/{len(orders)}]  {o['ticker']:<6}  "
-                  f"BUY {o['shares']} @ MKT  |  Stop: {o['stop']:.2f}  |  "
+                  f"BUY {o['shares']} @ LMT {o['entry']:.2f}  |  Stop: {o['stop']:.2f}  |  "
                   f"Target: {o['target']:.2f}  |  "
-                  f"Live: {o['live']:.2f}  |  Risk/share: ${o['rps']:.2f}  |  "
+                  f"Risk/share: ${o['rps']:.2f}  |  "
                   f"Max loss: ${o['max_loss']:.2f}  |  Max gain: ${o['max_gain']:.2f}")
 
             answer = input("        Send to IB? [y/n/q]: ").strip().lower()
@@ -424,7 +440,7 @@ def main():
             tp_id     = app.next_order_id()
             parent, stop_order, tp_order = make_bracket(
                 parent_id, stop_id, tp_id,
-                qty=o["shares"], stop=o["stop"], take_profit=o["target"]
+                qty=o["shares"], entry=o["entry"], stop=o["stop"], take_profit=o["target"]
             )
             app.placeOrder(parent_id, contract, parent)
             app.placeOrder(stop_id,   contract, stop_order)

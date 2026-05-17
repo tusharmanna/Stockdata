@@ -10,5 +10,7 @@ echo Downloading market data... >> "%LOG_FILE%"
 python "%~dp0download_data.py" 2>&1 | powershell -Command "$input | Tee-Object -FilePath '%LOG_FILE%' -Append"
 echo Running scanner... >> "%LOG_FILE%"
 python "%~dp0run_scan.py" 2>&1 | powershell -Command "$input | Tee-Object -FilePath '%LOG_FILE%' -Append"
+echo Generating master list... >> "%LOG_FILE%"
+python "%~dp0generate_masterlist.py" 2>&1 | powershell -Command "$input | Tee-Object -FilePath '%LOG_FILE%' -Append"
 echo === Run finished: %date% %time% === >> "%LOG_FILE%"
 pause

@@ -2,3 +2,7 @@
 # Example:
 # AAPL
 # MSFT
+TRT 13.32
+PAA 22.3
+PAGP 23.94
+BXP 59.57

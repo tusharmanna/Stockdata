@@ -27,6 +27,12 @@ v4 (Hybrid: v2 Signals + v3 Graduated Sizing):
   - SIZING: v3's graduated position (30%/60%/85%/110% based on MA count)
   - Combines sharp entry/exit with graduated position management
 
+v5 (Hybrid: v1 Base + Dip Buying):
+  - Base: v1 logic (exit at 15% below 189d high, re-enter after 3 days)
+  - Opportunistic: Buy additional $1000 TQQQ on 4% QQQ dips (only while in TQQQ regime)
+  - Combines v1's strong exits with tactical dip accumulation
+  - Multiple concurrent dip positions allowed while in buy regime
+
 USAGE
 -----
   python tusharStrategyDev.py                        # today's v1 signal
@@ -57,6 +63,8 @@ MA200_PERIOD      = 200
 MA_CONFIRM_DAYS   = 3             # consecutive closes above/below MA to trigger
 MA20_PERIOD       = 20            # v3 short-term MA
 # v3 position sizes: 30% (0 MAs), 60% (1 MA), 85% (2 MAs), 110% (3 MAs)
+DIP_THRESHOLD     = 0.04           # 4% drop from recent high triggers buy
+DIP_BUY_AMOUNT    = 1000.0         # buy $1000 TQQQ on each dip
 DATA_START        = "2010-01-01"  # warmup start for accurate rolling high
 
 MONTHS = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -385,6 +393,92 @@ def compute_signal_v4(qqq_df: pd.DataFrame) -> pd.DataFrame:
     df["ma20"] = df["ma20"]
     df["ma50"] = df["ma50"]
     df["ma200"] = df["ma200"]
+    return df
+
+
+def compute_signal_v5_hybrid(qqq_df: pd.DataFrame) -> pd.DataFrame:
+    """v5: v1 base timing + opportunistic dip buying ($1000 per 4% drop while in TQQQ regime)."""
+    df = qqq_df.copy()
+
+    # v1 indicators
+    df["high189"] = df["close"].rolling(HIGH_PERIOD, min_periods=1).max()
+    df["pcthi"]   = (df["high189"] - df["close"]) / df["high189"] * 100
+
+    position_size_list = []
+    action_list = []
+    dip_shares_list = []
+
+    days_below = 0
+    in_tqqq = True
+    base_position = 1.0  # v1 base: 0.0 (cash) or 1.0 (full)
+    prev_position_size = 1.0
+    dip_shares = 0.0
+    recent_high = df["close"].iloc[0] if not df.empty else 100.0
+    last_dip_buy_price = None
+
+    for _, row in df.iterrows():
+        pcthi = row["pcthi"]
+        close = row["close"]
+
+        # --- v1 logic (base timing) ---
+        if pcthi >= SIGNAL_THRESHOLD:
+            days_below = 0
+            in_tqqq = False
+            dip_shares = 0.0  # Exit all dip positions on v1 exit
+        else:
+            days_below += 1
+            if days_below >= REENTRY_DAYS:
+                in_tqqq = True
+
+        base_position = 1.0 if in_tqqq else 0.0
+
+        # --- Dip buying logic (only while in TQQQ regime) ---
+        action = "HOLD"
+        if in_tqqq:
+            # Update recent high for dip detection
+            if close > recent_high:
+                recent_high = close
+
+            dip_level = recent_high * (1 - DIP_THRESHOLD)
+
+            # Buy on dip: only if price drops 4%, and price is lower than last dip buy
+            if close <= dip_level and (last_dip_buy_price is None or close < last_dip_buy_price * 0.98):
+                shares_to_buy = DIP_BUY_AMOUNT / close
+                dip_shares += shares_to_buy
+                last_dip_buy_price = close
+                recent_high = max(close, recent_high * 1.02)  # Need recovery before next dip
+                action = "BUY"
+        else:
+            # Reset dip tracking when exiting TQQQ regime
+            dip_shares = 0.0
+            recent_high = close
+            last_dip_buy_price = None
+
+        # --- Combine base position with dip accumulation ---
+        # position_size = base (100% in TQQQ) + dip value as additional holdings
+        dip_value = dip_shares * close
+        position_size = base_position + (dip_value / 100_000.0)
+
+        # Determine action based on position change
+        if position_size > prev_position_size:
+            if action != "BUY":
+                action = "BUY"
+        elif position_size < prev_position_size:
+            action = "SELL"
+        else:
+            if action == "HOLD" and position_size > 0:
+                action = "HOLD"
+
+        position_size_list.append(position_size)
+        action_list.append(action)
+        dip_shares_list.append(dip_shares)
+        prev_position_size = position_size
+
+    df["position_size"] = position_size_list
+    df["action"] = action_list
+    df["dip_shares"] = dip_shares_list
+    df["regime"] = ["BUY_TQQQ" if ps > 0 else "CASH" for ps in position_size_list]
+    df["pcthi"] = df["pcthi"]
     return df
 
 
@@ -884,6 +978,94 @@ def print_qqq_v4_comparison(daily_v1: list[dict], daily_v4: list[dict],
         print(f"\n{SEP}\n")
 
 
+def print_dip_comparison(daily_v1: list[dict], daily_dip: list[dict], daily_tbh: list[dict],
+                         years: list[int], capital: float) -> None:
+    """v1 vs v5 (dip buying) annual comparison."""
+    r_v1  = _monthly_rets(daily_v1)
+    r_dip = _monthly_rets(daily_dip)
+    r_tbh = _monthly_rets(daily_tbh)
+
+    W   = 100
+    SEP = "=" * W
+    DIV = "-" * W
+
+    print(f"\n{SEP}")
+    print(f"  v1 vs v5 (Dip Buying: $1000 per 4%% drop)  |  Capital: ${capital:,.0f}")
+    print(f"{SEP}\n")
+
+    yr_totals = []
+    cum_v1 = cum_dip = cum_tbh = capital
+
+    for year in years:
+        yv10 = cum_v1
+        ydip0 = cum_dip
+        ytbh0 = cum_tbh
+
+        for m in range(1, 13):
+            ym = (year, m)
+            tbh = r_tbh.get(ym)
+            v1  = r_v1.get(ym)
+            dip = r_dip.get(ym)
+
+            if tbh: cum_tbh *= 1 + tbh / 100
+            if v1:  cum_v1  *= 1 + v1  / 100
+            if dip: cum_dip *= 1 + dip / 100
+
+        fy_tbh = round((cum_tbh / ytbh0 - 1) * 100, 1)
+        fy_v1  = round((cum_v1  / yv10  - 1) * 100, 1)
+        fy_dip = round((cum_dip / ydip0 - 1) * 100, 1)
+
+        yr_totals.append((year, fy_tbh, fy_v1, fy_dip))
+        if yr_totals == [(years[0], fy_tbh, fy_v1, fy_dip)]:
+            print(f"  {'Year':<7} {'TQQQ B&H':>10} {'v1':>10} {'v5 (Dip)':>10}")
+            print(DIV)
+
+        print(f"  {year:<7} {_fmt(fy_tbh):>10} {_fmt(fy_v1):>10} {_fmt(fy_dip):>10}")
+
+    if len(yr_totals) > 1:
+        print(f"\n{SEP}")
+        n_yr = (date.today().year - min(y for y, _, _, _ in yr_totals)) + \
+               (date.today().month - 1) / 12 + (date.today().day - 1) / 365
+        cagr = lambda x: round(((x / capital) ** (1 / n_yr) - 1) * 100, 1) if n_yr > 0 and x > 0 else 0.0
+
+        ov_tbh = round((cum_tbh / capital - 1) * 100, 1)
+        ov_v1  = round((cum_v1  / capital - 1) * 100, 1)
+        ov_dip = round((cum_dip / capital - 1) * 100, 1)
+
+        print(f"  {'CAGR':<7} {_fmt(cagr(cum_tbh)):>10} {_fmt(cagr(cum_v1)):>10} {_fmt(cagr(cum_dip)):>10}")
+        print(f"  {'Final':<7} ${cum_tbh:>9,.0f} ${cum_v1:>9,.0f} ${cum_dip:>9,.0f}")
+        print(f"\n{SEP}\n")
+
+
+def print_dip_trade_log(sig_v5: pd.DataFrame, tqqq_df: pd.DataFrame) -> None:
+    """Print v5 (hybrid v1 + dip buying) trade log showing dip buys."""
+    trades = []
+    for dt, row in sig_v5.iterrows():
+        if row["action"] == "BUY" and row.get("dip_shares", 0) > 0:
+            tqqq_p = _price_on(tqqq_df, dt)
+            if tqqq_p is None:
+                continue
+
+            dip_shares = row.get("dip_shares", 0)
+            pcthi = row.get("pcthi", 0)
+
+            trades.append({
+                "date": dt,
+                "price": tqqq_p,
+                "dip_shares": dip_shares,
+                "pcthi": pcthi
+            })
+
+    if trades:
+        print(f"\n  v5 (Hybrid: v1 + 4%% Dip Buying) Dip Buy Log:")
+        print(f"  {'Date':<12} {'TQQQ Price':>12} {'Dip Shares':>12} {'Total Dip Shares':>16} {'QQQ %Hi':>8}")
+        print(f"  {'-'*70}")
+        for t in trades:
+            dip_shares = t['dip_shares']
+            print(f"  {t['date'].date()} ${t['price']:>10.2f}  {DIP_BUY_AMOUNT/t['price']:>10.0f}  {dip_shares:>15.0f}  {t['pcthi']:>6.1f}%")
+        print(f"\n  Total dip buys: {len(trades)}, Total dip shares accumulated: {trades[-1]['dip_shares'] if trades else 0:.0f}\n")
+
+
 def print_v2_trade_log(sig_v2: pd.DataFrame, tqqq_df: pd.DataFrame) -> None:
     """Print v2 (hybrid) trade log with position sizing."""
     trades = []
@@ -1025,6 +1207,8 @@ def main():
                     help="Compare v1 vs v2 vs v3 graduated MA exposure")
     ap.add_argument("--v4",       action="store_true",
                     help="Compare v1 vs v2 vs v3 vs v4 (v2 signals + v3 sizing)")
+    ap.add_argument("--dip",      action="store_true",
+                    help="v5: Buy $1000 TQQQ on every 4%% QQQ dip, hold all positions")
     ap.add_argument("--qqq",      action="store_true",
                     help="Backtest v4 strategy on QQQ (non-leveraged)")
     ap.add_argument("--optimize", action="store_true",
@@ -1067,6 +1251,25 @@ def main():
             years = [date.today().year]
         print_v4_comparison(daily_v1, daily_v2, daily_v3, daily_v4, daily_tbh, years, args.capital)
         print_v4_trade_log(sig_v4, tqqq_al)
+    elif args.dip:
+        print("Computing v1 and v5 (hybrid: v1 + dip buying) signals...")
+        sig_v5 = compute_signal_v5_hybrid(qqq_df)
+        # Align all to common trading dates
+        common = sig_v1.index.intersection(tqqq_df.index)
+        tqqq_al = tqqq_df.loc[common]
+        sig_v1 = sig_v1.loc[common]
+        sig_v5 = sig_v5.loc[common]
+        daily_v1 = run_backtest(sig_v1, tqqq_al, args.capital)
+        daily_v5 = run_backtest(sig_v5, tqqq_al, args.capital)
+        daily_tbh = run_buyhold(tqqq_al, args.capital)
+        if args.all:
+            years = sorted(set(d["date"].year for d in daily_v1))
+        elif args.year:
+            years = [args.year]
+        else:
+            years = [date.today().year]
+        print_dip_comparison(daily_v1, daily_v5, daily_tbh, years, args.capital)
+        print_dip_trade_log(sig_v5, tqqq_al)
     elif args.qqq:
         print("Computing v4 signal for QQQ backtest...")
         sig_v4 = compute_signal_v4(qqq_df)
