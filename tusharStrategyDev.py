@@ -64,7 +64,7 @@ MA_CONFIRM_DAYS   = 3             # consecutive closes above/below MA to trigger
 MA20_PERIOD       = 20            # v3 short-term MA
 # v3 position sizes: 30% (0 MAs), 60% (1 MA), 85% (2 MAs), 110% (3 MAs)
 DIP_THRESHOLD     = 0.04           # 4% drop from recent high triggers buy
-DIP_BUY_AMOUNT    = 1000.0         # buy $1000 TQQQ on each dip
+DIP_BUY_AMOUNT    = 1000.0         # buy $1000 TQQQ on each dip (optimal)
 DATA_START        = "2010-01-01"  # warmup start for accurate rolling high
 
 MONTHS = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
