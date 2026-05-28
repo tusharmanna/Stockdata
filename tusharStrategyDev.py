@@ -1,5 +1,5 @@
 """
-tusharStrategyDev.py  --  Trading Strategies: v1 & Donchian Breakout
+tusharStrategyDev.py  --  Trading Strategies: v1, Donchian, & Hybrid
 
 STRATEGIES
 ----------
@@ -10,13 +10,20 @@ v1 (TusharStrategy):
   - Re-entry: 3 consecutive days back below 15% threshold.
 
 v_donchian (Donchian Channel Breakout):
-  - Entry: Buy TQQQ when QQQ closes above 4-day Donchian High
-  - Exit: Sell when QQQ closes below 2-day Donchian Low
+  - Entry: Buy TQQQ when QQQ closes above 2-day Donchian High
+  - Exit: Sell when QQQ closes below 20-day Donchian Low
   - Position pyramiding: Add to position on new breakout signals
-  - Capital: $10,000 per trade (fixed position sizing)
+  - Optimized for volatile/choppy markets
+
+v_hybrid (v1 + Donchian Hybrid):
+  - In BULL regime (v1): Hold 100% TQQQ (catch trends)
+  - In CASH regime (v1): Trade Donchian 2d/20d (catch bounces)
+  - Combines trend strength of v1 with bounce profits of Donchian
+  - Best for balanced risk/reward across all market types
 
 USAGE
 -----
+  python tusharStrategyDev.py --backtest --year 2025 --hybrid    # Hybrid for 2025
   python tusharStrategyDev.py --backtest --year 2025 --donchian  # Donchian for 2025
   python tusharStrategyDev.py --backtest --all                   # v1 full history
   python tusharStrategyDev.py --backtest --year 2025             # v1 for 2025
@@ -170,6 +177,116 @@ def compute_signal_donchian(qqq_df: pd.DataFrame) -> pd.DataFrame:
         action_list.append(action)
         position_list.append(pos_size)
         prev_regime = regime
+
+    df["regime"]        = regime_list
+    df["action"]        = action_list
+    df["position_size"] = position_list
+    return df
+
+
+def compute_signal_v1_donchian_hybrid(qqq_df: pd.DataFrame) -> pd.DataFrame:
+    """v1 + Donchian Hybrid with Bear Market Filter.
+
+    Logic:
+    - In v1 BUY_TQQQ regime: Trade v1 style (100% in TQQQ, catch trends)
+    - In SHALLOW CASH (days_below < 10): Trade Donchian 2d/20d (catch bounces)
+    - In DEEP CASH (days_below >= 10): Stay in CASH (avoid failing bounces)
+
+    This captures:
+    - v1's trend strength in bull markets (2013, 2014, 2017, 2019, 2024)
+    - Donchian bounce profits in healthy pullbacks (2020: +195%, 2023: +192%)
+    - v1 protection in deep downtrends (avoids 2022: -84%, 2018: -17%)
+    """
+    df = qqq_df.copy()
+
+    # Calculate v1 signals for regime gating
+    df["high252"] = df["close"].rolling(HIGH_PERIOD, min_periods=1).max()
+    df["pcthi"]   = (df["high252"] - df["close"]) / df["high252"] * 100
+
+    # Calculate Donchian signals for bounces
+    df["donchian_high"] = df["high"].shift(1).rolling(DONCHIAN_ENTRY_PERIOD, min_periods=1).max()
+    df["donchian_low"]  = df["low"].shift(1).rolling(DONCHIAN_EXIT_PERIOD, min_periods=1).min()
+
+    regime_list, action_list, position_list = [], [], []
+
+    # v1 state tracking
+    days_below = 0
+    in_v1_tqqq = True
+    prev_v1_regime = "BUY_TQQQ"
+
+    # Donchian state tracking
+    in_donchian = False
+
+    # Bear market threshold: if days_below >= this, don't trade bounces
+    SHALLOW_PULLBACK_THRESHOLD = 10
+
+    for i, row in df.iterrows():
+        close = row["close"]
+        pcthi = row["pcthi"]
+        high_dch = row["donchian_high"]
+        low_dch = row["donchian_low"]
+
+        # --- Determine v1 regime and days_below (for gating) ---
+        if pcthi >= SIGNAL_THRESHOLD:
+            days_below = 0
+            in_v1_tqqq = False
+            v1_regime = "CASH"
+        else:
+            days_below += 1
+            if days_below >= REENTRY_DAYS:
+                in_v1_tqqq = True
+            v1_regime = "BUY_TQQQ" if in_v1_tqqq else "CASH"
+
+        # --- HYBRID LOGIC with BEAR FILTER ---
+        if v1_regime == "BUY_TQQQ":
+            # In BULL regime: Trade v1 style (follow the trend)
+            regime = "BUY_TQQQ"
+            pos_size = 1.0
+            action = "BUY" if (in_v1_tqqq and not (prev_v1_regime == "BUY_TQQQ")) else "HOLD"
+            in_donchian = False  # Reset Donchian position
+        else:
+            # In CASH regime: check bear filter
+            if days_below >= SHALLOW_PULLBACK_THRESHOLD:
+                # DEEP DOWNTREND: Don't trade bounces, stay in CASH
+                regime = "CASH"
+                pos_size = 0.0
+                action = "HOLD"
+                in_donchian = False
+            else:
+                # SHALLOW PULLBACK: Trade Donchian bounces
+                if pd.isna(high_dch) or pd.isna(low_dch):
+                    regime = "CASH"
+                    pos_size = 0.0
+                    action = "HOLD"
+                else:
+                    # Donchian breakout logic (only in shallow pullbacks)
+                    if in_donchian:
+                        # In position: check exit
+                        if close < low_dch:
+                            in_donchian = False
+                            regime = "CASH"
+                            pos_size = 0.0
+                            action = "SELL"
+                        else:
+                            regime = "IN_BOUNCE"
+                            pos_size = 1.0
+                            action = "HOLD"
+                    else:
+                        # Not in position: check entry
+                        if close > high_dch:
+                            in_donchian = True
+                            regime = "IN_BOUNCE"
+                            pos_size = 1.0
+                            action = "BUY"
+                        else:
+                            regime = "CASH"
+                            pos_size = 0.0
+                            action = "HOLD"
+
+        regime_list.append(regime)
+        action_list.append(action)
+        position_list.append(pos_size)
+        prev_v1_regime = v1_regime
 
     df["regime"]        = regime_list
     df["action"]        = action_list
@@ -705,6 +822,78 @@ def print_backtest_donchian(daily_v1: list[dict], daily_donchian: list[dict],
     print()
 
 
+def print_backtest_hybrid(daily_v1: list[dict], daily_donchian: list[dict],
+                          daily_hybrid: list[dict], daily_tbh: list[dict],
+                          years: list[int], capital: float) -> None:
+    """Backtest results: v1 vs Donchian vs Hybrid vs TQQQ B&H."""
+    r_v1       = _monthly_rets(daily_v1)
+    r_donchian = _monthly_rets(daily_donchian)
+    r_hybrid   = _monthly_rets(daily_hybrid)
+    r_tbh      = _monthly_rets(daily_tbh)
+
+    W   = 110
+    SEP = "=" * W
+    DIV = "-" * W
+
+    print(f"\n{SEP}")
+    print(f"  HYBRID STRATEGY: v1 + Donchian  |  Capital: ${capital:,.0f}")
+    print(f"{SEP}\n")
+
+    yr_totals = []
+    cum_v1 = cum_donchian = cum_hybrid = cum_tbh = capital
+
+    for year in years:
+        ytbh0 = cum_tbh
+        yv10  = cum_v1
+        ydch0 = cum_donchian
+        yhyb0 = cum_hybrid
+
+        print(f"  -- {year} " + "-" * (W - 10))
+        print(f"  {'Month':<7} {'B&H':>10} {'v1':>10} {'Donchian':>10} {'Hybrid':>10}")
+        print(DIV)
+
+        for m in range(1, 13):
+            ym = (year, m)
+            tbh = r_tbh.get(ym)
+            v1  = r_v1.get(ym)
+            dch = r_donchian.get(ym)
+            hyb = r_hybrid.get(ym)
+
+            if tbh: cum_tbh *= 1 + tbh / 100
+            if v1:  cum_v1  *= 1 + v1  / 100
+            if dch: cum_donchian *= 1 + dch / 100
+            if hyb: cum_hybrid *= 1 + hyb / 100
+
+            print(f"  {MONTHS[m]:<7} {_fmt(tbh):>10} {_fmt(v1):>10} {_fmt(dch):>10} {_fmt(hyb):>10}")
+
+        fy_tbh = round((cum_tbh / ytbh0 - 1) * 100, 1)
+        fy_v1  = round((cum_v1  / yv10  - 1) * 100, 1)
+        fy_dch = round((cum_donchian / ydch0 - 1) * 100, 1)
+        fy_hyb = round((cum_hybrid / yhyb0 - 1) * 100, 1)
+        yr_totals.append((year, fy_tbh, fy_v1, fy_dch, fy_hyb))
+        print(DIV)
+        print(f"  {'FY '+str(year):<7} {_fmt(fy_tbh):>10} {_fmt(fy_v1):>10} {_fmt(fy_dch):>10} {_fmt(fy_hyb):>10}")
+
+    if len(yr_totals) > 1:
+        print(f"\n{SEP}")
+        n_yr = (date.today().year - min(y for y, _, _, _, _ in yr_totals)) + \
+               (date.today().month - 1) / 12 + (date.today().day - 1) / 365
+        cagr = lambda x: round(((x / capital) ** (1 / n_yr) - 1) * 100, 1) if n_yr > 0 and x > 0 else 0.0
+
+        ov_tbh = round((cum_tbh / capital - 1) * 100, 1)
+        ov_v1  = round((cum_v1  / capital - 1) * 100, 1)
+        ov_dch = round((cum_donchian / capital - 1) * 100, 1)
+        ov_hyb = round((cum_hybrid / capital - 1) * 100, 1)
+
+        print(f"  {'Total %':<7} {_fmt(ov_tbh):>10} {_fmt(ov_v1):>10} {_fmt(ov_dch):>10} {_fmt(ov_hyb):>10}")
+        print(f"  {'CAGR':<7} {_fmt(cagr(cum_tbh)):>10} {_fmt(cagr(cum_v1)):>10} {_fmt(cagr(cum_donchian)):>10} {_fmt(cagr(cum_hybrid)):>10}")
+        print(f"\n  Final values:")
+        print(f"    TQQQ B&H: ${cum_tbh:,.0f}")
+        print(f"    v1:       ${cum_v1:,.0f}")
+        print(f"    Donchian: ${cum_donchian:,.0f}")
+        print(f"    Hybrid:   ${cum_hybrid:,.0f}")
+        print(SEP)
+    print()
 
 
 
@@ -747,6 +936,8 @@ def main():
                     help="Backtest specific year")
     ap.add_argument("--donchian",      action="store_true",
                     help="Use Donchian Channel Breakout strategy (requires --backtest)")
+    ap.add_argument("--hybrid",        action="store_true",
+                    help="Use v1+Donchian Hybrid strategy (requires --backtest)")
     ap.add_argument("--optimize-dch",  action="store_true",
                     help="Optimize Donchian parameters to beat v1 (requires --backtest --year)")
     args = ap.parse_args()
@@ -773,7 +964,25 @@ def main():
         sig_v1  = sig_v1.loc[common]
         tqqq_al = tqqq_df.loc[common]
 
-        if args.donchian:
+        if args.hybrid:
+            sig_donchian = compute_signal_donchian(qqq_df.loc[common])
+            sig_hybrid = compute_signal_v1_donchian_hybrid(qqq_df.loc[common])
+            print("Running Hybrid backtest (v1 + Donchian)...")
+            daily_v1       = run_backtest(sig_v1, tqqq_al, args.capital)
+            daily_donchian = run_backtest(sig_donchian, tqqq_al, args.capital)
+            daily_hybrid   = run_backtest(sig_hybrid, tqqq_al, args.capital)
+            daily_tbh      = run_buyhold(tqqq_al, args.capital)
+
+            start_year = int(DATA_START[:4])
+            if args.all:
+                years = sorted(set(d["date"].year for d in daily_v1 if d["date"].year >= start_year))
+            elif args.year:
+                years = [args.year]
+            else:
+                years = [date.today().year]
+
+            print_backtest_hybrid(daily_v1, daily_donchian, daily_hybrid, daily_tbh, years, args.capital)
+        elif args.donchian:
             sig_donchian = compute_signal_donchian(qqq_df.loc[common])
             print("Running Donchian backtest...")
             daily_v1      = run_backtest(sig_v1, tqqq_al, args.capital)
