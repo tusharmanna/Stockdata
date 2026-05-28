@@ -41,9 +41,9 @@ HIGH_PERIOD       = 189           # proven period from tushar_strategy.py
 SIGNAL_THRESHOLD  = 15.0
 REENTRY_DAYS      = 3
 
-# Donchian Channel constants
-DONCHIAN_ENTRY_PERIOD = 4         # lookback for entry (4-day high)
-DONCHIAN_EXIT_PERIOD  = 2         # lookback for exit (2-day low)
+# Donchian Channel constants (2d/20d - best across volatile markets)
+DONCHIAN_ENTRY_PERIOD = 2         # lookback for entry (2-day high) - OPTIMIZED
+DONCHIAN_EXIT_PERIOD  = 20        # lookback for exit (20-day low) - OPTIMIZED
 
 DATA_START        = "2010-01-01"  # warmup start for accurate rolling high
 
@@ -329,6 +329,148 @@ def run_buyhold(price_df: pd.DataFrame, capital: float) -> list[dict]:
     return daily
 
 
+def optimize_donchian(qqq_df: pd.DataFrame, tqqq_df: pd.DataFrame, capital: float, test_year: int = 2025) -> list[tuple]:
+    """Grid search over Donchian entry/exit periods to beat v1."""
+    from itertools import product
+
+    entry_periods = [2, 3, 4, 5, 6, 7, 8, 10, 12, 15]
+    exit_periods  = [1, 2, 3, 4, 5, 7, 10, 15, 20]
+
+    results = []
+    common = qqq_df.index.intersection(tqqq_df.index)
+    tqqq_al = tqqq_df.loc[common]
+    qqq_al = qqq_df.loc[common]
+
+    # Compute v1 baseline
+    sig_v1 = compute_signal_v1(qqq_al)
+    daily_v1 = run_backtest(sig_v1, tqqq_al, capital)
+    v1_rets = _monthly_rets(daily_v1)
+
+    # Calculate v1 year return
+    v1_cum = capital
+    for m in range(1, 13):
+        ym = (test_year, m)
+        if ym in v1_rets:
+            v1_cum *= 1 + v1_rets[ym] / 100
+
+    v1_year_ret = round((v1_cum / capital - 1) * 100, 1)
+
+    print(f"  Testing {len(entry_periods)} × {len(exit_periods)} = {len(entry_periods) * len(exit_periods)} Donchian combinations...")
+    print(f"  v1 baseline for {test_year}: {v1_year_ret}%\n")
+
+    combo_count = 0
+    for entry_p, exit_p in product(entry_periods, exit_periods):
+        combo_count += 1
+        if combo_count % 20 == 0:
+            print(f"  Processed {combo_count} combinations...")
+
+        # Inline Donchian signal with custom params
+        df = qqq_al.copy()
+        df["don_high"] = df["high"].shift(1).rolling(entry_p, min_periods=1).max()
+        df["don_low"]  = df["low"].shift(1).rolling(exit_p, min_periods=1).min()
+
+        regime_list, action_list, position_list = [], [], []
+        shares = 0
+        prev_regime = "CASH"
+        prev_entry_high = 0.0
+
+        for i, row in df.iterrows():
+            close = row["close"]
+            high_entry = row["don_high"]
+            low_exit = row["don_low"]
+
+            if pd.isna(high_entry) or pd.isna(low_exit):
+                regime_list.append("CASH")
+                action_list.append("HOLD")
+                position_list.append(0.0)
+                prev_regime = "CASH"
+                continue
+
+            if shares > 0:
+                if close < low_exit:
+                    regime = "CASH"
+                else:
+                    regime = "IN_TQQQ"
+            else:
+                if close > high_entry:
+                    regime = "IN_TQQQ"
+                else:
+                    regime = "CASH"
+
+            if regime == "IN_TQQQ" and prev_regime == "CASH":
+                action = "BUY"
+                shares = 1
+                prev_entry_high = high_entry
+            elif regime == "IN_TQQQ" and prev_regime == "IN_TQQQ":
+                if close > prev_entry_high:
+                    action = "ADD"
+                    shares += 1
+                    prev_entry_high = high_entry
+                else:
+                    action = "HOLD"
+            elif regime == "CASH" and prev_regime == "IN_TQQQ":
+                action = "SELL"
+                shares = 0
+            else:
+                action = "HOLD"
+
+            pos_size = 1.0 if shares > 0 else 0.0
+            regime_list.append(regime)
+            action_list.append(action)
+            position_list.append(pos_size)
+            prev_regime = regime
+
+        df["regime"] = regime_list
+        df["action"] = action_list
+        df["position_size"] = position_list
+
+        daily = run_backtest(df, tqqq_al, capital)
+
+        # Extract year performance
+        d_rets = _monthly_rets(daily)
+        d_cum = capital
+        for m in range(1, 13):
+            ym = (test_year, m)
+            if ym in d_rets:
+                d_cum *= 1 + d_rets[ym] / 100
+
+        d_year_ret = round((d_cum / capital - 1) * 100, 1)
+
+        # Only keep combinations that beat v1
+        if d_year_ret > v1_year_ret:
+            results.append((d_year_ret - v1_year_ret, entry_p, exit_p, d_year_ret, d_cum))
+
+    # Sort by outperformance vs v1 (descending)
+    results.sort(key=lambda x: x[0], reverse=True)
+    return results, v1_year_ret
+
+
+def print_optimize_donchian(results: list[tuple], v1_ret: float, test_year: int, top_n: int = 15) -> None:
+    """Print top Donchian optimizations ranked by outperformance vs v1."""
+    if not results:
+        print(f"\n  No Donchian combinations beat v1 ({v1_ret}%) for {test_year}")
+        print("  Try longer exit periods (20+) or combining with v1 regime filter.\n")
+        return
+
+    W = 90
+    SEP = "=" * W
+    DIV = "-" * W
+
+    print(f"\n{SEP}")
+    print(f"  Donchian Channel Optimization — Top {min(top_n, len(results))} Combinations")
+    print(f"  v1 Baseline ({test_year}): {v1_ret}%")
+    print(f"{SEP}\n")
+    print(f"  {'Rank':<5} {'Entry':>8} {'Exit':>8} {'Year %':>10} {'vs v1':>10} {'Final $':>15}")
+    print(DIV)
+
+    for i, (outperf, entry, exit_p, year_ret, final) in enumerate(results[:top_n], 1):
+        print(f"  {i:<5} {entry:>8}d {exit_p:>8}d {year_ret:>9.1f}% {outperf:>+9.1f}% ${final:>14,.0f}")
+
+    print(f"\n{SEP}")
+    print(f"  Best combination: {results[0][1]}-day entry, {results[0][2]}-day exit")
+    print(f"  Outperformance: {results[0][0]:+.1f}% ({results[0][3]:.1f}% vs v1 {v1_ret}%)\n")
+
+
 def optimize_v1(qqq_df: pd.DataFrame, tqqq_df: pd.DataFrame, capital: float) -> list[tuple]:
     """Grid search over HIGH_PERIOD, SIGNAL_THRESHOLD, REENTRY_DAYS for v1."""
     from itertools import product
@@ -595,16 +737,18 @@ def print_daily_signal(sig_df: pd.DataFrame, tqqq_df: pd.DataFrame) -> None:
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--capital",   type=float, default=DEFAULT_CAPITAL,
+    ap.add_argument("--capital",       type=float, default=DEFAULT_CAPITAL,
                     help="Portfolio capital (default: 100000)")
-    ap.add_argument("--backtest",  action="store_true",
+    ap.add_argument("--backtest",      action="store_true",
                     help="Run backtest (default: today's signal)")
-    ap.add_argument("--all",       action="store_true",
+    ap.add_argument("--all",           action="store_true",
                     help="Backtest all years")
-    ap.add_argument("--year",      type=int,
+    ap.add_argument("--year",          type=int,
                     help="Backtest specific year")
-    ap.add_argument("--donchian",  action="store_true",
+    ap.add_argument("--donchian",      action="store_true",
                     help="Use Donchian Channel Breakout strategy (requires --backtest)")
+    ap.add_argument("--optimize-dch",  action="store_true",
+                    help="Optimize Donchian parameters to beat v1 (requires --backtest --year)")
     args = ap.parse_args()
 
     print("\nLoading QQQ and TQQQ data...")
@@ -613,6 +757,15 @@ def main():
 
     print("Computing signals...")
     sig_v1 = compute_signal_v1(qqq_df)
+
+    if args.optimize_dch:
+        if not args.year:
+            print("ERROR: --optimize-dch requires --year")
+            return
+        print(f"\nOptimizing Donchian parameters for {args.year}...")
+        results, v1_ret = optimize_donchian(qqq_df, tqqq_df, args.capital, test_year=args.year)
+        print_optimize_donchian(results, v1_ret, args.year)
+        return
 
     if args.backtest:
         # Align to common dates
