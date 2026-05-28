@@ -1,5 +1,5 @@
 """
-tusharStrategyDev.py  --  Trading Strategies: v1, Donchian, & Hybrid
+tusharStrategyDev.py  --  Trading Strategies: v1
 
 STRATEGIES
 ----------
@@ -9,24 +9,6 @@ v1 (TusharStrategy):
   - QQQ falls > 15% below that high -> go to CASH
   - Re-entry: 3 consecutive days back below 15% threshold.
 
-v_donchian (Donchian Channel Breakout):
-  - Entry: Buy TQQQ when QQQ closes above 2-day Donchian High
-  - Exit: Sell when QQQ closes below 20-day Donchian Low
-  - Position pyramiding: Add to position on new breakout signals
-  - Optimized for volatile/choppy markets
-
-v_hybrid (v1 + Donchian Hybrid):
-  - In BULL regime (v1): Hold 100% TQQQ (catch trends)
-  - In CASH regime (v1): Trade Donchian 2d/20d (catch bounces)
-  - Combines trend strength of v1 with bounce profits of Donchian
-  - Best for balanced risk/reward across all market types
-
-USAGE
------
-  python tusharStrategyDev.py --backtest --year 2025 --hybrid    # Hybrid for 2025
-  python tusharStrategyDev.py --backtest --year 2025 --donchian  # Donchian for 2025
-  python tusharStrategyDev.py --backtest --all                   # v1 full history
-  python tusharStrategyDev.py --backtest --year 2025             # v1 for 2025
 """
 
 import argparse
@@ -40,17 +22,14 @@ import yfinance as yf
 # -- Constants -----------------------------------------------------------------
 QQQ_TICKER        = "QQQ"
 TQQQ_TICKER       = "TQQQ"
+SQQQ_TICKER       = "SQQQ"        # 3x inverse QQQ for hedging
 DEFAULT_CAPITAL   = 100_000.0
-RISK_PER_TRADE    = 10_000.0      # Donchian position sizing
 
 # v1 constants
 HIGH_PERIOD       = 189           # proven period from tushar_strategy.py
 SIGNAL_THRESHOLD  = 15.0
 REENTRY_DAYS      = 3
 
-# Donchian Channel constants (2d/20d - best across volatile markets)
-DONCHIAN_ENTRY_PERIOD = 2         # lookback for entry (2-day high) - OPTIMIZED
-DONCHIAN_EXIT_PERIOD  = 20        # lookback for exit (20-day low) - OPTIMIZED
 
 DATA_START        = "2010-01-01"  # warmup start for accurate rolling high
 
@@ -106,195 +85,6 @@ def compute_signal_v1(qqq_df: pd.DataFrame) -> pd.DataFrame:
     df["days_below"] = days_list
     df["action"]     = action_list
     return df
-
-
-def compute_signal_donchian(qqq_df: pd.DataFrame) -> pd.DataFrame:
-    """Donchian Channel Breakout: 4-day entry, 2-day exit with pyramiding.
-
-    Entry: Close above the high of the previous 4 bars
-    Exit: Close below the low of the previous 2 bars
-    Position Pyramiding: Add on new breakout signals while in position
-    """
-    df = qqq_df.copy()
-
-    # Shift to exclude current bar from lookback
-    df["donchian_high4"] = df["high"].shift(1).rolling(DONCHIAN_ENTRY_PERIOD, min_periods=1).max()
-    df["donchian_low2"]  = df["low"].shift(1).rolling(DONCHIAN_EXIT_PERIOD, min_periods=1).min()
-
-    regime_list, action_list, position_list = [], [], []
-    shares = 0
-    prev_regime = "CASH"
-    prev_entry_high = 0.0
-
-    for i, row in df.iterrows():
-        close = row["close"]
-        high4 = row["donchian_high4"]
-        low2  = row["donchian_low2"]
-
-        # Skip if not enough data yet
-        if pd.isna(high4) or pd.isna(low2):
-            regime_list.append("CASH")
-            action_list.append("HOLD")
-            position_list.append(0.0)
-            prev_regime = "CASH"
-            continue
-
-        # Determine current regime
-        if shares > 0:
-            # In position: check exit condition
-            if close < low2:
-                regime = "CASH"
-            else:
-                regime = "IN_TQQQ"
-        else:
-            # Not in position: check entry condition
-            if close > high4:
-                regime = "IN_TQQQ"
-            else:
-                regime = "CASH"
-
-        # Action: detect transitions and pyramiding
-        if regime == "IN_TQQQ" and prev_regime == "CASH":
-            action = "BUY"
-            shares = 1
-            prev_entry_high = high4
-        elif regime == "IN_TQQQ" and prev_regime == "IN_TQQQ":
-            # Pyramiding: add on new breakout if close > previous entry high
-            if close > prev_entry_high:
-                action = "ADD"
-                shares += 1
-                prev_entry_high = high4
-            else:
-                action = "HOLD"
-        elif regime == "CASH" and prev_regime == "IN_TQQQ":
-            action = "SELL"
-            shares = 0
-        else:
-            action = "HOLD"
-
-        pos_size = 1.0 if shares > 0 else 0.0
-        regime_list.append(regime)
-        action_list.append(action)
-        position_list.append(pos_size)
-        prev_regime = regime
-
-    df["regime"]        = regime_list
-    df["action"]        = action_list
-    df["position_size"] = position_list
-    return df
-
-
-def compute_signal_v1_donchian_hybrid(qqq_df: pd.DataFrame) -> pd.DataFrame:
-    """v1 + Donchian Hybrid with Bear Market Filter.
-
-    Logic:
-    - In v1 BUY_TQQQ regime: Trade v1 style (100% in TQQQ, catch trends)
-    - In SHALLOW CASH (days_below < 10): Trade Donchian 2d/20d (catch bounces)
-    - In DEEP CASH (days_below >= 10): Stay in CASH (avoid failing bounces)
-
-    This captures:
-    - v1's trend strength in bull markets (2013, 2014, 2017, 2019, 2024)
-    - Donchian bounce profits in healthy pullbacks (2020: +195%, 2023: +192%)
-    - v1 protection in deep downtrends (avoids 2022: -84%, 2018: -17%)
-    """
-    df = qqq_df.copy()
-
-    # Calculate v1 signals for regime gating
-    df["high252"] = df["close"].rolling(HIGH_PERIOD, min_periods=1).max()
-    df["pcthi"]   = (df["high252"] - df["close"]) / df["high252"] * 100
-
-    # Calculate Donchian signals for bounces
-    df["donchian_high"] = df["high"].shift(1).rolling(DONCHIAN_ENTRY_PERIOD, min_periods=1).max()
-    df["donchian_low"]  = df["low"].shift(1).rolling(DONCHIAN_EXIT_PERIOD, min_periods=1).min()
-
-    regime_list, action_list, position_list = [], [], []
-
-    # v1 state tracking
-    days_below = 0
-    in_v1_tqqq = True
-    prev_v1_regime = "BUY_TQQQ"
-
-    # Donchian state tracking
-    in_donchian = False
-
-    # Bear market threshold: if days_below >= this, don't trade bounces
-    SHALLOW_PULLBACK_THRESHOLD = 10
-
-    for i, row in df.iterrows():
-        close = row["close"]
-        pcthi = row["pcthi"]
-        high_dch = row["donchian_high"]
-        low_dch = row["donchian_low"]
-
-        # --- Determine v1 regime and days_below (for gating) ---
-        if pcthi >= SIGNAL_THRESHOLD:
-            days_below = 0
-            in_v1_tqqq = False
-            v1_regime = "CASH"
-        else:
-            days_below += 1
-            if days_below >= REENTRY_DAYS:
-                in_v1_tqqq = True
-            v1_regime = "BUY_TQQQ" if in_v1_tqqq else "CASH"
-
-        # --- HYBRID LOGIC with BEAR FILTER ---
-        if v1_regime == "BUY_TQQQ":
-            # In BULL regime: Trade v1 style (follow the trend)
-            regime = "BUY_TQQQ"
-            pos_size = 1.0
-            action = "BUY" if (in_v1_tqqq and not (prev_v1_regime == "BUY_TQQQ")) else "HOLD"
-            in_donchian = False  # Reset Donchian position
-        else:
-            # In CASH regime: check bear filter
-            if days_below >= SHALLOW_PULLBACK_THRESHOLD:
-                # DEEP DOWNTREND: Don't trade bounces, stay in CASH
-                regime = "CASH"
-                pos_size = 0.0
-                action = "HOLD"
-                in_donchian = False
-            else:
-                # SHALLOW PULLBACK: Trade Donchian bounces
-                if pd.isna(high_dch) or pd.isna(low_dch):
-                    regime = "CASH"
-                    pos_size = 0.0
-                    action = "HOLD"
-                else:
-                    # Donchian breakout logic (only in shallow pullbacks)
-                    if in_donchian:
-                        # In position: check exit
-                        if close < low_dch:
-                            in_donchian = False
-                            regime = "CASH"
-                            pos_size = 0.0
-                            action = "SELL"
-                        else:
-                            regime = "IN_BOUNCE"
-                            pos_size = 1.0
-                            action = "HOLD"
-                    else:
-                        # Not in position: check entry
-                        if close > high_dch:
-                            in_donchian = True
-                            regime = "IN_BOUNCE"
-                            pos_size = 1.0
-                            action = "BUY"
-                        else:
-                            regime = "CASH"
-                            pos_size = 0.0
-                            action = "HOLD"
-
-        regime_list.append(regime)
-        action_list.append(action)
-        position_list.append(pos_size)
-        prev_v1_regime = v1_regime
-
-    df["regime"]        = regime_list
-    df["action"]        = action_list
-    df["position_size"] = position_list
-    return df
-
-
-# -- Backtest engine -----------------------------------------------------------
 
 
 
@@ -446,146 +236,6 @@ def run_buyhold(price_df: pd.DataFrame, capital: float) -> list[dict]:
     return daily
 
 
-def optimize_donchian(qqq_df: pd.DataFrame, tqqq_df: pd.DataFrame, capital: float, test_year: int = 2025) -> list[tuple]:
-    """Grid search over Donchian entry/exit periods to beat v1."""
-    from itertools import product
-
-    entry_periods = [2, 3, 4, 5, 6, 7, 8, 10, 12, 15]
-    exit_periods  = [1, 2, 3, 4, 5, 7, 10, 15, 20]
-
-    results = []
-    common = qqq_df.index.intersection(tqqq_df.index)
-    tqqq_al = tqqq_df.loc[common]
-    qqq_al = qqq_df.loc[common]
-
-    # Compute v1 baseline
-    sig_v1 = compute_signal_v1(qqq_al)
-    daily_v1 = run_backtest(sig_v1, tqqq_al, capital)
-    v1_rets = _monthly_rets(daily_v1)
-
-    # Calculate v1 year return
-    v1_cum = capital
-    for m in range(1, 13):
-        ym = (test_year, m)
-        if ym in v1_rets:
-            v1_cum *= 1 + v1_rets[ym] / 100
-
-    v1_year_ret = round((v1_cum / capital - 1) * 100, 1)
-
-    print(f"  Testing {len(entry_periods)} × {len(exit_periods)} = {len(entry_periods) * len(exit_periods)} Donchian combinations...")
-    print(f"  v1 baseline for {test_year}: {v1_year_ret}%\n")
-
-    combo_count = 0
-    for entry_p, exit_p in product(entry_periods, exit_periods):
-        combo_count += 1
-        if combo_count % 20 == 0:
-            print(f"  Processed {combo_count} combinations...")
-
-        # Inline Donchian signal with custom params
-        df = qqq_al.copy()
-        df["don_high"] = df["high"].shift(1).rolling(entry_p, min_periods=1).max()
-        df["don_low"]  = df["low"].shift(1).rolling(exit_p, min_periods=1).min()
-
-        regime_list, action_list, position_list = [], [], []
-        shares = 0
-        prev_regime = "CASH"
-        prev_entry_high = 0.0
-
-        for i, row in df.iterrows():
-            close = row["close"]
-            high_entry = row["don_high"]
-            low_exit = row["don_low"]
-
-            if pd.isna(high_entry) or pd.isna(low_exit):
-                regime_list.append("CASH")
-                action_list.append("HOLD")
-                position_list.append(0.0)
-                prev_regime = "CASH"
-                continue
-
-            if shares > 0:
-                if close < low_exit:
-                    regime = "CASH"
-                else:
-                    regime = "IN_TQQQ"
-            else:
-                if close > high_entry:
-                    regime = "IN_TQQQ"
-                else:
-                    regime = "CASH"
-
-            if regime == "IN_TQQQ" and prev_regime == "CASH":
-                action = "BUY"
-                shares = 1
-                prev_entry_high = high_entry
-            elif regime == "IN_TQQQ" and prev_regime == "IN_TQQQ":
-                if close > prev_entry_high:
-                    action = "ADD"
-                    shares += 1
-                    prev_entry_high = high_entry
-                else:
-                    action = "HOLD"
-            elif regime == "CASH" and prev_regime == "IN_TQQQ":
-                action = "SELL"
-                shares = 0
-            else:
-                action = "HOLD"
-
-            pos_size = 1.0 if shares > 0 else 0.0
-            regime_list.append(regime)
-            action_list.append(action)
-            position_list.append(pos_size)
-            prev_regime = regime
-
-        df["regime"] = regime_list
-        df["action"] = action_list
-        df["position_size"] = position_list
-
-        daily = run_backtest(df, tqqq_al, capital)
-
-        # Extract year performance
-        d_rets = _monthly_rets(daily)
-        d_cum = capital
-        for m in range(1, 13):
-            ym = (test_year, m)
-            if ym in d_rets:
-                d_cum *= 1 + d_rets[ym] / 100
-
-        d_year_ret = round((d_cum / capital - 1) * 100, 1)
-
-        # Only keep combinations that beat v1
-        if d_year_ret > v1_year_ret:
-            results.append((d_year_ret - v1_year_ret, entry_p, exit_p, d_year_ret, d_cum))
-
-    # Sort by outperformance vs v1 (descending)
-    results.sort(key=lambda x: x[0], reverse=True)
-    return results, v1_year_ret
-
-
-def print_optimize_donchian(results: list[tuple], v1_ret: float, test_year: int, top_n: int = 15) -> None:
-    """Print top Donchian optimizations ranked by outperformance vs v1."""
-    if not results:
-        print(f"\n  No Donchian combinations beat v1 ({v1_ret}%) for {test_year}")
-        print("  Try longer exit periods (20+) or combining with v1 regime filter.\n")
-        return
-
-    W = 90
-    SEP = "=" * W
-    DIV = "-" * W
-
-    print(f"\n{SEP}")
-    print(f"  Donchian Channel Optimization — Top {min(top_n, len(results))} Combinations")
-    print(f"  v1 Baseline ({test_year}): {v1_ret}%")
-    print(f"{SEP}\n")
-    print(f"  {'Rank':<5} {'Entry':>8} {'Exit':>8} {'Year %':>10} {'vs v1':>10} {'Final $':>15}")
-    print(DIV)
-
-    for i, (outperf, entry, exit_p, year_ret, final) in enumerate(results[:top_n], 1):
-        print(f"  {i:<5} {entry:>8}d {exit_p:>8}d {year_ret:>9.1f}% {outperf:>+9.1f}% ${final:>14,.0f}")
-
-    print(f"\n{SEP}")
-    print(f"  Best combination: {results[0][1]}-day entry, {results[0][2]}-day exit")
-    print(f"  Outperformance: {results[0][0]:+.1f}% ({results[0][3]:.1f}% vs v1 {v1_ret}%)\n")
 
 
 def optimize_v1(qqq_df: pd.DataFrame, tqqq_df: pd.DataFrame, capital: float) -> list[tuple]:
@@ -758,146 +408,6 @@ def print_backtest(daily_v1: list[dict], daily_tbh: list[dict], years: list[int]
     print()
 
 
-def print_backtest_donchian(daily_v1: list[dict], daily_donchian: list[dict],
-                            daily_tbh: list[dict], years: list[int],
-                            capital: float) -> None:
-    """Backtest results: v1 vs Donchian vs TQQQ B&H."""
-    r_v1       = _monthly_rets(daily_v1)
-    r_donchian = _monthly_rets(daily_donchian)
-    r_tbh      = _monthly_rets(daily_tbh)
-
-    W   = 85
-    SEP = "=" * W
-    DIV = "-" * W
-
-    print(f"\n{SEP}")
-    print(f"  Strategy Comparison: v1 vs Donchian Breakout  |  Capital: ${capital:,.0f}")
-    print(f"{SEP}\n")
-
-    yr_totals = []
-    cum_v1 = cum_donchian = cum_tbh = capital
-
-    for year in years:
-        ytbh0 = cum_tbh
-        yv10  = cum_v1
-        ydch0 = cum_donchian
-
-        print(f"  -- {year} " + "-" * (W - 10))
-        print(f"  {'Month':<7} {'TQQQ B&H':>11} {'v1':>11} {'Donchian':>11}")
-        print(DIV)
-
-        for m in range(1, 13):
-            ym = (year, m)
-            tbh = r_tbh.get(ym)
-            v1  = r_v1.get(ym)
-            dch = r_donchian.get(ym)
-
-            if tbh: cum_tbh *= 1 + tbh / 100
-            if v1:  cum_v1  *= 1 + v1  / 100
-            if dch: cum_donchian *= 1 + dch / 100
-
-            print(f"  {MONTHS[m]:<7} {_fmt(tbh):>11} {_fmt(v1):>11} {_fmt(dch):>11}")
-
-        fy_tbh = round((cum_tbh / ytbh0 - 1) * 100, 1)
-        fy_v1  = round((cum_v1  / yv10  - 1) * 100, 1)
-        fy_dch = round((cum_donchian / ydch0 - 1) * 100, 1)
-        yr_totals.append((year, fy_tbh, fy_v1, fy_dch))
-        print(DIV)
-        print(f"  {'FY '+str(year):<7} {_fmt(fy_tbh):>11} {_fmt(fy_v1):>11} {_fmt(fy_dch):>11}")
-
-    if len(yr_totals) > 1:
-        print(f"\n{SEP}")
-        n_yr = (date.today().year - min(y for y, _, _, _ in yr_totals)) + \
-               (date.today().month - 1) / 12 + (date.today().day - 1) / 365
-        cagr = lambda x: round(((x / capital) ** (1 / n_yr) - 1) * 100, 1) if n_yr > 0 and x > 0 else 0.0
-
-        ov_tbh = round((cum_tbh / capital - 1) * 100, 1)
-        ov_v1  = round((cum_v1  / capital - 1) * 100, 1)
-        ov_dch = round((cum_donchian / capital - 1) * 100, 1)
-
-        print(f"  {'Total %':<7} {_fmt(ov_tbh):>11} {_fmt(ov_v1):>11} {_fmt(ov_dch):>11}")
-        print(f"  {'CAGR':<7} {_fmt(cagr(cum_tbh)):>11} {_fmt(cagr(cum_v1)):>11} {_fmt(cagr(cum_donchian)):>11}")
-        print(f"\n  Final values:  TQQQ B&H ${cum_tbh:,.0f}  |  v1 ${cum_v1:,.0f}  |  Donchian ${cum_donchian:,.0f}")
-        print(SEP)
-    print()
-
-
-def print_backtest_hybrid(daily_v1: list[dict], daily_donchian: list[dict],
-                          daily_hybrid: list[dict], daily_tbh: list[dict],
-                          years: list[int], capital: float) -> None:
-    """Backtest results: v1 vs Donchian vs Hybrid vs TQQQ B&H."""
-    r_v1       = _monthly_rets(daily_v1)
-    r_donchian = _monthly_rets(daily_donchian)
-    r_hybrid   = _monthly_rets(daily_hybrid)
-    r_tbh      = _monthly_rets(daily_tbh)
-
-    W   = 110
-    SEP = "=" * W
-    DIV = "-" * W
-
-    print(f"\n{SEP}")
-    print(f"  HYBRID STRATEGY: v1 + Donchian  |  Capital: ${capital:,.0f}")
-    print(f"{SEP}\n")
-
-    yr_totals = []
-    cum_v1 = cum_donchian = cum_hybrid = cum_tbh = capital
-
-    for year in years:
-        ytbh0 = cum_tbh
-        yv10  = cum_v1
-        ydch0 = cum_donchian
-        yhyb0 = cum_hybrid
-
-        print(f"  -- {year} " + "-" * (W - 10))
-        print(f"  {'Month':<7} {'B&H':>10} {'v1':>10} {'Donchian':>10} {'Hybrid':>10}")
-        print(DIV)
-
-        for m in range(1, 13):
-            ym = (year, m)
-            tbh = r_tbh.get(ym)
-            v1  = r_v1.get(ym)
-            dch = r_donchian.get(ym)
-            hyb = r_hybrid.get(ym)
-
-            if tbh: cum_tbh *= 1 + tbh / 100
-            if v1:  cum_v1  *= 1 + v1  / 100
-            if dch: cum_donchian *= 1 + dch / 100
-            if hyb: cum_hybrid *= 1 + hyb / 100
-
-            print(f"  {MONTHS[m]:<7} {_fmt(tbh):>10} {_fmt(v1):>10} {_fmt(dch):>10} {_fmt(hyb):>10}")
-
-        fy_tbh = round((cum_tbh / ytbh0 - 1) * 100, 1)
-        fy_v1  = round((cum_v1  / yv10  - 1) * 100, 1)
-        fy_dch = round((cum_donchian / ydch0 - 1) * 100, 1)
-        fy_hyb = round((cum_hybrid / yhyb0 - 1) * 100, 1)
-        yr_totals.append((year, fy_tbh, fy_v1, fy_dch, fy_hyb))
-        print(DIV)
-        print(f"  {'FY '+str(year):<7} {_fmt(fy_tbh):>10} {_fmt(fy_v1):>10} {_fmt(fy_dch):>10} {_fmt(fy_hyb):>10}")
-
-    if len(yr_totals) > 1:
-        print(f"\n{SEP}")
-        n_yr = (date.today().year - min(y for y, _, _, _, _ in yr_totals)) + \
-               (date.today().month - 1) / 12 + (date.today().day - 1) / 365
-        cagr = lambda x: round(((x / capital) ** (1 / n_yr) - 1) * 100, 1) if n_yr > 0 and x > 0 else 0.0
-
-        ov_tbh = round((cum_tbh / capital - 1) * 100, 1)
-        ov_v1  = round((cum_v1  / capital - 1) * 100, 1)
-        ov_dch = round((cum_donchian / capital - 1) * 100, 1)
-        ov_hyb = round((cum_hybrid / capital - 1) * 100, 1)
-
-        print(f"  {'Total %':<7} {_fmt(ov_tbh):>10} {_fmt(ov_v1):>10} {_fmt(ov_dch):>10} {_fmt(ov_hyb):>10}")
-        print(f"  {'CAGR':<7} {_fmt(cagr(cum_tbh)):>10} {_fmt(cagr(cum_v1)):>10} {_fmt(cagr(cum_donchian)):>10} {_fmt(cagr(cum_hybrid)):>10}")
-        print(f"\n  Final values:")
-        print(f"    TQQQ B&H: ${cum_tbh:,.0f}")
-        print(f"    v1:       ${cum_v1:,.0f}")
-        print(f"    Donchian: ${cum_donchian:,.0f}")
-        print(f"    Hybrid:   ${cum_hybrid:,.0f}")
-        print(SEP)
-    print()
-
-
-
-
 
 
 def print_daily_signal(sig_df: pd.DataFrame, tqqq_df: pd.DataFrame) -> None:
@@ -934,12 +444,8 @@ def main():
                     help="Backtest all years")
     ap.add_argument("--year",          type=int,
                     help="Backtest specific year")
-    ap.add_argument("--donchian",      action="store_true",
-                    help="Use Donchian Channel Breakout strategy (requires --backtest)")
-    ap.add_argument("--hybrid",        action="store_true",
-                    help="Use v1+Donchian Hybrid strategy (requires --backtest)")
-    ap.add_argument("--optimize-dch",  action="store_true",
-                    help="Optimize Donchian parameters to beat v1 (requires --backtest --year)")
+    ap.add_argument("--sqqq-hedge",    action="store_true",
+                    help="Use v1+SQQQ Hedge strategy - long SQQQ in downtrends (requires --backtest)")
     args = ap.parse_args()
 
     print("\nLoading QQQ and TQQQ data...")
@@ -949,28 +455,20 @@ def main():
     print("Computing signals...")
     sig_v1 = compute_signal_v1(qqq_df)
 
-    if args.optimize_dch:
-        if not args.year:
-            print("ERROR: --optimize-dch requires --year")
-            return
-        print(f"\nOptimizing Donchian parameters for {args.year}...")
-        results, v1_ret = optimize_donchian(qqq_df, tqqq_df, args.capital, test_year=args.year)
-        print_optimize_donchian(results, v1_ret, args.year)
-        return
-
     if args.backtest:
         # Align to common dates
         common  = sig_v1.index.intersection(tqqq_df.index)
         sig_v1  = sig_v1.loc[common]
         tqqq_al = tqqq_df.loc[common]
 
-        if args.hybrid:
-            sig_donchian = compute_signal_donchian(qqq_df.loc[common])
-            sig_hybrid = compute_signal_v1_donchian_hybrid(qqq_df.loc[common])
-            print("Running Hybrid backtest (v1 + Donchian)...")
+        if args.sqqq_hedge:
+            sqqq_df = _load(SQQQ_TICKER, DATA_START)
+            sqqq_al = sqqq_df.loc[common]
+            sig_sqqq_hedge = compute_signal_v1_sqqq_hedge(qqq_df.loc[common])
+            print("Running v1+SQQQ Hedge backtest...")
+            price_df_multi = {"TQQQ": tqqq_al, "SQQQ": sqqq_al}
             daily_v1       = run_backtest(sig_v1, tqqq_al, args.capital)
-            daily_donchian = run_backtest(sig_donchian, tqqq_al, args.capital)
-            daily_hybrid   = run_backtest(sig_hybrid, tqqq_al, args.capital)
+            daily_sqqq_hedge = run_backtest(sig_sqqq_hedge, price_df_multi, args.capital)
             daily_tbh      = run_buyhold(tqqq_al, args.capital)
 
             start_year = int(DATA_START[:4])
@@ -981,23 +479,7 @@ def main():
             else:
                 years = [date.today().year]
 
-            print_backtest_hybrid(daily_v1, daily_donchian, daily_hybrid, daily_tbh, years, args.capital)
-        elif args.donchian:
-            sig_donchian = compute_signal_donchian(qqq_df.loc[common])
-            print("Running Donchian backtest...")
-            daily_v1      = run_backtest(sig_v1, tqqq_al, args.capital)
-            daily_donchian = run_backtest(sig_donchian, tqqq_al, args.capital)
-            daily_tbh     = run_buyhold(tqqq_al, args.capital)
-
-            start_year = int(DATA_START[:4])
-            if args.all:
-                years = sorted(set(d["date"].year for d in daily_v1 if d["date"].year >= start_year))
-            elif args.year:
-                years = [args.year]
-            else:
-                years = [date.today().year]
-
-            print_backtest_donchian(daily_v1, daily_donchian, daily_tbh, years, args.capital)
+            print_backtest_sqqq_hedge(daily_v1, daily_sqqq_hedge, daily_tbh, years, args.capital)
         else:
             print("Running v1 backtest...")
             daily_v1  = run_backtest(sig_v1, tqqq_al, args.capital)
