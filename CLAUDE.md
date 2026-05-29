@@ -120,28 +120,51 @@ Logs accumulate in `logs\` — not auto-purged.
 
 ## Order Entry (EnterOrdersIB.py)
 
-Connects to Interactive Brokers (TWS or Gateway) via the `ibapi` Python library and places bracket orders from a watchlist file.
+Connects to Interactive Brokers (TWS or Gateway) via the `ibapi` Python library and places bracket orders from `orders.txt` with split profit targets.
 
 ```bash
-pip install ibapi   # one-time
+pip install ibapi yfinance   # one-time
 
-python EnterOrdersIB.py                   # paper trading, TWS port 7497
-python EnterOrdersIB.py --live            # live trading,  TWS port 7496
+python EnterOrdersIB.py                   # paper trading, market orders, TWS port 7497
+python EnterOrdersIB.py --live            # live trading, market orders, TWS port 7496
+python EnterOrdersIB.py --limit           # use limit orders (requires TICKER PRICE in orders.txt)
 python EnterOrdersIB.py --port 4002       # IB Gateway paper
 python EnterOrdersIB.py --host 192.168.1.5 --port 7497  # remote TWS
 python EnterOrdersIB.py --client-id 2    # override IB client ID (default 1)
+python EnterOrdersIB.py --all            # send all orders without per-order confirmation
 ```
 
-**`stocks2buy.txt`** — one ticker per line, `#` for comments. Edit before each run.
+**`orders.txt`** — one per line, optional price, `#` for comments.
+- **Market orders (default)**: `TICKER` — price fetched automatically from yfinance current close
+- **Limit orders (--limit)**: `TICKER PRICE` — uses specified price from file
 
 **Order logic:**
-- Connects to IB and fetches live price via `reqMktData` snapshot (tick 4/68 = real-time/delayed LAST).
-- Calls `reqMarketDataType(3)` after connecting so IB falls back to delayed data for tickers without a real-time subscription (silences error 10089).
-- Reads yesterday's close and low from `stockdata.db` (most recent row — assumes `main.py` has NOT been run today).
-- **Condition**: if `live > prev_close` → Market order + Stop Loss child at `prev_low`. Tickers where `live <= prev_close` are skipped.
-- Shares = `floor($100 / (live − prev_low))`.
-- Prints full order summary (all qualifying tickers), then steps through each order one at a time for individual confirmation before sending.
+- Connects to IB, validates connection.
+- **Entry**: Market order (default, fetches current price) OR limit order if `--limit` flag + price specified.
+- **Stop**: Current day's low from yfinance (live market data, not database).
+- **Split profit targets** (OCA linked):
+  - **TP1** at Entry + 1R: sells 1/3 of shares (1:1 reward/risk)
+  - **TP2** at Entry + 3R: sells 2/3 of shares (1:3 reward/risk)
+- **Position sizing**: Shares = `floor($50 / (entry − current_low))` (Risk = $50 per trade).
+- **Max Gain**: shares × 3 × RPS (accounts for split profit target strategy).
+- **OCA bracket**: Stop, TP1, and TP2 linked via OCA group — first fill cancels remaining.
+- Prints full order summary with both targets and split quantities.
+- Steps through each order for individual confirmation (unless `--all` flag).
 - Per-order prompt: `[y]` = send to IB, `[n]` = skip, `[q]` = quit remaining.
+
+**Example trade (market order):**
+```
+AAPL: Current low = $190, Current price = $200
+Entry:  $200 (market)
+Stop:   $190 (current low from yfinance)
+RPS:    $10
+Shares: floor($50 / $10) = 5
+
+TP1:    $210 (Entry + 1R)  → Sell 2 shares (1:1 gain)
+TP2:    $230 (Entry + 3R)  → Sell 3 shares (3:1 gain)
+Risk:   5 × $10 = $50
+Max Gain: 2×$10 + 3×$30 = $110
+```
 
 **IB setup required in TWS/Gateway:**
 - Edit → Global Configuration → API → Settings → enable "Enable ActiveX and Socket Clients"
