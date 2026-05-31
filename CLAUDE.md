@@ -170,6 +170,33 @@ Max Gain: 2×$10 + 3×$30 = $110
 - Edit → Global Configuration → API → Settings → enable "Enable ActiveX and Socket Clients"
 - Uncheck "Read-Only API" when placing live orders
 
+## Testing (EnterOrdersIB.py)
+
+Unit tests verify all critical logic: profit targets, position sizing, max gain calculations, and order format parsing.
+
+```bash
+# Run all tests
+python test_EnterOrdersIB.py -v
+
+# Or use the test runner
+run_tests.bat
+```
+
+**Test Coverage (23 tests):**
+- Profit targets: TP1 (Entry + 1R), TP2 (Entry + 3R)
+- Share splitting: 1/3 at TP1, 2/3 at TP2
+- Max gain: `(tp1_qty * 1R) + (tp2_qty * 3R)` (not `shares * 3R`)
+- Position sizing: `floor($50 / rps)`
+- Risk/reward: max_loss, cost_basis, RPS
+- Order format: TICKER (market) vs TICKER PRICE (limit)
+
+**Automated Testing:**
+- Pre-commit hook runs tests automatically when EnterOrdersIB.py is modified
+- Tests must pass before commit is allowed
+- Manual runs: `python test_EnterOrdersIB.py -v` or `run_tests.bat`
+
+All tests must pass before pushing to GitHub.
+
 ## Key Behaviours to Preserve
 
 - `INSERT OR REPLACE` is used everywhere — re-runs are safe and idempotent.
