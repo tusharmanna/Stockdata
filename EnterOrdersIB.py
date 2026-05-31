@@ -408,7 +408,7 @@ def main():
             "tp2_qty":   tp2_qty,
             "cost":      round(shares * entry, 2),
             "max_loss":  round(shares * rps, 2),
-            "max_gain":  round(shares * 3 * rps, 2),
+            "max_gain":  round((tp1_qty * 1 * rps) + (tp2_qty * 3 * rps), 2),
             "use_market": use_market,
         })
 
