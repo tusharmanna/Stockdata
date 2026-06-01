@@ -157,7 +157,7 @@ python EnterOrdersIB.py --all            # send all orders without per-order con
   - **TP1** at Entry + 1R: sells 1/3 of shares (1:1 reward/risk)
   - **TP2** at Entry + 3R: sells 2/3 of shares (1:3 reward/risk)
 - **Position sizing**: Shares = `floor($50 / (entry − current_low))` (Risk = $50 per trade).
-- **Max Gain**: shares × 3 × RPS (accounts for split profit target strategy).
+- **Max Gain**: `(tp1_qty × 1R) + (tp2_qty × 3R)` — accounts for split profit targets (not `shares × 3R`).
 - **OCA bracket**: Stop, TP1, and TP2 linked via OCA group — first fill cancels remaining.
 - Prints full order summary with both targets and split quantities.
 - Steps through each order for individual confirmation (unless `--all` flag).
@@ -165,16 +165,16 @@ python EnterOrdersIB.py --all            # send all orders without per-order con
 
 **Example trade (market order):**
 ```
-AAPL: Current low = $190, Current price = $200
-Entry:  $200 (market)
-Stop:   $190 (current low from yfinance)
-RPS:    $10
-Shares: floor($50 / $10) = 5
+ALOY: Current low = $9.50, Current price = $10.20
+Entry:  $10.20 (market)
+Stop:   $9.50 (current low from yfinance)
+RPS:    $0.70
+Shares: floor($50 / $0.70) = 71
 
-TP1:    $210 (Entry + 1R)  → Sell 2 shares (1:1 gain)
-TP2:    $230 (Entry + 3R)  → Sell 3 shares (3:1 gain)
-Risk:   5 × $10 = $50
-Max Gain: 2×$10 + 3×$30 = $110
+TP1:    $10.90 (Entry + 1R)  → Sell 23 shares (1:1 gain = $16.10)
+TP2:    $12.30 (Entry + 3R)  → Sell 48 shares (3:1 gain = $100.80)
+Risk:   71 × $0.70 = $49.70
+Max Gain: (23×$0.70) + (48×$2.10) = $116.90
 ```
 
 **IB setup required in TWS/Gateway:**
@@ -201,10 +201,21 @@ run_tests.bat
 - Risk/reward: max_loss, cost_basis, RPS
 - Order format: TICKER (market) vs TICKER PRICE (limit)
 
+**Integration Tests (Full Pipeline):**
+- `test_integration_mock.py` — validates order calculations using actual `orders.txt` with mock market data (no external dependencies)
+  - Tests market order price fetching, stop loss calculation, profit targets, share split, max gain formula
+  - Includes 6 validation assertions per order
+  - Useful for testing without yfinance network calls
+  - Run with: `python test_integration_mock.py`
+- `test_integration_EnterOrders.py` — alternative integration test using live yfinance data
+  - Same validation logic as mock version but fetches real market prices
+  - Run with: `python test_integration_EnterOrders.py`
+
 **Automated Testing:**
 - Pre-commit hook runs tests automatically when EnterOrdersIB.py is modified
 - Tests must pass before commit is allowed
 - Manual runs: `python test_EnterOrdersIB.py -v` or `run_tests.bat`
+- Integration test runs: `python test_integration_mock.py` (recommended) or `python test_integration_EnterOrders.py`
 
 All tests must pass before pushing to GitHub.
 
