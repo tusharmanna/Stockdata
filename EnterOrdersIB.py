@@ -80,7 +80,8 @@ def get_current_low(ticker: str) -> float | None:
         data = yf.download(ticker, period='1d', progress=False)
         if data.empty:
             return None
-        low = float(data['Low'].iloc[-1])
+        low_value = data['Low'].iloc[-1]
+        low = float(low_value) if isinstance(low_value, (int, float)) else float(low_value.item())
         return low if low > 0 else None
     except Exception as e:
         print(f"  Error fetching low for {ticker}: {e}")
@@ -372,7 +373,9 @@ def main():
                     if data.empty:
                         skipped.append((ticker, "no current price data"))
                         continue
-                    entry = round(float(data['Close'].iloc[-1]), 2)
+                    close_value = data['Close'].iloc[-1]
+                    close_price = float(close_value) if isinstance(close_value, (int, float)) else float(close_value.item())
+                    entry = round(close_price, 2)
                 except Exception as e:
                     skipped.append((ticker, f"error fetching price: {e}"))
                     continue
