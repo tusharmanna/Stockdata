@@ -6,8 +6,7 @@ Fetches current low from yfinance (live market data).
 
   Entry    : Market order (default) OR Limit if --limit flag + price specified
   Stop     : Current low (from yfinance)
-  TP1      : Entry + 1R (sell 1/3, 1:1 reward/risk)
-  TP2      : Entry + 3R (sell 2/3, 1:3 reward/risk)
+  Target   : Entry + 3R (sell all shares at 1:3 reward/risk)
   Shares   : floor($50 / (entry - current_low))
 
 Displays a full order summary and asks for per-order confirmation before sending.
@@ -205,16 +204,14 @@ def make_contract(symbol: str) -> Contract:
     return c
 
 
-def make_bracket(parent_id: int, stop_id: int, tp1_id: int, tp2_id: int,
-                 qty: int, tp1_qty: int, tp2_qty: int, entry: float | None, stop: float,
-                 target1: float, target2: float, use_market: bool = True):
-    """Return (parent, stop_order, tp1_order, tp2_order) for a Market/Limit + Stop + 2xTP bracket.
+def make_bracket(parent_id: int, stop_id: int, tp_id: int,
+                 qty: int, entry: float | None, stop: float, target: float, use_market: bool = True):
+    """Return (parent, stop_order, tp_order) for a Market/Limit + Stop + 1xTP bracket.
 
     If use_market=True, entry is a market order (entry price ignored).
     If use_market=False, entry is a limit order at specified price.
-    TP1: sell tp1_qty at target1 (1:1 reward/risk)
-    TP2: sell tp2_qty at target2 (1:3 reward/risk)
-    Stop, TP1, and TP2 are linked via OCA group.
+    TP: sell all shares at target (1:3 reward/risk).
+    Stop and TP are linked via OCA group.
     """
     oca_group = f"OCA_{parent_id}"
 
@@ -237,38 +234,25 @@ def make_bracket(parent_id: int, stop_id: int, tp1_id: int, tp2_id: int,
     stop_order.auxPrice       = round(stop, 2)
     stop_order.totalQuantity  = qty
     stop_order.ocaGroup       = oca_group
-    stop_order.ocaType        = 1   # cancel remaining orders on fill
+    stop_order.ocaType        = 1
     stop_order.transmit       = False
     stop_order.eTradeOnly     = False
     stop_order.firmQuoteOnly  = False
 
-    tp1_order = Order()
-    tp1_order.orderId        = tp1_id
-    tp1_order.parentId       = parent_id
-    tp1_order.action         = "SELL"
-    tp1_order.orderType      = "LMT"
-    tp1_order.lmtPrice       = round(target1, 2)
-    tp1_order.totalQuantity  = tp1_qty
-    tp1_order.ocaGroup       = oca_group
-    tp1_order.ocaType        = 1   # cancel remaining orders on fill
-    tp1_order.transmit       = False
-    tp1_order.eTradeOnly     = False
-    tp1_order.firmQuoteOnly  = False
+    tp_order = Order()
+    tp_order.orderId        = tp_id
+    tp_order.parentId       = parent_id
+    tp_order.action         = "SELL"
+    tp_order.orderType      = "LMT"
+    tp_order.lmtPrice       = round(target, 2)
+    tp_order.totalQuantity  = qty
+    tp_order.ocaGroup       = oca_group
+    tp_order.ocaType        = 1
+    tp_order.transmit       = True
+    tp_order.eTradeOnly     = False
+    tp_order.firmQuoteOnly  = False
 
-    tp2_order = Order()
-    tp2_order.orderId        = tp2_id
-    tp2_order.parentId       = parent_id
-    tp2_order.action         = "SELL"
-    tp2_order.orderType      = "LMT"
-    tp2_order.lmtPrice       = round(target2, 2)
-    tp2_order.totalQuantity  = tp2_qty
-    tp2_order.ocaGroup       = oca_group
-    tp2_order.ocaType        = 1   # cancel remaining orders on fill
-    tp2_order.transmit       = True  # transmit all orders at once
-    tp2_order.eTradeOnly     = False
-    tp2_order.firmQuoteOnly  = False
-
-    return parent, stop_order, tp1_order, tp2_order
+    return parent, stop_order, tp_order
 
 
 # ---------------------------------------------------------------------------
@@ -344,10 +328,9 @@ def main():
 
     # ------------------------------------------------------------------
     # 4. Build order list
-    #    Entry : Market order (default) OR Limit if --limit + price
-    #    Stop  : Current low from yfinance
-    #    TP1   : Entry + 1R (sell 1/3)
-    #    TP2   : Entry + 3R (sell 2/3)
+    #    Entry  : Market order (default) OR Limit if --limit + price
+    #    Stop   : Current low from yfinance
+    #    Target : Entry + 3R (sell all shares)
     # ------------------------------------------------------------------
     orders  = []
     skipped = []
@@ -394,45 +377,39 @@ def main():
             skipped.append((ticker, f"risk/share ${rps:.2f} > ${RISK_DOLLARS:.0f} budget"))
             continue
 
-        target1 = round(entry + 1 * rps, 2)
-        target2 = round(entry + 3 * rps, 2)
-        tp1_qty = max(1, shares // 3)
-        tp2_qty = shares - tp1_qty
+        target = round(entry + 3 * rps, 2)
 
         orders.append({
             "ticker":    ticker,
             "entry":     entry,
             "stop":      current_low,
-            "target1":   target1,
-            "target2":   target2,
+            "target":    target,
             "rps":       rps,
             "shares":    shares,
-            "tp1_qty":   tp1_qty,
-            "tp2_qty":   tp2_qty,
             "cost":      round(shares * entry, 2),
             "max_loss":  round(shares * rps, 2),
-            "max_gain":  round((tp1_qty * 1 * rps) + (tp2_qty * 3 * rps), 2),
+            "max_gain":  round(shares * 3 * rps, 2),
             "use_market": use_market,
         })
 
     # ------------------------------------------------------------------
     # 5. Print full order summary
     # ------------------------------------------------------------------
-    SEP = "=" * 100
+    SEP = "=" * 90
     print(SEP)
     entry_type = "Market" if use_market else "Limit"
-    print(f"ORDER SUMMARY  ({entry_type} entry + Stop at current low + TP1 at 1R (1/3) + TP2 at 3R (2/3), Risk = $50)")
+    print(f"ORDER SUMMARY  ({entry_type} entry + Stop at current low + TP at 3R, Risk = $50)")
     print(SEP)
 
     if orders:
-        hdr = (f"{'Ticker':<8}  {'Entry':>8}  {'Stop':>8}  {'TP1(1R)':>9}  {'TP2(3R)':>9}  "
-               f"{'Qty':>4}  {'TP1/TP2':>8}  {'~Cost':>10}  {'MaxLoss':>8}  {'MaxGain':>8}")
+        hdr = (f"{'Ticker':<8}  {'Entry':>8}  {'Stop':>8}  {'Target(3R)':>12}  "
+               f"{'Qty':>4}  {'~Cost':>10}  {'MaxLoss':>8}  {'MaxGain':>8}")
         print(hdr)
         print("-" * len(hdr))
         for o in orders:
             print(
-                f"{o['ticker']:<8}  {o['entry']:>8.2f}  {o['stop']:>8.2f}  {o['target1']:>9.2f}  {o['target2']:>9.2f}  "
-                f"{o['shares']:>4}  {o['tp1_qty']}/{o['tp2_qty']:<5}  "
+                f"{o['ticker']:<8}  {o['entry']:>8.2f}  {o['stop']:>8.2f}  {o['target']:>12.2f}  "
+                f"{o['shares']:>4}  "
                 f"{o['cost']:>10,.2f}  {o['max_loss']:>8.2f}  {o['max_gain']:>8.2f}"
             )
         print("-" * len(hdr))
@@ -468,23 +445,21 @@ def main():
             contract  = make_contract(o["ticker"])
             parent_id = app.next_order_id()
             stop_id   = app.next_order_id()
-            tp1_id    = app.next_order_id()
-            tp2_id    = app.next_order_id()
-            parent, stop_order, tp1_order, tp2_order = make_bracket(
-                parent_id, stop_id, tp1_id, tp2_id,
-                qty=o["shares"], tp1_qty=o["tp1_qty"], tp2_qty=o["tp2_qty"],
-                entry=o["entry"], stop=o["stop"], target1=o["target1"], target2=o["target2"],
+            tp_id     = app.next_order_id()
+            parent, stop_order, tp_order = make_bracket(
+                parent_id, stop_id, tp_id,
+                qty=o["shares"],
+                entry=o["entry"], stop=o["stop"], target=o["target"],
                 use_market=o["use_market"]
             )
             app.placeOrder(parent_id, contract, parent)
             app.placeOrder(stop_id,   contract, stop_order)
-            app.placeOrder(tp1_id,    contract, tp1_order)
-            app.placeOrder(tp2_id,    contract, tp2_order)
+            app.placeOrder(tp_id,     contract, tp_order)
             order_type = "MKT" if o["use_market"] else "LMT"
             print(f"  Submitted {o['ticker']:<6}  "
                   f"BUY {o['shares']} @ {order_type} {o['entry']:.2f}  Stop: {o['stop']:.2f}  "
-                  f"TP1: {o['target1']:.2f} ({o['tp1_qty']} sh)  TP2: {o['target2']:.2f} ({o['tp2_qty']} sh)  "
-                  f"(orderId={parent_id}/{stop_id}/{tp1_id}/{tp2_id})")
+                  f"Target: {o['target']:.2f} (3R)  "
+                  f"(orderId={parent_id}/{stop_id}/{tp_id})")
             placed += 1
             time.sleep(0.1)
     else:
@@ -493,7 +468,7 @@ def main():
             order_type = "MKT" if o["use_market"] else "LMT"
             print(f"  [{i}/{len(orders)}]  {o['ticker']:<6}  "
                   f"BUY {o['shares']} @ {order_type} {o['entry']:.2f}  |  Stop: {o['stop']:.2f}  |  "
-                  f"TP1: {o['target1']:.2f} ({o['tp1_qty']} sh)  |  TP2: {o['target2']:.2f} ({o['tp2_qty']} sh)  |  "
+                  f"Target: {o['target']:.2f} (3R)  |  "
                   f"Risk/share: ${o['rps']:.2f}  |  "
                   f"Max loss: ${o['max_loss']:.2f}  |  Max gain: ${o['max_gain']:.2f}")
 
@@ -510,19 +485,17 @@ def main():
             contract  = make_contract(o["ticker"])
             parent_id = app.next_order_id()
             stop_id   = app.next_order_id()
-            tp1_id    = app.next_order_id()
-            tp2_id    = app.next_order_id()
-            parent, stop_order, tp1_order, tp2_order = make_bracket(
-                parent_id, stop_id, tp1_id, tp2_id,
-                qty=o["shares"], tp1_qty=o["tp1_qty"], tp2_qty=o["tp2_qty"],
-                entry=o["entry"], stop=o["stop"], target1=o["target1"], target2=o["target2"],
+            tp_id     = app.next_order_id()
+            parent, stop_order, tp_order = make_bracket(
+                parent_id, stop_id, tp_id,
+                qty=o["shares"],
+                entry=o["entry"], stop=o["stop"], target=o["target"],
                 use_market=o["use_market"]
             )
             app.placeOrder(parent_id, contract, parent)
             app.placeOrder(stop_id,   contract, stop_order)
-            app.placeOrder(tp1_id,    contract, tp1_order)
-            app.placeOrder(tp2_id,    contract, tp2_order)
-            print(f"  Submitted (orderId={parent_id} entry / {stop_id} stop / {tp1_id} tp1 / {tp2_id} tp2)\n")
+            app.placeOrder(tp_id,     contract, tp_order)
+            print(f"  Submitted (orderId={parent_id} entry / {stop_id} stop / {tp_id} target)\n")
             placed += 1
             time.sleep(0.1)
 

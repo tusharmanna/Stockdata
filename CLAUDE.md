@@ -153,13 +153,12 @@ python EnterOrdersIB.py --all            # send all orders without per-order con
 - Connects to IB, validates connection.
 - **Entry**: Market order (default, fetches current price) OR limit order if `--limit` flag + price specified.
 - **Stop**: Current day's low from yfinance (live market data, not database).
-- **Split profit targets** (OCA linked):
-  - **TP1** at Entry + 1R: sells 1/3 of shares (1:1 reward/risk)
-  - **TP2** at Entry + 3R: sells 2/3 of shares (1:3 reward/risk)
+- **Profit Target** (OCA linked):
+  - **Target** at Entry + 3R: sells all shares (1:3 reward/risk)
 - **Position sizing**: Shares = `floor($50 / (entry − current_low))` (Risk = $50 per trade).
-- **Max Gain**: `(tp1_qty × 1R) + (tp2_qty × 3R)` — accounts for split profit targets (not `shares × 3R`).
-- **OCA bracket**: Stop, TP1, and TP2 linked via OCA group — first fill cancels remaining.
-- Prints full order summary with both targets and split quantities.
+- **Max Gain**: `shares × 3R` — all shares sold at 1:3 reward/risk ratio.
+- **OCA bracket**: Stop and Target linked via OCA group — first fill cancels the other.
+- Prints full order summary with entry, stop, target, and gain projections.
 - Steps through each order for individual confirmation (unless `--all` flag).
 - Per-order prompt: `[y]` = send to IB, `[n]` = skip, `[q]` = quit remaining.
 
@@ -171,10 +170,9 @@ Stop:   $9.50 (current low from yfinance)
 RPS:    $0.70
 Shares: floor($50 / $0.70) = 71
 
-TP1:    $10.90 (Entry + 1R)  → Sell 23 shares (1:1 gain = $16.10)
-TP2:    $12.30 (Entry + 3R)  → Sell 48 shares (3:1 gain = $100.80)
+Target: $12.30 (Entry + 3R) → Sell all 71 shares (3:1 gain)
 Risk:   71 × $0.70 = $49.70
-Max Gain: (23×$0.70) + (48×$2.10) = $116.90
+Max Gain: 71 × $2.10 = $149.10
 ```
 
 **IB setup required in TWS/Gateway:**
@@ -183,7 +181,7 @@ Max Gain: (23×$0.70) + (48×$2.10) = $116.90
 
 ## Testing (EnterOrdersIB.py)
 
-Unit tests verify all critical logic: profit targets, position sizing, max gain calculations, and order format parsing.
+Unit tests verify all critical logic: profit target, position sizing, max gain calculations, and order format parsing.
 
 ```bash
 # Run all tests
@@ -193,10 +191,9 @@ python test_EnterOrdersIB.py -v
 run_tests.bat
 ```
 
-**Test Coverage (23 tests):**
-- Profit targets: TP1 (Entry + 1R), TP2 (Entry + 3R)
-- Share splitting: 1/3 at TP1, 2/3 at TP2
-- Max gain: `(tp1_qty * 1R) + (tp2_qty * 3R)` (not `shares * 3R`)
+**Test Coverage (18 tests):**
+- Profit target: Entry + 3R (single target, all shares)
+- Max gain: `shares × 3R`
 - Position sizing: `floor($50 / rps)`
 - Risk/reward: max_loss, cost_basis, RPS
 - Order format: TICKER (market) vs TICKER PRICE (limit)
