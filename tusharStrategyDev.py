@@ -236,47 +236,6 @@ def run_buyhold(price_df: pd.DataFrame, capital: float) -> list[dict]:
     return daily
 
 
-def run_backtest_dual(sig_df: pd.DataFrame, tqqq_df: pd.DataFrame,
-                      sqqq_df: pd.DataFrame, capital: float) -> list[dict]:
-    """Dual-asset backtest: TQQQ + SQQQ held simultaneously per sig_df allocations."""
-    tqqq_shares = 0; sqqq_shares = 0; cash = capital
-    prev_tqqq_pct = 0.5; prev_sqqq_pct = 0.5
-    daily = []
-
-    for dt, row in sig_df.iterrows():
-        tp = _price_on(tqqq_df, dt)
-        sp = _price_on(sqqq_df, dt)
-        if tp is None or sp is None:
-            continue
-
-        port = tqqq_shares * tp + sqqq_shares * sp + cash
-        tqqq_pct = float(row["tqqq_pct"])
-        sqqq_pct = float(row["sqqq_pct"])
-
-        if tqqq_pct != prev_tqqq_pct or sqqq_pct != prev_sqqq_pct:
-            cash = port
-            tqqq_shares = math.floor(tqqq_pct * cash / tp) if tp > 0 else 0
-            cash -= tqqq_shares * tp
-            sqqq_shares = math.floor(sqqq_pct * cash / sp) if sp > 0 else 0
-            cash -= sqqq_shares * sp
-            port = tqqq_shares * tp + sqqq_shares * sp + cash
-
-        action = ("BUY"  if tqqq_pct > prev_tqqq_pct else
-                  "SELL" if tqqq_pct < prev_tqqq_pct else "HOLD")
-
-        daily.append({
-            "date":      dt,
-            "portfolio": round(port, 2),
-            "tqqq_pct":  tqqq_pct,
-            "sqqq_pct":  sqqq_pct,
-            "action":    action,
-        })
-        prev_tqqq_pct = tqqq_pct
-        prev_sqqq_pct = sqqq_pct
-
-    return daily
-
-
 def optimize_v1(qqq_df: pd.DataFrame, tqqq_df: pd.DataFrame, capital: float) -> list[tuple]:
     """Grid search over HIGH_PERIOD, SIGNAL_THRESHOLD, REENTRY_DAYS for v1."""
     from itertools import product
@@ -447,46 +406,6 @@ def print_backtest(daily_v1: list[dict], daily_tbh: list[dict], years: list[int]
     print()
 
 
-def print_v8_comparison(daily_v1, daily_v8, daily_tbh, years, capital):
-    r_v1  = _monthly_rets(daily_v1)
-    r_v8  = _monthly_rets(daily_v8)
-    r_tbh = _monthly_rets(daily_tbh)
-    W = 75; SEP = "=" * W; DIV = "-" * W
-    print(f"\n{SEP}")
-    print(f"  v8 MA-Blend vs v1 vs TQQQ B&H  |  Capital: ${capital:,.0f}")
-    print(f"{SEP}\n")
-    cum_v1 = cum_v8 = cum_tbh = capital
-    yr_totals = []
-    for year in years:
-        yv10 = cum_v1; yv80 = cum_v8; ytbh0 = cum_tbh
-        print(f"  -- {year} " + "-" * (W - 10))
-        print(f"  {'Month':<7} {'TQQQ B&H':>10} {'v1':>10} {'v8':>10}")
-        print(DIV)
-        for m in range(1, 13):
-            ym = (year, m)
-            tbh = r_tbh.get(ym); v1 = r_v1.get(ym); v8 = r_v8.get(ym)
-            if tbh: cum_tbh *= 1 + tbh / 100
-            if v1:  cum_v1  *= 1 + v1  / 100
-            if v8:  cum_v8  *= 1 + v8  / 100
-            print(f"  {MONTHS[m]:<7} {_fmt(tbh):>10} {_fmt(v1):>10} {_fmt(v8):>10}")
-        fy_tbh = round((cum_tbh / ytbh0 - 1) * 100, 1)
-        fy_v1  = round((cum_v1  / yv10  - 1) * 100, 1)
-        fy_v8  = round((cum_v8  / yv80  - 1) * 100, 1)
-        yr_totals.append((year, fy_tbh, fy_v1, fy_v8))
-        print(DIV)
-        print(f"  {'FY '+str(year):<7} {_fmt(fy_tbh):>10} {_fmt(fy_v1):>10} {_fmt(fy_v8):>10}")
-    if len(yr_totals) > 1:
-        n_yr = len({y for y, *_ in yr_totals})
-        cagr = lambda x: round(((x / capital) ** (1 / n_yr) - 1) * 100, 1) if n_yr > 0 and x > 0 else 0.0
-        print(f"\n{SEP}")
-        print(f"  {'CAGR':<7} {_fmt(cagr(cum_tbh)):>10} {_fmt(cagr(cum_v1)):>10} {_fmt(cagr(cum_v8)):>10}")
-        print(f"\n  Final: TQQQ B&H ${cum_tbh:,.0f} | v1 ${cum_v1:,.0f} | v8 ${cum_v8:,.0f}")
-        print(SEP)
-    print()
-
-
-
-
 def print_daily_signal(sig_df: pd.DataFrame, tqqq_df: pd.DataFrame) -> None:
     row       = sig_df.iloc[-1]
     today     = sig_df.index[-1].date()
@@ -509,47 +428,6 @@ def print_daily_signal(sig_df: pd.DataFrame, tqqq_df: pd.DataFrame) -> None:
     print(SEP)
 
 
-# -- Strategy 8: MA-Blend (TQQQ + SQQQ simultaneous) ---------------------------
-
-def compute_signal_v8_ma_blend(qqq_df: pd.DataFrame) -> pd.DataFrame:
-    """v8: v1 regime gate with SQQQ hedge in bear markets."""
-    df = qqq_df.copy()
-    df["high252"] = df["close"].rolling(HIGH_PERIOD, min_periods=1).max()
-    df["pcthi"]   = (df["high252"] - df["close"]) / df["high252"] * 100
-
-    regime_list, tqqq_list, sqqq_list, action_list = [], [], [], []
-    days_below = 0
-    in_tqqq    = True
-    prev_in    = False
-
-    for pcthi in df["pcthi"]:
-        if pcthi >= SIGNAL_THRESHOLD:
-            days_below = 0
-            in_tqqq    = False
-        else:
-            days_below += 1
-            if days_below >= REENTRY_DAYS:
-                in_tqqq = True
-
-        if in_tqqq:
-            tqqq_pct, sqqq_pct = 1.0, 0.0
-        else:
-            tqqq_pct, sqqq_pct = 0.0, 1.0
-
-        act = "BUY" if (in_tqqq and not prev_in) else "SELL" if (not in_tqqq and prev_in) else "HOLD"
-        regime_list.append("BUY_TQQQ" if in_tqqq else "CASH")
-        tqqq_list.append(round(tqqq_pct, 4))
-        sqqq_list.append(round(sqqq_pct, 4))
-        action_list.append(act)
-        prev_in = in_tqqq
-
-    df["regime"]   = regime_list
-    df["tqqq_pct"] = tqqq_list
-    df["sqqq_pct"] = sqqq_list
-    df["action"]   = action_list
-    return df
-
-
 # -- Main ----------------------------------------------------------------------
 
 def main():
@@ -564,8 +442,6 @@ def main():
                     help="Backtest specific year")
     ap.add_argument("--sqqq-hedge",    action="store_true",
                     help="Use v1+SQQQ Hedge strategy - long SQQQ in downtrends (requires --backtest)")
-    ap.add_argument("--v8",             action="store_true",
-                    help="v8: QQQ MA-blend TQQQ/SQQQ dual-asset strategy")
     args = ap.parse_args()
 
     print("\nLoading QQQ and TQQQ data...")
@@ -581,22 +457,7 @@ def main():
         sig_v1  = sig_v1.loc[common]
         tqqq_al = tqqq_df.loc[common]
 
-        if args.v8:
-            sqqq_df = _load(SQQQ_TICKER, DATA_START)
-            common  = sig_v1.index.intersection(tqqq_df.index).intersection(sqqq_df.index)
-            sig_v1_al = sig_v1.loc[common]
-            tqqq_al   = tqqq_df.loc[common]
-            sqqq_al   = sqqq_df.loc[common]
-            sig_v8 = compute_signal_v8_ma_blend(qqq_df.loc[common])
-            print("Running v8 MA-Blend backtest...")
-            daily_v1  = run_backtest(sig_v1_al, tqqq_al, args.capital)
-            daily_v8  = run_backtest_dual(sig_v8, tqqq_al, sqqq_al, args.capital)
-            daily_tbh = run_buyhold(tqqq_al, args.capital)
-            start_year = int(DATA_START[:4])
-            years = (sorted(set(d["date"].year for d in daily_v1 if d["date"].year >= start_year))
-                     if args.all else [args.year] if args.year else [date.today().year])
-            print_v8_comparison(daily_v1, daily_v8, daily_tbh, years, args.capital)
-        elif args.sqqq_hedge:
+        if args.sqqq_hedge:
             sqqq_df = _load(SQQQ_TICKER, DATA_START)
             sqqq_al = sqqq_df.loc[common]
             sig_sqqq_hedge = compute_signal_v1_sqqq_hedge(qqq_df.loc[common])
