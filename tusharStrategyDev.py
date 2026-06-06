@@ -30,6 +30,11 @@ HIGH_PERIOD       = 189           # proven period from tushar_strategy.py
 SIGNAL_THRESHOLD  = 15.0
 REENTRY_DAYS      = 3
 
+# v9 constants — 5-day Sharpe-like position sizing
+V9_LOOKBACK       = 5
+V9_SHARPE_OFFSET  = 1.0   # sharpe5 = 0 -> position = 1.0
+V9_SHARPE_SCALE   = 0.5   # sharpe5 = -2 -> position = 0.0
+
 
 DATA_START        = "2010-01-01"  # warmup start for accurate rolling high
 
@@ -449,6 +454,49 @@ def print_v8_comparison(daily_v1, daily_v8, daily_tbh, years, capital):
     print()
 
 
+def print_v9_comparison(daily_v1, daily_v9, daily_tbh, years, capital):
+    r_v1  = _monthly_rets(daily_v1)
+    r_v9  = _monthly_rets(daily_v9)
+    r_tbh = _monthly_rets(daily_tbh)
+    W = 75; SEP = "=" * W; DIV = "-" * W
+    print(f"\n{SEP}")
+    print(f"  v9 Sharpe-Sized vs v1 vs TQQQ B&H  |  Capital: ${capital:,.0f}")
+    print(f"{SEP}\n")
+    cum_v1 = cum_v9 = cum_tbh = capital
+    yr_totals = []
+    for year in years:
+        yv10 = cum_v1; yv90 = cum_v9; ytbh0 = cum_tbh
+        print(f"  -- {year} " + "-" * (W - 10))
+        print(f"  {'Month':<7} {'TQQQ B&H':>10} {'v1':>10} {'v9':>10}")
+        print(DIV)
+        for m in range(1, 13):
+            ym = (year, m)
+            tbh = r_tbh.get(ym); v1 = r_v1.get(ym); v9 = r_v9.get(ym)
+            if tbh: cum_tbh *= 1 + tbh / 100
+            if v1:  cum_v1  *= 1 + v1  / 100
+            if v9:  cum_v9  *= 1 + v9  / 100
+            print(f"  {MONTHS[m]:<7} {_fmt(tbh):>10} {_fmt(v1):>10} {_fmt(v9):>10}")
+        fy_tbh = round((cum_tbh / ytbh0 - 1) * 100, 1)
+        fy_v1  = round((cum_v1  / yv10  - 1) * 100, 1)
+        fy_v9  = round((cum_v9  / yv90  - 1) * 100, 1)
+        yr_totals.append((year, fy_tbh, fy_v1, fy_v9))
+        print(DIV)
+        print(f"  {'FY '+str(year):<7} {_fmt(fy_tbh):>10} {_fmt(fy_v1):>10} {_fmt(fy_v9):>10}")
+    if len(yr_totals) > 1:
+        n_yr = (date.today().year - min(y for y, *_ in yr_totals)) + \
+               (date.today().month - 1) / 12 + (date.today().day - 1) / 365
+        cagr = lambda x: round(((x / capital) ** (1 / n_yr) - 1) * 100, 1) if n_yr > 0 and x > 0 else 0.0
+        ov_tbh = round((cum_tbh / capital - 1) * 100, 1)
+        ov_v1  = round((cum_v1  / capital - 1) * 100, 1)
+        ov_v9  = round((cum_v9  / capital - 1) * 100, 1)
+        print(f"\n{SEP}")
+        print(f"  {'Total %':<7} {_fmt(ov_tbh):>10} {_fmt(ov_v1):>10} {_fmt(ov_v9):>10}")
+        print(f"  {'CAGR':<7} {_fmt(cagr(cum_tbh)):>10} {_fmt(cagr(cum_v1)):>10} {_fmt(cagr(cum_v9)):>10}")
+        print(f"\n  Final: TQQQ B&H ${cum_tbh:,.0f} | v1 ${cum_v1:,.0f} | v9 ${cum_v9:,.0f}")
+        print(SEP)
+    print()
+
+
 def print_daily_signal(sig_df: pd.DataFrame, tqqq_df: pd.DataFrame) -> None:
     row       = sig_df.iloc[-1]
     today     = sig_df.index[-1].date()
@@ -520,6 +568,41 @@ def compute_signal_v8_ma_blend(qqq_df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+# -- Strategy 9: v1 regime + 5-day Sharpe-like position sizing -----------------
+
+def compute_signal_v9_sharpe_size(qqq_df: pd.DataFrame) -> pd.DataFrame:
+    """v9: v1 regime gate + 5-day Sharpe-like position sizing during BULL."""
+    v1 = compute_signal_v1(qqq_df)
+
+    close   = qqq_df["close"]
+    daily_r = close.pct_change()
+    ret_5d  = (close - close.shift(V9_LOOKBACK)) / close.shift(V9_LOOKBACK)
+    vol_5d  = daily_r.rolling(V9_LOOKBACK).std()
+
+    sharpe5 = (ret_5d / vol_5d).where(vol_5d > 0, 0.0).fillna(0.0)
+
+    raw_pos = V9_SHARPE_OFFSET + sharpe5 * V9_SHARPE_SCALE
+    sized   = raw_pos.clip(0.0, 1.0)
+
+    pos_list, action_list = [], []
+    prev_pos = 0.0
+    for i, (_, row) in enumerate(v1.iterrows()):
+        if row["regime"] == "BUY_TQQQ":
+            pos = float(sized.iloc[i])
+        else:
+            pos = 0.0
+        act = ("BUY" if pos > prev_pos else "SELL" if pos < prev_pos else "HOLD")
+        pos_list.append(round(pos, 4))
+        action_list.append(act)
+        prev_pos = pos
+
+    out = v1.copy()
+    out["sharpe5"]       = sharpe5.values
+    out["position_size"] = pos_list
+    out["action"]        = action_list
+    return out
+
+
 # -- Main ----------------------------------------------------------------------
 
 def main():
@@ -536,6 +619,8 @@ def main():
                     help="Use v1+SQQQ Hedge strategy - long SQQQ in downtrends (requires --backtest)")
     ap.add_argument("--v8",             action="store_true",
                     help="v8: QQQ MA crossover blend — incremental TQQQ sizing (0–100%%)")
+    ap.add_argument("--v9",             action="store_true",
+                    help="v9: v1 regime + 5-day Sharpe-like TQQQ sizing")
     args = ap.parse_args()
 
     print("\nLoading QQQ and TQQQ data...")
@@ -561,6 +646,16 @@ def main():
                      if args.all else [args.year] if args.year else [date.today().year])
             print("Running v8 MA-Blend backtest...")
             print_v8_comparison(daily_v1, daily_v8, daily_tbh, years, args.capital)
+        elif args.v9:
+            sig_v9    = compute_signal_v9_sharpe_size(qqq_df.loc[common])
+            daily_v1  = run_backtest(sig_v1, tqqq_al, args.capital)
+            daily_v9  = run_backtest(sig_v9, tqqq_al, args.capital)
+            daily_tbh = run_buyhold(tqqq_al, args.capital)
+            start_year = int(DATA_START[:4])
+            years = (sorted(set(d["date"].year for d in daily_v1 if d["date"].year >= start_year))
+                     if args.all else [args.year] if args.year else [date.today().year])
+            print("Running v9 Sharpe-Sized backtest...")
+            print_v9_comparison(daily_v1, daily_v9, daily_tbh, years, args.capital)
         elif args.sqqq_hedge:
             sqqq_df = _load(SQQQ_TICKER, DATA_START)
             sqqq_al = sqqq_df.loc[common]
