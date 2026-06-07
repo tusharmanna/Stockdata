@@ -30,10 +30,10 @@ HIGH_PERIOD       = 189           # proven period from tushar_strategy.py
 SIGNAL_THRESHOLD  = 15.0
 REENTRY_DAYS      = 3
 
-# v9 constants — 5-day Sharpe-like position sizing
+# v9 constants — 5-day Sharpe-like position sizing (tuned via grid search)
 V9_LOOKBACK       = 5
-V9_SHARPE_OFFSET  = 1.0   # sharpe5 = 0 -> position = 1.0
-V9_SHARPE_SCALE   = 0.5   # sharpe5 = -2 -> position = 0.0
+V9_SHARPE_OFFSET  = 1.5   # sharpe5 = 0 -> position = 1.0 (clipped)
+V9_SHARPE_SCALE   = 0.2   # sharpe5 = -5 -> position = 0.0; more aggressive by default
 
 
 DATA_START        = "2010-01-01"  # warmup start for accurate rolling high
