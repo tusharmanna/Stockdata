@@ -1,39 +1,10 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python -c \":*)",
-      "Bash(where python:*)",
-      "Bash(python:*)",
-      "Bash(pip install:*)",
-      "Bash(pip show:*)",
-      "Bash(taskkill /F /IM python.exe)",
-      "Bash(tasklist:*)",
-      "Bash(ls:*)",
-      "Bash(taskkill //PID 41440 //F)",
-      "Bash(taskkill //PID 32476 //F)",
-      "Bash(taskkill //PID 12016 //F)",
-      "Bash(wmic process:*)",
-      "Bash(taskkill //PID 35148 //F)",
-      "Bash(taskkill //PID 32308 //F)",
-      "Bash(taskkill //PID 42564 //F)",
-      "Bash(curl -s \"https://api.nasdaq.com/api/screener/stocks?tableonly=true&limit=10000&download=true\" -H \"User-Agent: Mozilla/5.0\")",
-      "Bash(taskkill:*)",
-      "Bash(python3 *)",
-      "Bash(Get-ChildItem -Path \"E:\\\\work\\\\Stockdata\" -Recurse -Filter \"*.py\")",
-      "Bash(Select-Object -ExpandProperty FullName)",
-      "Bash(dir E:\\\\work\\\\Stockdata *)",
-      "Bash(dir \"E:\\\\work\\\\Stockdata\\\\data\" /b)",
-      "Bash(Out-File -FilePath \"E:\\\\work\\\\Stockdata\\\\pdf_extract_1.txt\" -Encoding utf8)",
-      "Bash(del *)",
-      "PowerShell(cd E:\\\\work\\\\Stockdata; python oliver_strategy.py --compare --all --mode ema20 2>&1 | Select-String -Pattern \"^  \\(20[0-9][0-9]|ANNUAL|CAGR|Max DD|Exits|Final|Total\\)\" | ForEach-Object { $_.Line })",
-      "Bash(Get-Content logs\\\\engine.log -Tail 30)",
-      "Bash(Get-Content logs\\\\trainer.log -Tail 20)",
-      "Bash(git *)",
-      "Bash(curl -s -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\" \"https://www.sec.gov/files/company_tickers.json\")",
-      "WebSearch",
-      "Bash(grep -v \"^$\")",
-      "Bash(awk '{print toupper\\($1\\)}')",
-      "Bash(awk '$1 > 1 {print $2 \" appears \" $1 \" times\"}')"
-    ]
+      "Bash(pip3 install:*)",
+      "Bash(python3:*)"
+    ],
+    "deny": [],
+    "ask": []
   }
 }

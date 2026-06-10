@@ -30,6 +30,7 @@ import time
 import threading
 from math import floor
 from pathlib import Path
+from typing import Optional
 
 try:
     from ibapi.client import EClient
@@ -73,7 +74,7 @@ _IB_INFO_CODES = {2104, 2106, 2107, 2108, 2119, 2158, 10167, 10197}
 # Helpers
 # ---------------------------------------------------------------------------
 
-def get_current_low(ticker: str) -> float | None:
+def get_current_low(ticker: str) -> Optional[float]:
     """Fetch current low from yfinance (live market data)."""
     try:
         data = yf.download(ticker, period='1d', progress=False)
@@ -129,7 +130,7 @@ def calc_shares(entry: float, stop: float, risk: float = RISK_DOLLARS) -> int:
 class IBApp(EWrapper, EClient):
     def __init__(self):
         EClient.__init__(self, self)
-        self._next_order_id: int | None = None
+        self._next_order_id: Optional[int] = None
         self._connected     = threading.Event()
 
         # Market data state
@@ -205,7 +206,7 @@ def make_contract(symbol: str) -> Contract:
 
 
 def make_bracket(parent_id: int, stop_id: int, tp_id: int,
-                 qty: int, entry: float | None, stop: float, target: float, use_market: bool = True):
+                 qty: int, entry: Optional[float], stop: float, target: float, use_market: bool = True):
     """Return (parent, stop_order, tp_order) for a Market/Limit + Stop + 1xTP bracket.
 
     If use_market=True, entry is a market order (entry price ignored).
