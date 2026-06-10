@@ -220,7 +220,7 @@ def plot_cumulative_returns(
 
     # ── Save ──────────────────────────────────────────────────────────────────
     if save_path is None:
-        from config import BASE_DIR
+        from old.nasdaq_ml_trader.config import BASE_DIR
         import datetime
         out_dir  = BASE_DIR / "backtest_results"
         out_dir.mkdir(parents=True, exist_ok=True)

@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from dateutil.relativedelta import relativedelta
 from typing import NamedTuple
 
-from config import (
+from old.nasdaq_ml_trader.config import (
     TRAIN_YEARS, TEST_YEARS, STEP_MONTHS, FINAL_HOLDOUT_DAYS,
     RF_N_ESTIMATORS, RF_MAX_DEPTH, RF_MIN_SAMPLES,
     XGB_N_ESTIMATORS, XGB_MAX_DEPTH, XGB_LR,
@@ -17,7 +17,7 @@ from config import (
     LSTM_EPOCHS, LSTM_BATCH, LSTM_LR, LSTM_WINDOW,
     MODEL_DIR,
 )
-from utils.logger import get_logger
+from old.nasdaq_ml_trader.utils.logger import get_logger
 
 log = get_logger("trainer")
 
@@ -252,7 +252,7 @@ def train_final_models(X: pd.DataFrame, y: pd.Series) -> dict:
     Retrain all models on full history up to FINAL_HOLDOUT_DAYS before end.
     fold_id=-1 is the sentinel for final models; files renamed to *_final.*.
     """
-    from data.features import build_lstm_sequences
+    from old.nasdaq_ml_trader.data.features import build_lstm_sequences
 
     cutoff   = len(X) - FINAL_HOLDOUT_DAYS
     X_train  = X.iloc[:cutoff]

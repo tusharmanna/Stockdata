@@ -4,9 +4,9 @@ import torch
 from scipy.optimize import minimize
 from typing import Optional
 
-from config import LSTM_WINDOW, MODEL_DIR
-from models.trainer import LSTMClassifier, load_model
-from utils.logger import get_logger
+from old.nasdaq_ml_trader.config import LSTM_WINDOW, MODEL_DIR
+from old.nasdaq_ml_trader.models.trainer import LSTMClassifier, load_model
+from old.nasdaq_ml_trader.utils.logger import get_logger
 
 log = get_logger("ensemble")
 

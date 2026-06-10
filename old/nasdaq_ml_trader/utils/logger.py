@@ -8,7 +8,7 @@ def get_logger(name: str) -> logging.Logger:
     if name in _loggers:
         return _loggers[name]
 
-    from config import LOG_DIR
+    from old.nasdaq_ml_trader.config import LOG_DIR
     LOG_DIR.mkdir(parents=True, exist_ok=True)
 
     logger = logging.getLogger(f"nasdaq_ml.{name}")

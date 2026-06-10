@@ -29,7 +29,11 @@
       "Bash(Get-Content logs\\\\engine.log -Tail 30)",
       "Bash(Get-Content logs\\\\trainer.log -Tail 20)",
       "Bash(git *)",
-      "Bash(curl -s -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\" \"https://www.sec.gov/files/company_tickers.json\")"
+      "Bash(curl -s -H \"User-Agent: Mozilla/5.0 \\(Windows NT 10.0; Win64; x64\\) AppleWebKit/537.36\" \"https://www.sec.gov/files/company_tickers.json\")",
+      "WebSearch",
+      "Bash(grep -v \"^$\")",
+      "Bash(awk '{print toupper\\($1\\)}')",
+      "Bash(awk '$1 > 1 {print $2 \" appears \" $1 \" times\"}')"
     ]
   }
 }

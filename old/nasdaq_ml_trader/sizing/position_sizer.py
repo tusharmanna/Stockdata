@@ -1,5 +1,5 @@
 import math
-from config import DEFAULT_CAPITAL, ATR_RISK_DOLLARS, KELLY_MAX_FRAC
+from old.nasdaq_ml_trader.config import DEFAULT_CAPITAL, ATR_RISK_DOLLARS, KELLY_MAX_FRAC
 
 
 def fixed_fractional(

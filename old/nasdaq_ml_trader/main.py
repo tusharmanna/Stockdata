@@ -25,8 +25,8 @@ sys.path.insert(0, str(Path(__file__).parent))
 # ── Commands ──────────────────────────────────────────────────────────────────
 
 def cmd_fetch(args) -> None:
-    from data.fetcher import get_ohlcv
-    from utils.display import console
+    from old.nasdaq_ml_trader.data.fetcher import get_ohlcv
+    from old.nasdaq_ml_trader.utils.display import console
 
     with console.status("[bold green]Fetching ^IXIC data..."):
         df = get_ohlcv(force_refresh=args.refresh)
@@ -38,9 +38,9 @@ def cmd_fetch(args) -> None:
 
 
 def cmd_features(args) -> None:
-    from data.fetcher import get_ohlcv
-    from data.features import build_ml_dataset
-    from utils.display import console
+    from old.nasdaq_ml_trader.data.fetcher import get_ohlcv
+    from old.nasdaq_ml_trader.data.features import build_ml_dataset
+    from old.nasdaq_ml_trader.utils.display import console
     from rich.table import Table
     from rich import box
 
@@ -71,12 +71,12 @@ def cmd_features(args) -> None:
 
 
 def cmd_train(args) -> None:
-    from data.fetcher import get_ohlcv
-    from data.features import build_ml_dataset
-    from models.trainer import generate_folds, train_final_models
-    from models.ensemble import EnsembleModel
-    from backtest.engine import run_walk_forward
-    from utils.display import console, make_progress, print_model_weights
+    from old.nasdaq_ml_trader.data.fetcher import get_ohlcv
+    from old.nasdaq_ml_trader.data.features import build_ml_dataset
+    from old.nasdaq_ml_trader.models.trainer import generate_folds, train_final_models
+    from old.nasdaq_ml_trader.models.ensemble import EnsembleModel
+    from old.nasdaq_ml_trader.backtest.engine import run_walk_forward
+    from old.nasdaq_ml_trader.utils.display import console, make_progress, print_model_weights
 
     console.print("[bold]Starting walk-forward training...[/bold]")
     if args.skip_lstm:
@@ -109,17 +109,17 @@ def cmd_train(args) -> None:
     train_final_models(X, y)
     console.print("[green]Training complete. Models saved to saved_models/[/green]")
 
-    from utils.display import print_backtest_summary
+    from old.nasdaq_ml_trader.utils.display import print_backtest_summary
     print_backtest_summary(results["metrics"], "Walk-Forward Backtest Metrics")
 
 
 def cmd_backtest(args) -> None:
     import pandas as pd
-    from data.fetcher import get_ohlcv
-    from data.features import build_ml_dataset
-    from models.trainer import generate_folds
-    from backtest.engine import run_walk_forward, benchmark_buyhold
-    from utils.display import (print_backtest_summary, console, make_progress,
+    from old.nasdaq_ml_trader.data.fetcher import get_ohlcv
+    from old.nasdaq_ml_trader.data.features import build_ml_dataset
+    from old.nasdaq_ml_trader.models.trainer import generate_folds
+    from old.nasdaq_ml_trader.backtest.engine import run_walk_forward, benchmark_buyhold
+    from old.nasdaq_ml_trader.utils.display import (print_backtest_summary, console, make_progress,
                                 plot_cumulative_returns, print_annual_table)
 
     # Determine window start date
@@ -192,8 +192,8 @@ def cmd_backtest(args) -> None:
 
 
 def cmd_signal(args) -> None:
-    from signals.generator import generate_signal, get_signal_history
-    from utils.display import print_signal_table, console
+    from old.nasdaq_ml_trader.signals.generator import generate_signal, get_signal_history
+    from old.nasdaq_ml_trader.utils.display import print_signal_table, console
     from rich.panel import Panel
     from rich.table import Table
     from rich import box
@@ -266,8 +266,8 @@ def cmd_signal(args) -> None:
 
 
 def cmd_status(args) -> None:
-    from config import MODEL_DIR
-    from utils.display import console
+    from old.nasdaq_ml_trader.config import MODEL_DIR
+    from old.nasdaq_ml_trader.utils.display import console
     from rich.table import Table
     from rich import box
 

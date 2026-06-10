@@ -2,8 +2,7 @@
 # Example:
 # AAPL
 # MSFT
-ASUR
-BMRN
-AVBP
-RNG
-SMSI
+casy
+frmi
+play
+pagp

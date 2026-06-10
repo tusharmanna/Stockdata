@@ -5,16 +5,16 @@ from sklearn.preprocessing import StandardScaler
 
 from dateutil.relativedelta import relativedelta
 
-from config import (
+from old.nasdaq_ml_trader.config import (
     DEFAULT_CAPITAL, MIN_CONFIDENCE, LSTM_WINDOW, MODEL_DIR, STEP_MONTHS,
 )
-from data.fetcher import get_ohlcv
-from data.features import build_ml_dataset, build_lstm_sequences, compute_features
-from models.trainer import generate_folds, train_rf, train_xgb, train_lstm
-from models.evaluator import evaluate_fold, compute_trading_metrics
-from models.ensemble import EnsembleModel
-from sizing.position_sizer import fixed_fractional
-from utils.logger import get_logger
+from old.nasdaq_ml_trader.data.fetcher import get_ohlcv
+from old.nasdaq_ml_trader.data.features import build_ml_dataset, build_lstm_sequences, compute_features
+from old.nasdaq_ml_trader.models.trainer import generate_folds, train_rf, train_xgb, train_lstm
+from old.nasdaq_ml_trader.models.evaluator import evaluate_fold, compute_trading_metrics
+from old.nasdaq_ml_trader.models.ensemble import EnsembleModel
+from old.nasdaq_ml_trader.sizing.position_sizer import fixed_fractional
+from old.nasdaq_ml_trader.utils.logger import get_logger
 
 log = get_logger("engine")
 

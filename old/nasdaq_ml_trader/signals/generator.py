@@ -4,12 +4,12 @@ import pandas as pd
 import joblib
 from datetime import datetime
 
-from config import MIN_CONFIDENCE, LSTM_WINDOW, SIGNAL_LOG, MODEL_DIR, DEFAULT_CAPITAL
-from data.fetcher import get_ohlcv
-from data.features import compute_features
-from models.ensemble import EnsembleModel
-from sizing.position_sizer import size_all_methods
-from utils.logger import get_logger
+from old.nasdaq_ml_trader.config import MIN_CONFIDENCE, LSTM_WINDOW, SIGNAL_LOG, MODEL_DIR, DEFAULT_CAPITAL
+from old.nasdaq_ml_trader.data.fetcher import get_ohlcv
+from old.nasdaq_ml_trader.data.features import compute_features
+from old.nasdaq_ml_trader.models.ensemble import EnsembleModel
+from old.nasdaq_ml_trader.sizing.position_sizer import size_all_methods
+from old.nasdaq_ml_trader.utils.logger import get_logger
 
 log = get_logger("generator")
 
