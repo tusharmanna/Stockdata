@@ -36,6 +36,9 @@ python run_scan.py
 
 # Backfill tickers whose most recent row is behind the DB-wide latest date
 python backfill_recent.py
+
+# Print today's 4/25 MA crossover signal for QQQ (ENTER/EXIT/HOLD) + log to signals/
+python qqq_signal.py
 ```
 
 ## Dependencies
