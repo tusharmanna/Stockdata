@@ -17,6 +17,10 @@ import sys
 import numpy as np
 import pandas as pd
 
+import matplotlib
+matplotlib.use("Agg")  # no display; save file only
+import matplotlib.pyplot as plt
+
 CSV_PATH = "QQQ_2026.csv"
 TRADING_DAYS = 252
 
@@ -140,13 +144,33 @@ def report(close):
             f"Best grid {best_cfg['fast']}/{best_cfg['slow']}": best_ret}
 
 
+PNG_PATH = "qqq_2026_strategy_results.png"
+
+
+def plot_curves(dates, curves, path=PNG_PATH):
+    fig, ax = plt.subplots(figsize=(12, 6))
+    for name, strat_ret in curves.items():
+        equity = (1.0 + strat_ret).cumprod()
+        ax.plot(dates, equity, label=f"{name} ({equity.iloc[-1] - 1:.1%})")
+    ax.set_title("QQQ 2026 MA-Crossover Strategy vs Buy & Hold")
+    ax.set_ylabel("Growth of $1")
+    ax.legend(loc="upper left")
+    ax.grid(alpha=0.3)
+    fig.autofmt_xdate()
+    fig.tight_layout()
+    fig.savefig(path, dpi=120)
+    plt.close(fig)
+    print(f"\nEquity curves saved to {path}")
+
+
 def main():
     df = load_data()
     close = df["Close"]
     print(f"Loaded {len(df)} rows: {df['Date'].iloc[0].date()} "
           f"to {df['Date'].iloc[-1].date()}")
     sanity_checks(close)
-    report(close)
+    curves = report(close)
+    plot_curves(df["Date"], curves)
 
 
 if __name__ == "__main__":
