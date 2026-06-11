@@ -1,5 +1,6 @@
 data/
 charts/
+signals/
 __pycache__/
 *.db
 *.db-shm
