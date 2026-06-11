@@ -81,12 +81,72 @@ def sanity_checks(close):
     print("Sanity checks passed.")
 
 
+BASELINE = {"fast": 10, "slow": 20, "l_long": 3, "l_short": 1}
+
+
+def grid_search(close):
+    rows = []
+    for fast in range(3, 16):                 # 3..15 step 1
+        for slow in range(10, 51, 5):         # 10..50 step 5
+            if fast >= slow:
+                continue
+            for l_long in (1, 2, 3):
+                for l_short in (0, 1, 2, 3):
+                    sr, pos = backtest(close, fast, slow, l_long, l_short)
+                    m = metrics(sr, pos)
+                    rows.append({"fast": fast, "slow": slow,
+                                 "l_long": l_long, "l_short": l_short, **m})
+    return (pd.DataFrame(rows)
+            .sort_values("sharpe", ascending=False)
+            .reset_index(drop=True))
+
+
+def fmt_row(name, m):
+    return (f"{name:<22} {m['total']:>8.2%} {m['sharpe']:>7.2f} "
+            f"{m['max_dd']:>8.2%} {m['flips']:>6d} {m['win']:>6.1%}")
+
+
+def report(close):
+    ret = close.pct_change().fillna(0.0)
+    bh_pos = pd.Series(1.0, index=close.index)
+    bh_m = metrics(ret, bh_pos)
+
+    base_ret, base_pos = backtest(close, **BASELINE)
+    base_m = metrics(base_ret, base_pos)
+
+    grid = grid_search(close)
+    best = grid.iloc[0]
+    best_cfg = {k: int(best[k]) for k in ("fast", "slow", "l_long", "l_short")}
+    best_ret, best_pos = backtest(close, **best_cfg)
+    best_m = metrics(best_ret, best_pos)
+
+    print(f"\n{'Strategy':<22} {'Return':>8} {'Sharpe':>7} "
+          f"{'MaxDD':>8} {'Flips':>6} {'Win%':>6}")
+    print("-" * 64)
+    print(fmt_row("Buy & hold", bh_m))
+    print(fmt_row("Baseline 10/20 3x/1x", base_m))
+    print(fmt_row(f"Best grid {best_cfg['fast']}/{best_cfg['slow']} "
+                  f"{best_cfg['l_long']}x/{best_cfg['l_short']}x", best_m))
+
+    print("\nTop 5 grid configs by Sharpe (flat neighborhood = trustworthy):")
+    cols = ["fast", "slow", "l_long", "l_short", "sharpe", "total", "max_dd", "flips"]
+    top5 = grid.head(5)[cols].copy()
+    top5["total"] = top5["total"].map("{:.2%}".format)
+    top5["max_dd"] = top5["max_dd"].map("{:.2%}".format)
+    top5["sharpe"] = top5["sharpe"].map("{:.2f}".format)
+    print(top5.to_string(index=False))
+
+    return {"Buy & hold": ret, "Baseline 10/20": base_ret,
+            f"Best grid {best_cfg['fast']}/{best_cfg['slow']}": best_ret}
+
+
 def main():
     df = load_data()
     close = df["Close"]
     print(f"Loaded {len(df)} rows: {df['Date'].iloc[0].date()} "
           f"to {df['Date'].iloc[-1].date()}")
     sanity_checks(close)
+    report(close)
 
 
 if __name__ == "__main__":
