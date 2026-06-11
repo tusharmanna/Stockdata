@@ -101,9 +101,9 @@ def print_report(sig):
 
     print(f"\nQQQ {FAST}/{SLOW} Pyramid Signal - {bar_date}")
     print(f"Close: ${sig['close']:.2f}   MA{FAST}: ${sig['ma_fast']:.2f}   MA{SLOW}: ${sig['ma_slow']:.2f}")
-    print(f"Tiers: T1 (close > MA4) {'YES' if sig['t1'] else 'NO'}  |  "
-          f"T2 (close > MA25) {'YES' if sig['t2'] else 'NO'}  |  "
-          f"T3 (MA4 > MA25) {'YES' if sig['t3'] else 'NO'}")
+    print(f"Tiers: T1 (close > MA{FAST}) {'YES' if sig['t1'] else 'NO'}  |  "
+          f"T2 (close > MA{SLOW}) {'YES' if sig['t2'] else 'NO'}  |  "
+          f"T3 (MA{FAST} > MA{SLOW}) {'YES' if sig['t3'] else 'NO'}")
     print(f"Position: {sig['frac_pct']}% of full 3x  |  Action: {sig['action']}  |  "
           f"Days in regime: {sig['days']}")
 
