@@ -1,12 +1,17 @@
 # Best Grid Strategy Guide
 ## 4/25 MA Crossover with 3x Long Leverage (2010-2026 Backtest)
 
-**Document Version:** 1.0  
+**Document Version:** 1.1 (corrected)  
 **Date Created:** 2026-06-10  
 **Strategy Name:** 4/25 MA Crossover (3x Long, 0x Short)  
 **Time Frame:** Daily bars  
 **Asset:** QQQ (Nasdaq-100 ETF)  
-**Performance:** 6,119% total return (27.50% CAGR, 2010-2026)  
+**Performance:** 7,373% total return (30.0% CAGR, 2010-2026)  
+
+> **Correction (v1.1, 2026-06-10):** The original backtest CSVs had Open and Close columns
+> swapped (a column-ordering bug in the download script). All figures in this document have been
+> recomputed on true closing prices. The strategy conclusions are unchanged — total return is
+> actually higher — but drawdowns are deeper than originally reported (2022: -55.6%, not -47.4%).
 
 ---
 
@@ -36,12 +41,12 @@ The **4/25 MA Crossover Strategy** is a trend-following, regime-switching system
 ### Why This Strategy Works
 
 Over 16 years (2010-2026), the strategy:
-- Captured 76% of days with positive returns (13 out of 17 years were profitable)
+- Was profitable in 13 out of 17 years (76%)
 - Avoided the worst bear-market whipsaws by exiting to cash early
 - Amplified bull-market gains with 3x leverage during strong uptrends
-- Delivered a **3.46x wealth multiplier** vs buy-and-hold ($6.2M vs $1.8M)
+- Delivered a **4.24x wealth multiplier** vs buy-and-hold ($7.5M vs $1.8M)
 
-The secret: **good exits matter more than perfect entries.** The fast 4-day MA triggers exits quickly, so you sit in cash during sudden reversals (like 2022's -47.4% loss instead of -54.7% if always leveraged).
+The secret: **good exits matter more than perfect entries.** The fast 4-day MA triggers exits quickly, so you sit in cash during sudden reversals (like 2022's -55.6% loss instead of -61.5% if always leveraged).
 
 ---
 
@@ -116,7 +121,7 @@ Price:    $150  ← Fast MA turns upward
 | 2010 | Early Jan | Fast MA crosses above Slow MA → Enter 3x long |
 | 2012 | Post Feb | Recovery from early bear → Re-enter 3x long |
 | 2019 | Early Jan | Strong uptrend begins → Enter 3x long |
-| 2020 | Late Mar | COVID bottom reversal → Fast MA turns up → Enter 3x long (MASSIVE GAIN +198.6%) |
+| 2020 | Late Mar | COVID bottom reversal → Fast MA turns up → Enter 3x long (MASSIVE GAIN +187.5%) |
 | 2023 | Throughout | Multiple crossovers as sentiment improves → Stay/re-enter 3x long |
 
 ---
@@ -154,10 +159,10 @@ Price:    $152  ← Slow MA still up, but flattening
 
 | Year | Duration | What Happened |
 |------|----------|---------------|
-| 2011 | Feb-Dec | Weak recovery → Fast MA dips below Slow MA → Exit to cash (saved from -42% baseline loss) |
-| 2015 | Feb-Sept | Oil crash contagion → Fast MA turns down → Go to cash (lost only -38.3% vs baseline -33.5%) |
-| 2018 | Feb & Oct | Two sharp reversals → Fast MA signals exit twice → Avoid worst of -32.3% loss |
-| 2022 | Early Jan | Fed rate-hike shock → Fast MA immediately turns down → Exit to cash (lose only -47.4% vs -54.7% if leveraged all year) |
+| 2011 | Feb-Dec | Weak recovery → Fast MA dips below Slow MA → Exit to cash (-9.9% vs baseline -57.7%) |
+| 2015 | Feb-Sept | Oil crash contagion → Fast MA turns down → Go to cash (-35.5%, choppy whipsaw year) |
+| 2018 | Feb & Oct | Two sharp reversals → Fast MA signals exit twice → -23.5% vs baseline -61.7% |
+| 2022 | Early Jan | Fed rate-hike shock → Fast MA immediately turns down → Exit to cash (-55.6% vs -61.5% if leveraged all year) |
 
 ---
 
@@ -210,7 +215,7 @@ Total 3-day return: -6% + 4.5% - 3% = -4.5%
 
 ## Example Trades
 
-### Example 1: 2020 COVID Crash & Recovery (Best Year: +198.6%)
+### Example 1: 2020 COVID Crash & Recovery (Best Year: +187.5%)
 
 ```
 Jan 1, 2020:  Prices = $210, Fast MA = $211, Slow MA = $208
@@ -231,17 +236,17 @@ Jun 30, 2020: Prices = $315 (strong recovery)
               Status: 3x LONG the entire recovery
               Gain: 3x × (+50% recovery from $210 to $315) = ~+150% on this leg
               
-Full Year 2020 Result: +198.6% (best year in the backtest)
+Full Year 2020 Result: +187.5% (best year in the backtest)
 ```
 
 **Key Insight:** By exiting early (in January) and re-entering at the recovery (April), the strategy:
 - Avoided the worst -30% crash
 - Captured the 50% recovery with 3x leverage
-- Turned a -30% + 50% sideways year into a +199% monster year
+- Turned a -30% + 50% sideways year into a +188% monster year
 
 ---
 
-### Example 2: 2022 Bear Market (Worst Year: -47.4%)
+### Example 2: 2022 Bear Market (Worst Year: -55.6%)
 
 ```
 Jan 1, 2022:  Prices = $380, Fast MA = $382, Slow MA = $375
@@ -258,15 +263,15 @@ Feb-Nov 2022: Prices fall from $350 to $210 (-40% more)
 Dec 2022:     Prices = $220, Fast MA = $215, Slow MA = $220
               Status: Still mostly CASH or weak entry
               
-Full Year 2022 Result: -47.4% (worse than buy & hold -33.6%, but saved vs baseline -52.4% all-in)
+Full Year 2022 Result: -55.6% (worse than buy & hold -32.6%, but saved vs baseline -61.5% all-in)
 ```
 
 **Key Insight:** Even in the worst year:
-- The fast MA exit in January saved you from the -40% January-November plunge
-- You lost only -47.4% because you spent most of 2022 in cash, not leveraged long
-- Baseline strategy (always 3x long): -52.4%
-- Grid strategy (fast exits to cash): -47.4%
-- Difference: 5% saved = $50K on a $1M position
+- The fast MA exit in January saved you from the worst of the January-November plunge
+- You lost -55.6% — painful, but you spent much of 2022 in cash, not leveraged long
+- Baseline strategy (always 3x long): -61.5%
+- Grid strategy (fast exits to cash): -55.6%
+- Difference: ~6% saved = $60K on a $1M position
 
 ---
 
@@ -276,23 +281,23 @@ Full Year 2022 Result: -47.4% (worse than buy & hold -33.6%, but saved vs baseli
 
 | Year | Entry/Exit Signals | Return | Notes |
 |------|------------------|--------|-------|
-| **2010** | Early Jan (enter) | **+45.8%** | Strong start, rode bull market all year |
-| **2011** | Feb (exit to cash) | **-13.8%** | Brief correction, missed most losses |
-| **2012** | Feb (re-enter) → Dec | **+67.4%** | Full recovery, strong leverage gains |
-| **2013** | Jan-Dec (mostly long) | **+32.9%** | Steady uptrend |
-| **2014** | Jan-Dec (mostly long) | **+34.4%** | Continued bull |
-| **2015** | Feb (exit), Sept (re-enter) | **-38.3%** | Oil shock, caught one downdraft early-year |
-| **2016** | Several exits/re-entries | **+10.3%** | Choppy, slow recovery |
-| **2017** | Jan-Dec (mostly long) | **+39.4%** | Strong bull year, steady |
-| **2018** | Feb & Oct exits | **-32.3%** | Two sharp reversals, exited into both, limited leverage losses |
-| **2019** | Jan-Dec (mostly long) | **+115.3%** | Exceptional bull, 3x leverage turbo-charged returns |
-| **2020** | Early Jan (exit), Apr (re-enter) | **+198.6%** | BEST YEAR: COVID exit + recovery re-entry + 3x |
-| **2021** | Jan-Dec (mostly long) | **+35.1%** | Bull market, steady gains |
-| **2022** | Early Jan (exit to cash) | **-47.4%** | WORST YEAR: Spent year in cash, limited leverage damage |
-| **2023** | Jan-Dec (mostly long) | **+97.3%** | Strong bull, 3x leverage on 55% QQQ rise = 165% move (only 97% realized due to some exits) |
-| **2024** | Several exits/re-entries | **+35.1%** | Mixed signals, but stayed mostly long |
-| **2025** | Jan-Dec (mostly long) | **+42.2%** | Steady bull market |
-| **2026** | Jan-June (mostly long) | **+48.8%** | Continued bull (partial year data) |
+| **2010** | Early Jan (enter) | **+44.4%** | Strong start, rode bull market all year |
+| **2011** | Feb (exit to cash) | **-9.9%** | Brief correction, missed most losses |
+| **2012** | Feb (re-enter) → Dec | **+69.1%** | Full recovery, strong leverage gains |
+| **2013** | Jan-Dec (mostly long) | **+45.6%** | Steady uptrend |
+| **2014** | Jan-Dec (mostly long) | **+26.6%** | Continued bull |
+| **2015** | Feb (exit), Sept (re-enter) | **-35.5%** | Oil shock, choppy whipsaw year |
+| **2016** | Several exits/re-entries | **+16.4%** | Choppy, slow recovery |
+| **2017** | Jan-Dec (mostly long) | **+49.2%** | Strong bull year, steady |
+| **2018** | Feb & Oct exits | **-23.5%** | Two sharp reversals, exited into both, limited leverage losses |
+| **2019** | Jan-Dec (mostly long) | **+125.4%** | Exceptional bull, 3x leverage turbo-charged returns |
+| **2020** | Early Jan (exit), Apr (re-enter) | **+187.5%** | BEST YEAR: COVID exit + recovery re-entry + 3x |
+| **2021** | Jan-Dec (mostly long) | **+48.5%** | Bull market, steady gains |
+| **2022** | Early Jan (exit to cash) | **-55.6%** | WORST YEAR: leverage hurt despite cash exits |
+| **2023** | Jan-Dec (mostly long) | **+96.7%** | Strong bull, 3x leverage on 55% QQQ rise (partially realized due to exits) |
+| **2024** | Several exits/re-entries | **+20.0%** | Mixed signals, whipsaws cost some upside |
+| **2025** | Jan-Dec (mostly long) | **+64.3%** | Steady bull market |
+| **2026** | Jan-June (mostly cash since June 9) | **+29.6%** | Bull then June pullback (partial year) |
 
 ### Performance Statistics
 
@@ -300,15 +305,15 @@ Full Year 2022 Result: -47.4% (worse than buy & hold -33.6%, but saved vs baseli
 |--------|-------|
 | Positive Years | 13 out of 17 (76%) |
 | Negative Years | 4 out of 17 (24%) |
-| Best Year | 2020: +198.6% |
-| Worst Year | 2022: -47.4% |
-| Average Annual Return | +39.46% |
-| Total Return (2010-2026) | 6,119% ($100K → $6.22M) |
-| CAGR | 27.50% |
-| Max Drawdown | -47.4% (2022) |
+| Best Year | 2020: +187.5% |
+| Worst Year | 2022: -55.6% |
+| Average Annual Return | +41.1% |
+| Total Return (2010-2026) | 7,373% ($100K → $7.46M) |
+| CAGR | 30.0% |
+| Max Drawdown | -66.9% (peak-to-trough, around 2022) |
 | Win Rate | 76% (positive years) |
-| Avg Bull Year Return | +47.8% (12 years > 30%) |
-| Avg Bear Year Return | -39.3% (4 years < -10%) |
+| Avg Bull Year Return | +81.2% (9 years > 30%) |
+| Avg Bear Year Return | -31.1% (4 negative years) |
 
 ---
 
@@ -316,17 +321,18 @@ Full Year 2022 Result: -47.4% (worse than buy & hold -33.6%, but saved vs baseli
 
 ### Drawdown Scenarios
 
-**Maximum Drawdown: -47.4% (2022)**
+**Maximum Drawdown: -66.9% peak-to-trough (2021 high → 2022 low)**
 
-This was the worst year, but context matters:
+2022 was the worst calendar year, but context matters:
 
 ```
-Strategy A (Grid 4/25 3x/0x):  -47.4%
-Strategy B (Baseline always 3x): -52.4%
-Strategy C (Buy & Hold):       -33.6%
+2022 annual returns:
+Strategy A (Grid 4/25 3x/0x):    -55.6%
+Strategy B (Baseline always 3x): -61.5%
+Strategy C (Buy & Hold):         -32.6%
 
-→ Grid paid a 13.8% premium vs B&H to get 27.50% CAGR
-→ But saved 5% vs baseline by exiting to cash when signals triggered
+→ Grid paid a deep-drawdown premium vs B&H to get 30.0% CAGR
+→ But saved ~6% vs baseline by exiting to cash when signals triggered
 ```
 
 ### How Leverage Amplifies Losses
@@ -341,7 +347,7 @@ If you exit halfway (after Fast MA turns):
   Loss becomes: 3x × (-25%) = -75% (but adds positive cash leg)
   Real loss: ~-50% (cushioned by cash time)
   
-Grid strategy: -47.4% actual loss (exits reduced leverage exposure)
+Grid strategy: -55.6% actual loss (exits reduced leverage exposure)
 ```
 
 ### Leverage Warnings
@@ -383,7 +389,7 @@ Grid strategy: -47.4% actual loss (exits reduced leverage exposure)
 | 1 | **Fast Exits** | 4-day MA triggers exits within days, not weeks → limits bear-market leverage damage |
 | 2 | **Mechanical Rules** | No emotions; no "I'll hold longer" mistakes → consistent discipline |
 | 3 | **Cash Option** | When wrong, you're in cash earning 0%, not short (bad leverage) → no compounding losses |
-| 4 | **Leverage Booster** | 3x on bull years amplifies gains → 27.50% CAGR vs 18.52% B&H |
+| 4 | **Leverage Booster** | 3x on bull years amplifies gains → 30.0% CAGR vs 19.1% B&H |
 | 5 | **Simple Logic** | Just 2 moving averages → anyone can code/understand this |
 | 6 | **Historical Edge** | Worked across 16 years, multiple bear markets, bull markets → not curve-fit to one period |
 | 7 | **No Shorting** | Avoids reversal traps (shorting a recovery) → long-only bias matches market structure |
@@ -392,7 +398,7 @@ Grid strategy: -47.4% actual loss (exits reduced leverage exposure)
 
 | # | Disadvantage | Explanation |
 |---|-------------|-------------|
-| 1 | **Leverage Amplifies Losses** | 3x means -50% year becomes -47.4% actual (still bad) → not a loss limiter |
+| 1 | **Leverage Amplifies Losses** | 3x means a -33% QQQ year becomes -55.6% actual (still bad) → not a loss limiter |
 | 2 | **Whipsaws in Choppy Markets** | 4-day MA exits/re-entries = friction costs → 2016 slow year showed this |
 | 3 | **In-Sample Backtest** | Uses QQQ 2010-2026 data → real 2027+ performance unknown → might not generalize |
 | 4 | **Real-World Costs** | Borrow fees, ETF expenses, slippage = 50-100 bps drag → backtest is optimistic |
@@ -469,7 +475,7 @@ if MA4[-1] >= MA25[-1] and MA4[0] < MA25[0]:  # Crossover downward
 ## Practical Checklist for Implementation
 
 - [ ] **Obtain data:** Download QQQ daily OHLCV since 2010 (verify 4,100+ rows)
-- [ ] **Backtest:** Run the strategy on historical data, confirm 6,119% return
+- [ ] **Backtest:** Run the strategy on historical data, confirm ~7,373% return
 - [ ] **Paper trade:** Run for 3-6 months without real money, verify signal generation
 - [ ] **Account setup:** Open brokerage account allowing TQQQ trades, zero-commission preferred
 - [ ] **Cash allocation:** Decide starting capital (e.g., $100K, $500K, $1M)
@@ -498,7 +504,7 @@ A: Yes, but backtest first. The grid search tested 3-15 (fast) × 10-50 (slow) a
 
 **Q: What if I add shorting (SQQQ)?**
 
-A: Backtests showed shorting during downtrends *loses* money on QQQ. The fast-exit-to-cash approach wins. Shorting would turn 2015 -38% into something worse (you'd be short into a recovery).
+A: Backtests showed shorting during downtrends *loses* money on QQQ. The fast-exit-to-cash approach wins. Shorting would turn 2015's -35.5% into something worse (you'd be short into a recovery).
 
 ---
 
@@ -526,7 +532,7 @@ The **4/25 MA Crossover Strategy** is a disciplined, mechanical, trend-following
 - **Enters** when the fast 4-day MA crosses above the slow 25-day MA
 - **Exits** when the fast 4-day MA crosses below the slow 25-day MA
 - **Uses 3x leverage** on long positions, cash on exits
-- **Delivered 27.50% CAGR** over 16 years (2010-2026)
+- **Delivered 30.0% CAGR** over 16 years (2010-2026)
 - **Requires discipline** to follow mechanical signals without override
 
 It's not a get-rich-quick scheme, but a proven trend-following approach with historical edge. Success depends on implementation consistency and emotional discipline during drawdowns.
@@ -534,7 +540,7 @@ It's not a get-rich-quick scheme, but a proven trend-following approach with his
 ---
 
 **Next Steps:**
-1. Backtest on your own system (verify 6,119% result)
+1. Backtest on your own system (verify ~7,373% result)
 2. Paper trade for 3-6 months (live paper trading)
 3. Start small with real capital ($10K-$50K)
 4. Scale up after 1+ year of successful execution
