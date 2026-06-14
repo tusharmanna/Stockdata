@@ -269,11 +269,30 @@ python tushar_v2_stresstest.py    # Survivability: holding-period, drawdown dept
 ```
 All reuse v1's regime logic (`_load`, `compute_signal_v1`) from `tusharStrategyDev.py` and fetch QQQ + TQQQ live via yfinance. The signal tool logs to `signals/tushar_v2_history.csv`. To change risk appetite, edit `TARGET_VOL` in `tushar_v2_backtest.py` and `tushar_v2_signal.py` (higher = more return + more drawdown, same Sharpe).
 
-**No-margin variant (Roth / HSA / 401k):** retirement and HSA accounts cannot use margin or (often) TQQQ, so use **QLD (2x Nasdaq-100)** with the same overlay capped at 100% of cash.
+### Tushar v2 — No-Margin Variant for Roth / HSA / 401k (QLD)
+
+Retirement and HSA accounts **cannot use margin** (IRS rule) and often cannot trade TQQQ, so leverage must come from *inside* a fund. Use **QLD (2x Nasdaq-100)** — fund-internal leverage, no margin account needed — with the same v2 overlay (v1 regime gate + vol-target) but **capped at 100% of cash** (cap = 1.0). Bonus: trades incur no tax in these accounts, so the regime switching is friction-free.
+
 ```bash
 python tushar_v2_qld_signal.py    # Daily signal: regime, QLD vol, "% of account in QLD" (e.g. "85% QLD")
 ```
-Backtest 2010-2026 (cap 1.0, after cash yield): QLD vol-target CAGR +30.6%, Sharpe **0.99**, maxDD **−39%** — vs QLD buy & hold 32.4% / 0.89 / −64%. The overlay keeps most of 2x Nasdaq's return while taming the drawdown. On plain QQQ (1x) the gate *underperforms* buy & hold on return (it only reduces risk), so 2x QLD is the recommended no-margin vehicle. Logs to `signals/tushar_v2_qld_history.csv`. Confirm your custodian allows QLD; 401k plans with a fixed fund menu usually can't run this — buy-and-hold the most growth-tilted index fund instead.
+Signal logs to `signals/tushar_v2_qld_history.csv`. Regime is computed on QQQ; vol-target uses QLD's own 20d realized vol; exposure = `clip(0.45 / QLD_vol, 0, 1.0)` in BULL regime, else 0.
+
+**Backtest 2010–2026 ($100k, cap 1.0, after cash yield):**
+
+| Strategy | CAGR | Sharpe | Max DD | Final $ |
+|---|---|---|---|---|
+| QLD Buy & Hold | **32.4%** | 0.89 | **−63.7%** | **$10.0M** |
+| QLD overlay (regime + vol-target) | 30.6% | **0.99** | **−39.1%** | $7.98M |
+
+**Honest finding — the overlay is a RISK-reducer, not a return-enhancer.** On a no-margin 2x vehicle it *underperforms* buy & hold on total return ($7.98M vs $10.0M) and beats B&H in only **3 of 17 years**. Its value is a far gentler ride: max drawdown −39% vs −64%, Sharpe 0.99 vs 0.89. The 2022 row captures it — buy & hold fell from $4.7M to $1.86M; the overlay went $2.9M → $1.91M (less at the peak, more at the bottom). The overlay's *return* edge only appears at 3x (TQQQ), where drawdown protection compounds enough to win; at 1x (QQQ) or 2x (QLD) you give up return for safety.
+
+**Vehicle choice by account:**
+- **Roth IRA** — best home (tax-free gains). Confirm broker allows QLD (most do — it needs no margin).
+- **HSA** — good if it has a brokerage option *and* the money will stay invested long-term (fails if you need it for near-term medical bills).
+- **401k** — usually a fixed fund menu with no QLD/QQQ; buy-and-hold the most growth/Nasdaq-tilted index fund offered instead.
+
+**Decision (personal, not mathematical):** For a long-horizon account you truly won't touch and can hold through a −64% drawdown, **plain QLD buy & hold is simpler and ends richer**. Choose the overlay if you'd doubt your ability to hold through −64% without panic-selling — it trades ~20% of terminal wealth to nearly halve the worst drawdown.
 
 ## QQQ Moving Average Crossover Strategies (2010–2026 Backtest)
 
