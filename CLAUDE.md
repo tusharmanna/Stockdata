@@ -4,14 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository Structure
 
+**Prime Strategies (Active):**
+- **Tushar v2 (vol-targeted)** — `tushar_v2_backtest.py`, `tushar_v2_signal.py` (TQQQ 3x, defensive `target_vol=0.45`), plus `tushar_v2_walkforward.py` and `tushar_v2_stresstest.py` for validation.
+- **QLD no-margin variant** — `tushar_v2_qld_signal.py` (QLD 2x, cap 1.0, for Roth/HSA/401k).
+- `tusharStrategyDev.py` — **retained as the shared regime engine** (`_load`, `compute_signal_v1`); v2 and QLD both import it. Also contains the original v1 strategy.
+- `all_strategies_backtest.py` + `docs/STRATEGY_COMPARISON.md` — consolidated comparison/rationale for choosing v2 + QLD.
+
 **Core Files (Active):**
-- `tusharStrategyDev.py` — v1 strategy backtest engine (189d high regime gate)
 - `EnterOrdersIB.py` — Interactive Brokers order entry tool
 - `orders.txt` — Order list for EnterOrdersIB
 - Infrastructure: `main.py`, `database.py`, `downloader.py`, `indicators.py`, `scanner.py`, `chart.py`
 
 **Archived Files:**
-- `old/` — Legacy strategies and experimental code moved here for cleanup
+- `old/` — Legacy strategies and experimental code moved here for cleanup. As of 2026-06-14 this includes the **QQQ MA-crossover and pyramid families** (`qqq_signal.py`, `qqq_pyramid_*.py`, `qqq_backtest_2010_2026.py`, `qqq_2026_strategy.py`, `setup_pyramid_schedule.ps1`) — superseded by the v2/QLD prime strategies.
 
 ## Running the Program
 
@@ -37,8 +42,9 @@ python run_scan.py
 # Backfill tickers whose most recent row is behind the DB-wide latest date
 python backfill_recent.py
 
-# Print today's 4/25 MA crossover signal for QQQ (ENTER/EXIT/HOLD) + log to signals/
-python qqq_signal.py
+# Daily v2 strategy signals (prime strategies)
+python tushar_v2_signal.py        # TQQQ 3x vol-targeted (taxable/margin account)
+python tushar_v2_qld_signal.py    # QLD 2x no-margin (Roth/HSA/401k)
 ```
 
 ## Dependencies
@@ -294,109 +300,17 @@ Signal logs to `signals/tushar_v2_qld_history.csv`. Regime is computed on QQQ; v
 
 **Decision (personal, not mathematical):** For a long-horizon account you truly won't touch and can hold through a −64% drawdown, **plain QLD buy & hold is simpler and ends richer**. Choose the overlay if you'd doubt your ability to hold through −64% without panic-selling — it trades ~20% of terminal wealth to nearly halve the worst drawdown.
 
-## QQQ Moving Average Crossover Strategies (2010–2026 Backtest)
+## QQQ MA-Crossover & Pyramid Strategies (ARCHIVED 2026-06-14)
 
-Two daily-bar strategies trade QQQ using moving average crossovers. Both download live data from yfinance on every run (no local CSV dependency for signals).
+The binary 4/25 crossover and the 3/35 pyramid (equal-thirds and 25/35/40 weighted) families
+were **superseded by the v2 / QLD prime strategies** and moved to `old/`:
+`qqq_signal.py`, `qqq_pyramid_signal.py`, `qqq_pyramid_strategy.py`, `qqq_pyramid_3_35_backtest.py`,
+`qqq_pyramid_weighted_backtest.py`, `qqq_pyramid_weight_search.py`, `qqq_backtest_2010_2026.py`,
+`qqq_2026_strategy.py`, `setup_pyramid_schedule.ps1`.
 
-### Strategy 1: Binary 4/25 Crossover (3x leverage)
-
-**Signal:** Long 3x when MA4 > MA25, else cash.
-
-**Performance (2010–2026):**
-- Total return: **+7,373%** ($100k → $7.47M)
-- CAGR: **30.0%** | Sharpe: 0.87 | Max drawdown: -66.9%
-- Wins vs B&H: 12/17 years
-- Best year: 2020 (+187.5%) | Worst year: 2022 (-55.6%)
-
-**Daily signal tool:**
-```bash
-python qqq_signal.py          # Run anytime; fetches latest QQQ close from yfinance
-```
-
-Outputs: Close, MA4, MA25, regime (LONG/CASH), days in regime, action (ENTER/EXIT/HOLD).
-
-**Automatic daily at 8 PM ET** (included in `run_daily.bat`):
-```powershell
-# One-time setup (admin):
-powershell -ExecutionPolicy Bypass -File E:\work\Stockdata\setup_schedule.ps1
-```
-
-**Backtest:**
-```bash
-python qqq_2026_strategy.py          # 2026 only (109 bars)
-python qqq_backtest_2010_2026.py     # Full 16-year history with year-by-year table
-```
-
-### Strategy 2: Weighted Pyramid 3/35 Crossover (3x leverage, 25/35/40 weights)
-
-**Signal:** Scale position as bullish tiers accumulate, weighted toward confirmed signals:
-- T1: Close > MA3 → +25% position (noisy fast tier, lowest weight)
-- T2: Close > MA35 → +35% position
-- T3: MA3 > MA35 → +40% position (confirmed crossover, highest weight)
-
-Position = sum of true tiers: 0%, 25%, 35%, 40%, 60%, 65%, 75%, or 100%. Symmetric scale-out: each tier false drops its weight.
-
-**Performance (2010–2026):**
-- Total return: **+10,021%** ($100k → $10.12M)
-- Sharpe: **0.98** | Max drawdown: -59.9%
-- Beats equal-thirds pyramid (+8,932%) in 13/17 years; beats B&H in 11/17 years
-- Best year: 2023 (+100.5%) | Worst year: 2022 (-46.3%)
-- Weight grid search (`qqq_pyramid_weight_search.py`): returns rise with more weight on T3, but 25/35/40 keeps the shallowest drawdown; Sharpe-optimal is ~20/10/70 (0.99)
-
-**Key advantage:** Reduces whipsaw damage in choppy markets (2015, 2018, 2024) by partial entries/exits. Trades some upside in explosive recoveries (2020 +187% binary vs +71% pyramid) for steadier compounding overall.
-
-**Daily signal tool:**
-```bash
-python qqq_pyramid_signal.py  # Run anytime; fetches latest QQQ close from yfinance
-```
-
-Outputs: Close, MA3, MA35, tier status (T1/T2/T3 with weights), position % (0–100), action (SCALE UP/DOWN/HOLD/IN CASH).
-
-**Automatic daily at 3:30 PM ET** (30 min before close, intraday signal):
-```powershell
-# One-time setup (admin):
-powershell -ExecutionPolicy Bypass -File E:\work\Stockdata\setup_pyramid_schedule.ps1
-
-# Manage task:
-schtasks /run /tn "StockDataPyramidSignal"        # trigger manually
-schtasks /delete /tn "StockDataPyramidSignal" /f  # remove task
-```
-
-**Backtest:**
-```bash
-python qqq_pyramid_strategy.py            # Compares binary, pyramid at 4/25, grid search for best MA pair
-python qqq_pyramid_3_35_backtest.py       # Equal-thirds 3/35 year-by-year vs B&H
-python qqq_pyramid_weighted_backtest.py   # 25/35/40 weights vs equal thirds, year-by-year
-python qqq_pyramid_weight_search.py       # Grid search over all tier-weight combos
-```
-
-### Signal History
-
-Both tools log signals to CSV for backtesting / tracking:
-```bash
-cat signals/qqq_signal_history.csv          # Binary 4/25 history
-cat signals/qqq_pyramid_history.csv         # Pyramid 3/35 history
-```
-
-### Causal Backtesting Notes
-
-- Both strategies use `position.shift(1)` so day t's position is executed at day t+1's open — matches real trading.
-- yfinance `auto_adjust=True` applies splits/dividends to historical Close prices (corrected in 2026-06-10).
-- MA windows are computed with `min_periods=window` (full window required, no NaN gaps).
-- Leverage is daily-rebalanced (TQQQ/SQQQ style): exposure = position fraction × 3.
-
-### Running Both Simultaneously
-
-You can run both signal tools for side-by-side recommendations:
-```bash
-python qqq_signal.py && python qqq_pyramid_signal.py
-```
-
-Example output (today's signals from live yfinance):
-```
-Binary 4/25:    HOLD CASH (since Jun 9)
-Pyramid 3/35:   66% invested, SCALE UP
-```
+For their backtest results (and how they compare to v2/QLD), see `docs/STRATEGY_COMPARISON.md`. Headline:
+the weighted pyramid (25/35/40, 3x) returned +10,021% / Sharpe 0.98 / maxDD −59.9%, but v2 defensive
+beat it on every axis (+40.4k% / 1.03 / −46.5%). To revive one, move it back from `old/`.
 
 ## Key Behaviours to Preserve
 
