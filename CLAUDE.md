@@ -265,8 +265,15 @@ v2 keeps v1's regime gate unchanged but **changes how the position is sized whil
 python tushar_v2_backtest.py      # Year-by-year + summary: QQQ B&H, TQQQ B&H, v1, v2 (ideal & after-cost)
 python tushar_v2_signal.py        # Daily signal: regime, TQQQ vol, target exposure (e.g. "Hold 0.57x TQQQ")
 python tushar_v2_walkforward.py   # Out-of-sample validation (fit 2010-2018, test 2019-2026)
+python tushar_v2_stresstest.py    # Survivability: holding-period, drawdown depth+duration, withdrawals
 ```
-All three reuse v1's regime logic (`_load`, `compute_signal_v1`) from `tusharStrategyDev.py` and fetch QQQ + TQQQ live via yfinance. The signal tool logs to `signals/tushar_v2_history.csv`. To change risk appetite, edit `TARGET_VOL` in `tushar_v2_backtest.py` and `tushar_v2_signal.py` (higher = more return + more drawdown, same Sharpe).
+All reuse v1's regime logic (`_load`, `compute_signal_v1`) from `tusharStrategyDev.py` and fetch QQQ + TQQQ live via yfinance. The signal tool logs to `signals/tushar_v2_history.csv`. To change risk appetite, edit `TARGET_VOL` in `tushar_v2_backtest.py` and `tushar_v2_signal.py` (higher = more return + more drawdown, same Sharpe).
+
+**No-margin variant (Roth / HSA / 401k):** retirement and HSA accounts cannot use margin or (often) TQQQ, so use **QLD (2x Nasdaq-100)** with the same overlay capped at 100% of cash.
+```bash
+python tushar_v2_qld_signal.py    # Daily signal: regime, QLD vol, "% of account in QLD" (e.g. "85% QLD")
+```
+Backtest 2010-2026 (cap 1.0, after cash yield): QLD vol-target CAGR +30.6%, Sharpe **0.99**, maxDD **−39%** — vs QLD buy & hold 32.4% / 0.89 / −64%. The overlay keeps most of 2x Nasdaq's return while taming the drawdown. On plain QQQ (1x) the gate *underperforms* buy & hold on return (it only reduces risk), so 2x QLD is the recommended no-margin vehicle. Logs to `signals/tushar_v2_qld_history.csv`. Confirm your custodian allows QLD; 401k plans with a fixed fund menu usually can't run this — buy-and-hold the most growth-tilted index fund instead.
 
 ## QQQ Moving Average Crossover Strategies (2010–2026 Backtest)
 
