@@ -2,6 +2,7 @@ data/
 charts/
 signals/
 __pycache__/
+.playwright-mcp/
 *.db
 *.db-shm
 *.db-wal
