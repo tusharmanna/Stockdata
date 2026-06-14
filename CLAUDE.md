@@ -238,6 +238,140 @@ python tusharStrategyDev.py
 - Best years: 2013 (+139%), 2023 (+139%), 2017 (+118%)
 - Bear market 2022: -54.7% (vs TQQQ B&H -79%)
 
+### Tushar v2 — Volatility-Targeted v1 (Defensive)
+
+v2 keeps v1's regime gate unchanged but **changes how the position is sized while invested**.
+
+**Why v2 exists:** Analysis showed v1 is ~93% just buy-and-hold TQQQ (only 7% in cash, 20 regime switches in 16 years). So tuning the gate (189-day window / 15% threshold / 3-day re-entry) is the overfitting trap — it only affects 7% of the time. The only structural lever is position *sizing* the other 93%.
+
+**The strategy:**
+- **Regime gate:** identical to v1 (BULL = QQQ within 15% of 189-day high; else CASH). In CASH, exposure = 0.
+- **Position sizing in BULL regime:** `exposure = clip(target_vol / realized_vol_TQQQ, 0, 1.5)`
+  - `target_vol = 0.45` (annualized), `cap = 1.5`
+  - `realized_vol_TQQQ = TQQQ_daily_ret.rolling(20).std() × √252`
+  - Plain English: **delever when TQQQ gets volatile, lever up (within cap) when it's calm.** During a 2022-style crash the position automatically shrinks; during calm uptrends it can hold up to 1.5× TQQQ.
+- **Costs (modeled honestly):** financing charged on the borrowed portion when exposure > 1.0 (margin on top of a 3x ETF); T-bill yield credited on idle cash. Rate schedule: ~1.5% (2010–2021), ~5–6% (2022–2026). TQQQ's expense ratio is already in its price.
+- **Causal:** `exposure.shift(1) × TQQQ_daily_ret` — today's signal trades tomorrow.
+
+**Performance (2010–2026, $100k, after cost):**
+- v2 defensive: CAGR +44.5% | Sharpe **1.03** | Max DD **−46.5%** | $40.5M
+- vs v1 baseline: CAGR +43.1% | Sharpe 0.96 | Max DD −58.9% | $34.7M
+- Crash protection: 2022 −35.1% (v1 −54.7%), 2011 −15.3% (v1 −26.5%)
+
+**⚠️ Honest caveat — what the walk-forward proved:** A clean walk-forward (fit `target_vol` on 2010–2018, verify on 2019–2026) showed **out-of-sample Sharpe is flat (~1.08) across every target_vol from 0.45 to 0.90, and identical to v1's**. Vol-targeting did **not** add risk-adjusted edge out of sample — it is a **risk-reduction knob, not alpha**. Higher target → more return *and* proportionally more drawdown (same Sharpe). `target_vol = 0.45` is the defensive setting the walk-forward endorses: it cuts max drawdown ~−59% → ~−43% (OOS) at v1-equivalent Sharpe. The favorable full-sample numbers above are partly in-sample drift; the *repeatable* benefit is shallower drawdowns, not extra return. All results are single-asset, single-path; live/taxed/slippage results will be lower.
+
+**Files & usage:**
+```bash
+python tushar_v2_backtest.py      # Year-by-year + summary: QQQ B&H, TQQQ B&H, v1, v2 (ideal & after-cost)
+python tushar_v2_signal.py        # Daily signal: regime, TQQQ vol, target exposure (e.g. "Hold 0.57x TQQQ")
+python tushar_v2_walkforward.py   # Out-of-sample validation (fit 2010-2018, test 2019-2026)
+```
+All three reuse v1's regime logic (`_load`, `compute_signal_v1`) from `tusharStrategyDev.py` and fetch QQQ + TQQQ live via yfinance. The signal tool logs to `signals/tushar_v2_history.csv`. To change risk appetite, edit `TARGET_VOL` in `tushar_v2_backtest.py` and `tushar_v2_signal.py` (higher = more return + more drawdown, same Sharpe).
+
+## QQQ Moving Average Crossover Strategies (2010–2026 Backtest)
+
+Two daily-bar strategies trade QQQ using moving average crossovers. Both download live data from yfinance on every run (no local CSV dependency for signals).
+
+### Strategy 1: Binary 4/25 Crossover (3x leverage)
+
+**Signal:** Long 3x when MA4 > MA25, else cash.
+
+**Performance (2010–2026):**
+- Total return: **+7,373%** ($100k → $7.47M)
+- CAGR: **30.0%** | Sharpe: 0.87 | Max drawdown: -66.9%
+- Wins vs B&H: 12/17 years
+- Best year: 2020 (+187.5%) | Worst year: 2022 (-55.6%)
+
+**Daily signal tool:**
+```bash
+python qqq_signal.py          # Run anytime; fetches latest QQQ close from yfinance
+```
+
+Outputs: Close, MA4, MA25, regime (LONG/CASH), days in regime, action (ENTER/EXIT/HOLD).
+
+**Automatic daily at 8 PM ET** (included in `run_daily.bat`):
+```powershell
+# One-time setup (admin):
+powershell -ExecutionPolicy Bypass -File E:\work\Stockdata\setup_schedule.ps1
+```
+
+**Backtest:**
+```bash
+python qqq_2026_strategy.py          # 2026 only (109 bars)
+python qqq_backtest_2010_2026.py     # Full 16-year history with year-by-year table
+```
+
+### Strategy 2: Weighted Pyramid 3/35 Crossover (3x leverage, 25/35/40 weights)
+
+**Signal:** Scale position as bullish tiers accumulate, weighted toward confirmed signals:
+- T1: Close > MA3 → +25% position (noisy fast tier, lowest weight)
+- T2: Close > MA35 → +35% position
+- T3: MA3 > MA35 → +40% position (confirmed crossover, highest weight)
+
+Position = sum of true tiers: 0%, 25%, 35%, 40%, 60%, 65%, 75%, or 100%. Symmetric scale-out: each tier false drops its weight.
+
+**Performance (2010–2026):**
+- Total return: **+10,021%** ($100k → $10.12M)
+- Sharpe: **0.98** | Max drawdown: -59.9%
+- Beats equal-thirds pyramid (+8,932%) in 13/17 years; beats B&H in 11/17 years
+- Best year: 2023 (+100.5%) | Worst year: 2022 (-46.3%)
+- Weight grid search (`qqq_pyramid_weight_search.py`): returns rise with more weight on T3, but 25/35/40 keeps the shallowest drawdown; Sharpe-optimal is ~20/10/70 (0.99)
+
+**Key advantage:** Reduces whipsaw damage in choppy markets (2015, 2018, 2024) by partial entries/exits. Trades some upside in explosive recoveries (2020 +187% binary vs +71% pyramid) for steadier compounding overall.
+
+**Daily signal tool:**
+```bash
+python qqq_pyramid_signal.py  # Run anytime; fetches latest QQQ close from yfinance
+```
+
+Outputs: Close, MA3, MA35, tier status (T1/T2/T3 with weights), position % (0–100), action (SCALE UP/DOWN/HOLD/IN CASH).
+
+**Automatic daily at 3:30 PM ET** (30 min before close, intraday signal):
+```powershell
+# One-time setup (admin):
+powershell -ExecutionPolicy Bypass -File E:\work\Stockdata\setup_pyramid_schedule.ps1
+
+# Manage task:
+schtasks /run /tn "StockDataPyramidSignal"        # trigger manually
+schtasks /delete /tn "StockDataPyramidSignal" /f  # remove task
+```
+
+**Backtest:**
+```bash
+python qqq_pyramid_strategy.py            # Compares binary, pyramid at 4/25, grid search for best MA pair
+python qqq_pyramid_3_35_backtest.py       # Equal-thirds 3/35 year-by-year vs B&H
+python qqq_pyramid_weighted_backtest.py   # 25/35/40 weights vs equal thirds, year-by-year
+python qqq_pyramid_weight_search.py       # Grid search over all tier-weight combos
+```
+
+### Signal History
+
+Both tools log signals to CSV for backtesting / tracking:
+```bash
+cat signals/qqq_signal_history.csv          # Binary 4/25 history
+cat signals/qqq_pyramid_history.csv         # Pyramid 3/35 history
+```
+
+### Causal Backtesting Notes
+
+- Both strategies use `position.shift(1)` so day t's position is executed at day t+1's open — matches real trading.
+- yfinance `auto_adjust=True` applies splits/dividends to historical Close prices (corrected in 2026-06-10).
+- MA windows are computed with `min_periods=window` (full window required, no NaN gaps).
+- Leverage is daily-rebalanced (TQQQ/SQQQ style): exposure = position fraction × 3.
+
+### Running Both Simultaneously
+
+You can run both signal tools for side-by-side recommendations:
+```bash
+python qqq_signal.py && python qqq_pyramid_signal.py
+```
+
+Example output (today's signals from live yfinance):
+```
+Binary 4/25:    HOLD CASH (since Jun 9)
+Pyramid 3/35:   66% invested, SCALE UP
+```
+
 ## Key Behaviours to Preserve
 
 - `INSERT OR REPLACE` is used everywhere — re-runs are safe and idempotent.
