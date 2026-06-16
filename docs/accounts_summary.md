@@ -25,6 +25,7 @@
 | WELLSTRADE IRA | $39,639.91 | v2 QLD (78%) | Starting positions |
 | Health Savings (HSA) | $27,256.63 | v2 QLD (78%) | Starting positions |
 | HSA Brokerage (Schwab) | $23,000.40 | v2 QLD (78%) | Starting positions |
+| Optum HSA 2023 | $21,729.41 | v2 QLD (78%) | Starting positions |
 | BrokerageLink (Self-Directed) | $339,902.67 | v2 TQQQ (53%) | Starting positions |
 | IB Brokerage | $100,000.00 | v2 TQQQ (53%) | Starting positions |
 | Cash Management (Individual - TOD) | $6,524.93 | Emergency fund | Hold cash |
@@ -33,16 +34,16 @@
 | SHREYAAN MANNA (Custodial) | $2,819.05 | Customized Static | Hold/restricted |
 | Individual - Youth Account | $506.04 | Hold cash | Minimal |
 | Individual - TOD (Taxable) | $750.15 | Hold cash | Too small for trading |
-| **TOTAL** | **$992,440.81** | — | — |
+| **TOTAL** | **$1,014,170.22** | — | — |
 
 ---
 
 ## Portfolio Summary & Total Positions (2026-06-16)
 
-**Total Portfolio Value:** $611,219.62 (investable accounts only)  
+**Total Portfolio Value:** $632,949.03 (investable accounts only)  
 **Cash Reserves:** $6,524.93 (emergency fund, not deployed)  
 **Restricted/Custodial:** $7,472.33 (not for active trading)  
-**Grand Total:** $992,440.81
+**Grand Total:** $1,014,170.22
 
 | Metric | Value |
 |--------|-------|
@@ -51,9 +52,10 @@
 | WELLSTRADE IRA (QLD) | $39,639.91 |
 | HSA (QLD) | $27,256.63 |
 | HSA Brokerage (QLD) | $23,000.40 |
+| Optum HSA 2023 (QLD) | $21,729.41 |
 | BrokerageLink (TQQQ) | $339,902.67 |
 | IB Brokerage (TQQQ) | $100,000.00 |
-| **Subtotal** | **$611,219.62** |
+| **Subtotal** | **$632,949.03** |
 | **CASH RESERVES:** | |
 | Cash Management (TOD) | $6,524.93 |
 | **RESTRICTED/CUSTODIAL:** | |
@@ -62,7 +64,7 @@
 | Colorado 401K | $365,967.74 |
 | Other (Youth Account, etc.) | $506.04 |
 | **Subtotal** | **$374,446.11** |
-| **GRAND TOTAL** | **$992,440.81** |
+| **GRAND TOTAL** | **$1,014,170.22** |
 
 ---
 
@@ -78,14 +80,15 @@
 | WELLSTRADE IRA | $39,640 | 78% QLD | 78% | $30,899 | $8,741 | BUY 324 QLD |
 | HSA | $27,257 | 78% QLD | 78% | $21,260 | $5,996 | BUY 222 QLD |
 | HSA Brokerage | $23,000 | 78% QLD | 78% | $17,940 | $5,060 | BUY 188 QLD |
+| Optum HSA 2023 | $21,729 | 78% QLD | 78% | $16,949 | $4,780 | BUY 177 QLD |
 | BrokerageLink | $339,903 | 0.53x TQQQ | 53% | $180,148 | $159,754 | BUY 2,254 TQQQ |
 | IB Brokerage | $100,000 | 0.53x TQQQ | 53% | $53,000 | $47,000 | BUY 663 TQQQ |
-| **TOTAL** | **$611,220** | **—** | **—** | **$366,755** | **$244,463** | **—** |
+| **TOTAL** | **$632,949** | **—** | **—** | **$383,704** | **$249,243** | **—** |
 
 **Summary:**
-- **Total deployed to ETFs:** $366,755 (60% of portfolio)
-- **Total in cash/T-bills:** $244,463 (40% of portfolio)
-- **Annual T-bill yield (@ 5%):** ~$12,223/year
+- **Total deployed to ETFs:** $383,704 (61% of portfolio)
+- **Total in cash/T-bills:** $249,243 (39% of portfolio)
+- **Annual T-bill yield (@ 5%):** ~$12,462/year
 
 ---
 
@@ -103,24 +106,26 @@
 | **WELLSTRADE IRA** | $39,640 | QLD | 78% | $30,899 | **324 QLD** | $8,741 | BUY 324 |
 | **HSA** | $27,257 | QLD | 78% | $21,260 | **222 QLD** | $5,996 | BUY 222 |
 | **HSA Brokerage** | $23,000 | QLD | 78% | $17,940 | **188 QLD** | $5,060 | BUY 188 |
+| **Optum HSA 2023** | $21,729 | QLD | 78% | $16,949 | **177 QLD** | $4,780 | BUY 177 |
 | **BrokerageLink** | $339,903 | TQQQ | 53% | $180,148 | **2,254 TQQQ** | $159,754 | BUY 2,254 |
 | **IB Brokerage** | $100,000 | TQQQ | 53% | $53,000 | **663 TQQQ** | $47,000 | BUY 663 |
-| **TOTAL** | **$611,220** | — | — | **$366,755** | — | **$244,463** | — |
+| **TOTAL** | **$632,949** | — | — | **$383,704** | — | **$249,243** | — |
 
 ### Summary of Actions Needed
 
-**QLD to Buy:** 1,399 shares (~$133,607)
+**QLD to Buy:** 1,576 shares (~$150,556)
 - Roth IRA: 665 shares
 - WELLSTRADE IRA: 324 shares  
 - HSA: 222 shares
 - HSA Brokerage: 188 shares
+- Optum HSA 2023: 177 shares
 
 **TQQQ to Buy:** 2,917 shares (~$233,148)
 - BrokerageLink: 2,254 shares
 - IB Brokerage: 663 shares
 
-**Total Cash to Deploy:** $366,755  
-**Total Cash to Keep:** $244,463 (T-bills @ 5%)
+**Total Cash to Deploy:** $383,704  
+**Total Cash to Keep:** $249,243 (T-bills @ 5%)
 
 ---
 
@@ -194,6 +199,23 @@ Target exposure = 0.45 (target vol) / 0.854 (realized vol) = 0.53x
 | **Action** | **BUY 188 QLD shares** |
 
 **Annual cash yield (on $5,060):** ~$253/year
+
+---
+
+### Optum HSA 2023 ($21,729.41)
+
+**Strategy:** v2 QLD (Volatility-targeted, no-margin for HSA)  
+**Signal Today:** 78% in QLD | Action: SCALE DOWN
+
+| Item | Value |
+|------|-------|
+| Target: QLD shares | 177 shares @ $95.46 = $16,896 |
+| Target: Cash | $4,833 (22% in T-bills @ ~5%) |
+| Current: QLD shares | 0 (starting) |
+| Current: Cash | $21,729 |
+| **Action** | **BUY 177 QLD shares** |
+
+**Annual cash yield (on $4,833):** ~$242/year
 
 ---
 
@@ -292,6 +314,7 @@ Based on 2010–2026 backtest (defensive settings):
 | v2 QLD | WELLSTRADE IRA | 30.6% | 0.99 | −39% | ~$437 |
 | v2 QLD | HSA | 30.6% | 0.99 | −39% | ~$303 |
 | v2 QLD | HSA Brokerage | 30.6% | 0.99 | −39% | ~$253 |
+| v2 QLD | Optum HSA 2023 | 30.6% | 0.99 | −39% | ~$242 |
 | v2 TQQQ | BrokerageLink | 44.5% | 1.03 | −46.5% | ~$7,990 |
 | v2 TQQQ | IB Brokerage | 44.5% | 1.03 | −46.5% | ~$2,351 |
 
