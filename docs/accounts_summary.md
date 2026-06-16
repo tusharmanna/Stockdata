@@ -19,6 +19,59 @@
 
 ---
 
+## Portfolio Summary & Total Positions (2026-06-16)
+
+**Total Portfolio Value:** $448,579.31 (investable accounts only)
+
+| Metric | Value |
+|--------|-------|
+| Roth IRA (QLD) | $81,420.01 |
+| HSA (QLD) | $27,256.63 |
+| BrokerageLink (TQQQ) | $339,902.67 |
+| **TOTAL** | **$448,579.31** |
+
+---
+
+### Current Volatility Factors & Position Targets
+
+**Today's Signal (2026-06-16):**
+- **TQQQ 20d Vol:** 85.4% → Target exposure: 0.53x
+- **QLD 20d Vol:** 57.5% → Target exposure: 78% of account
+
+| Account | Balance | Strategy | Target Exposure | Target Value | Target Cash | Action |
+|---------|---------|----------|-----------------|---------------|-------------|--------|
+| Roth IRA | $81,420 | 78% QLD | 78% | $63,508 | $17,912 | BUY 665 QLD |
+| HSA | $27,257 | 78% QLD | 78% | $21,260 | $5,996 | BUY 222 QLD |
+| BrokerageLink | $339,903 | 0.53x TQQQ | 53% | $180,148 | $159,754 | BUY 2,254 TQQQ |
+| **TOTAL** | **$448,579** | **—** | **—** | **$264,916** | **$183,662** | **—** |
+
+**Summary:**
+- **Total deployed to ETFs:** $264,916 (59% of portfolio)
+- **Total in cash/T-bills:** $183,662 (41% of portfolio)
+- **Annual T-bill yield (@ 5%):** ~$9,183/year
+
+---
+
+### Position Sizing Explanation
+
+**QLD Accounts (Roth + HSA):**
+```
+Target exposure = 0.45 (target vol) / 0.575 (realized vol) = 0.78 (78%)
+→ 78% of each account in QLD, 22% in cash
+```
+
+**TQQQ Account (BrokerageLink):**
+```
+Target exposure = 0.45 (target vol) / 0.854 (realized vol) = 0.53x
+→ 53% of account in TQQQ (3x leverage = 1.59x notional), 47% in cash
+```
+
+**Why volatile markets = less leverage:**
+- When vol ↑, exposure ↓ (delever into crashes)
+- When vol ↓, exposure ↑ (lever up in calm periods)
+
+---
+
 ## Starting Positions (Based on 2026-06-16 Prices)
 
 ### ROTH IRA ($81,420.01)
