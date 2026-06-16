@@ -2,6 +2,5 @@
 # Example:
 # AAPL
 # MSFT
-casy
-frmi
-play
+FCEL
+

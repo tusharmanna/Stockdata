@@ -11,7 +11,10 @@
       "PowerShell(python qqq_signal.py)",
       "PowerShell(python -c \"import pandas as pd; df = pd.read_csv\\('QQQ_2010_2026.csv'\\); c = df['Close']; ma4 = c.rolling\\(4\\).mean\\(\\).iloc[-1]; ma25 = c.rolling\\(25\\).mean\\(\\).iloc[-1]; print\\(f'As of 2026-06-09: MA4={ma4:.2f} MA25={ma25:.2f} regime={\\\\\"LONG\\\\\" if ma4 > ma25 else \\\\\"CASH\\\\\"}'\\)\")",
       "PowerShell(python qqq_signal.py; python -c \"import pandas as pd; h = pd.read_csv\\('signals/qqq_signal_history.csv'\\); print\\(h\\); assert h['date'].is_unique, 'DUPLICATE DATES'\")",
-      "PowerShell(python qqq_backtest_2010_2026.py)"
+      "PowerShell(python qqq_backtest_2010_2026.py)",
+      "Bash(git commit -m 'Add pyramid 3/35 daily signal checker and Task Scheduler setup *)",
+      "Bash(git commit -m 'Fix tier labels in pyramid signal output to reflect 3/35 MAs *)",
+      "Bash(git commit *)"
     ],
     "deny": [],
     "ask": []
