@@ -92,25 +92,6 @@
 
 ---
 
-## Current Prices & Exact Share Positions
-
-**Current Market Prices (2026-06-16):**
-- QLD: $95.46/share
-- TQQQ: $79.93/share
-
-### All Accounts - Buy/Sell Actions
-
-| Account | Balance | Target ETF | Target % | Target $ | Target Shares | Target Cash | Action |
-|---------|---------|-----------|----------|----------|---------------|-------------|--------|
-| **Roth IRA** | $81,420 | QLD | 78% | $63,508 | **665 QLD** | $17,912 | BUY 665 |
-| **WELLSTRADE IRA** | $39,640 | QLD | 78% | $30,899 | **324 QLD** | $8,741 | BUY 324 |
-| **HSA** | $27,257 | QLD | 78% | $21,260 | **222 QLD** | $5,996 | BUY 222 |
-| **HSA Brokerage** | $23,000 | QLD | 78% | $17,940 | **188 QLD** | $5,060 | BUY 188 |
-| **Optum HSA 2023** | $21,729 | QLD | 78% | $16,949 | **177 QLD** | $4,780 | BUY 177 |
-| **BrokerageLink** | $339,903 | TQQQ | 53% | $180,148 | **2,254 TQQQ** | $159,754 | BUY 2,254 |
-| **IB Brokerage** | $100,000 | TQQQ | 53% | $53,000 | **663 TQQQ** | $47,000 | BUY 663 |
-| **TOTAL** | **$632,949** | — | — | **$383,704** | — | **$249,243** | — |
-
 ### Summary of Actions Needed
 
 **QLD to Buy:** 1,576 shares (~$150,556)
