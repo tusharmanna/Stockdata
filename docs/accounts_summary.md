@@ -10,32 +10,34 @@
 | Account | Balance | Strategy | Status |
 |---------|---------|----------|--------|
 | ROTH IRA | $81,420.01 | v2 QLD (78%) | Starting positions |
+| WELLSTRADE IRA | $39,639.91 | v2 QLD (78%) | Starting positions |
 | Health Savings (HSA) | $27,256.63 | v2 QLD (78%) | Starting positions |
 | BrokerageLink (Self-Directed) | $339,902.67 | v2 TQQQ (53%) | Starting positions |
 | Cash Management (Individual - TOD) | $6,524.93 | Emergency fund | Hold cash |
 | Colorado INTERMEDIATE 401K | $365,967.74 | TBD (restricted) | Pending fund options |
 | Individual - Youth Account | $506.04 | Hold cash | Minimal |
 | Individual - TOD (Taxable) | $750.15 | Hold cash | Too small for trading |
-| **TOTAL** | **$822,328.17** | — | — |
+| **TOTAL** | **$861,968.08** | — | — |
 
 ---
 
 ## Portfolio Summary & Total Positions (2026-06-16)
 
-**Total Portfolio Value:** $448,579.31 (investable accounts only)  
+**Total Portfolio Value:** $488,219.22 (investable accounts only)  
 **Cash Reserves:** $6,524.93 (emergency fund, not deployed)  
-**Grand Total:** $455,104.24
+**Grand Total:** $862,244.15
 
 | Metric | Value |
 |--------|-------|
 | Roth IRA (QLD) | $81,420.01 |
+| WELLSTRADE IRA (QLD) | $39,639.91 |
 | HSA (QLD) | $27,256.63 |
 | BrokerageLink (TQQQ) | $339,902.67 |
 | Cash Management (TOD) | $6,524.93 |
 | Other (Youth Account, etc.) | $506.04 |
-| **INVESTABLE TOTAL** | **$448,579.31** |
+| **INVESTABLE TOTAL** | **$488,219.22** |
 | **CASH RESERVES** | **$6,524.93** |
-| **GRAND TOTAL** | **$455,104.24** |
+| **GRAND TOTAL** | **$862,244.15** |
 
 ---
 
@@ -48,14 +50,15 @@
 | Account | Balance | Strategy | Target Exposure | Target Value | Target Cash | Action |
 |---------|---------|----------|-----------------|---------------|-------------|--------|
 | Roth IRA | $81,420 | 78% QLD | 78% | $63,508 | $17,912 | BUY 665 QLD |
+| WELLSTRADE IRA | $39,640 | 78% QLD | 78% | $30,899 | $8,741 | BUY 324 QLD |
 | HSA | $27,257 | 78% QLD | 78% | $21,260 | $5,996 | BUY 222 QLD |
 | BrokerageLink | $339,903 | 0.53x TQQQ | 53% | $180,148 | $159,754 | BUY 2,254 TQQQ |
-| **TOTAL** | **$448,579** | **—** | **—** | **$264,916** | **$183,662** | **—** |
+| **TOTAL** | **$488,219** | **—** | **—** | **$295,815** | **$192,403** | **—** |
 
 **Summary:**
-- **Total deployed to ETFs:** $264,916 (59% of portfolio)
-- **Total in cash/T-bills:** $183,662 (41% of portfolio)
-- **Annual T-bill yield (@ 5%):** ~$9,183/year
+- **Total deployed to ETFs:** $295,815 (61% of portfolio)
+- **Total in cash/T-bills:** $192,403 (39% of portfolio)
+- **Annual T-bill yield (@ 5%):** ~$9,620/year
 
 ---
 
@@ -95,6 +98,23 @@ Target exposure = 0.45 (target vol) / 0.854 (realized vol) = 0.53x
 | **Action** | **BUY 665 QLD shares** |
 
 **Annual cash yield (on $17,940):** ~$897/year
+
+---
+
+### WELLSTRADE IRA ($39,639.91)
+
+**Strategy:** v2 QLD (Volatility-targeted, no-margin for IRA compatibility)  
+**Signal Today:** 78% in QLD | Action: SCALE DOWN
+
+| Item | Value |
+|------|-------|
+| Target: QLD shares | 324 shares @ $95.46 = $30,899 |
+| Target: Cash | $8,741 (22% in T-bills @ ~5%) |
+| Current: QLD shares | 0 (starting) |
+| Current: Cash | $39,640 |
+| **Action** | **BUY 324 QLD shares** |
+
+**Annual cash yield (on $8,741):** ~$437/year
 
 ---
 
@@ -173,6 +193,7 @@ Based on 2010–2026 backtest (defensive settings):
 | Strategy | Account | CAGR | Sharpe | Max DD | Annual Yield (Cash) |
 |----------|---------|------|--------|--------|-------------------|
 | v2 QLD | Roth IRA | 30.6% | 0.99 | −39% | ~$897 |
+| v2 QLD | WELLSTRADE IRA | 30.6% | 0.99 | −39% | ~$437 |
 | v2 QLD | HSA | 30.6% | 0.99 | −39% | ~$303 |
 | v2 TQQQ | BrokerageLink | 44.5% | 1.03 | −46.5% | ~$7,990 |
 
