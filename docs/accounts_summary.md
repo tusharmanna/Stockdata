@@ -13,22 +13,23 @@
 | WELLSTRADE IRA | $39,639.91 | v2 QLD (78%) | Starting positions |
 | Health Savings (HSA) | $27,256.63 | v2 QLD (78%) | Starting positions |
 | BrokerageLink (Self-Directed) | $339,902.67 | v2 TQQQ (53%) | Starting positions |
+| IB Brokerage | $100,000.00 | v2 TQQQ (53%) | Starting positions |
 | Cash Management (Individual - TOD) | $6,524.93 | Emergency fund | Hold cash |
 | Colorado INTERMEDIATE 401K | $365,967.74 | TBD (restricted) | Pending fund options |
 | ESHAAN MANNA (Custodial) | $4,653.28 | Customized Static | Hold/restricted |
 | SHREYAAN MANNA (Custodial) | $2,819.05 | Customized Static | Hold/restricted |
 | Individual - Youth Account | $506.04 | Hold cash | Minimal |
 | Individual - TOD (Taxable) | $750.15 | Hold cash | Too small for trading |
-| **TOTAL** | **$869,440.41** | — | — |
+| **TOTAL** | **$969,440.41** | — | — |
 
 ---
 
 ## Portfolio Summary & Total Positions (2026-06-16)
 
-**Total Portfolio Value:** $488,219.22 (investable accounts only)  
+**Total Portfolio Value:** $588,219.22 (investable accounts only)  
 **Cash Reserves:** $6,524.93 (emergency fund, not deployed)  
 **Restricted/Custodial:** $7,472.33 (not for active trading)  
-**Grand Total:** $869,440.41
+**Grand Total:** $969,440.41
 
 | Metric | Value |
 |--------|-------|
@@ -37,7 +38,8 @@
 | WELLSTRADE IRA (QLD) | $39,639.91 |
 | HSA (QLD) | $27,256.63 |
 | BrokerageLink (TQQQ) | $339,902.67 |
-| **Subtotal** | **$488,219.22** |
+| IB Brokerage (TQQQ) | $100,000.00 |
+| **Subtotal** | **$588,219.22** |
 | **CASH RESERVES:** | |
 | Cash Management (TOD) | $6,524.93 |
 | **RESTRICTED/CUSTODIAL:** | |
@@ -46,7 +48,7 @@
 | Colorado 401K | $365,967.74 |
 | Other (Youth Account, etc.) | $506.04 |
 | **Subtotal** | **$374,446.11** |
-| **GRAND TOTAL** | **$869,440.41** |
+| **GRAND TOTAL** | **$969,440.41** |
 
 ---
 
@@ -62,12 +64,13 @@
 | WELLSTRADE IRA | $39,640 | 78% QLD | 78% | $30,899 | $8,741 | BUY 324 QLD |
 | HSA | $27,257 | 78% QLD | 78% | $21,260 | $5,996 | BUY 222 QLD |
 | BrokerageLink | $339,903 | 0.53x TQQQ | 53% | $180,148 | $159,754 | BUY 2,254 TQQQ |
-| **TOTAL** | **$488,219** | **—** | **—** | **$295,815** | **$192,403** | **—** |
+| IB Brokerage | $100,000 | 0.53x TQQQ | 53% | $53,000 | $47,000 | BUY 663 TQQQ |
+| **TOTAL** | **$588,219** | **—** | **—** | **$348,815** | **$239,403** | **—** |
 
 **Summary:**
-- **Total deployed to ETFs:** $295,815 (61% of portfolio)
-- **Total in cash/T-bills:** $192,403 (39% of portfolio)
-- **Annual T-bill yield (@ 5%):** ~$9,620/year
+- **Total deployed to ETFs:** $348,815 (59% of portfolio)
+- **Total in cash/T-bills:** $239,403 (41% of portfolio)
+- **Annual T-bill yield (@ 5%):** ~$11,970/year
 
 ---
 
@@ -163,6 +166,23 @@ Target exposure = 0.45 (target vol) / 0.854 (realized vol) = 0.53x
 
 ---
 
+### IB Brokerage (Self-Directed) ($100,000.00)
+
+**Strategy:** v2 TQQQ (Volatility-targeted, 3× leverage with margin)  
+**Signal Today:** Hold 0.53x TQQQ | Action: HOLD
+
+| Item | Value |
+|------|-------|
+| Target: TQQQ shares | 663 shares @ $79.93 = $52,971 |
+| Target: Cash | $47,029 (47% in T-bills @ ~5%) |
+| Current: TQQQ shares | 0 (starting) |
+| Current: Cash | $100,000 |
+| **Action** | **BUY 663 TQQQ shares** |
+
+**Annual cash yield (on $47,029):** ~$2,351/year
+
+---
+
 ### Colorado INTERMEDIATE 401K ($365,967.74)
 
 **Status:** ⏸️ PENDING  
@@ -205,6 +225,7 @@ Based on 2010–2026 backtest (defensive settings):
 | v2 QLD | WELLSTRADE IRA | 30.6% | 0.99 | −39% | ~$437 |
 | v2 QLD | HSA | 30.6% | 0.99 | −39% | ~$303 |
 | v2 TQQQ | BrokerageLink | 44.5% | 1.03 | −46.5% | ~$7,990 |
+| v2 TQQQ | IB Brokerage | 44.5% | 1.03 | −46.5% | ~$2,351 |
 
 **⚠️ Disclaimer:** Past backtest results (2010–2026, single path, in-sample). Real-world results depend on market conditions, taxes (BrokerageLink only), slippage, and ability to hold through drawdowns.
 
