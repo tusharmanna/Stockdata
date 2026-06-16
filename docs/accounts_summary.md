@@ -76,6 +76,7 @@
 
 | Account | Balance | Strategy | Target Exposure | Target Value | Target Cash | Action |
 |---------|---------|----------|-----------------|---------------|-------------|--------|
+| **ACTIVE v2 ACCOUNTS:** | | | | | | |
 | Roth IRA | $81,420 | 78% QLD | 78% | $63,508 | $17,912 | BUY 665 QLD |
 | WELLSTRADE IRA | $39,640 | 78% QLD | 78% | $30,899 | $8,741 | BUY 324 QLD |
 | HSA | $27,257 | 78% QLD | 78% | $21,260 | $5,996 | BUY 222 QLD |
@@ -83,7 +84,16 @@
 | Optum HSA 2023 | $21,729 | 78% QLD | 78% | $16,949 | $4,780 | BUY 177 QLD |
 | BrokerageLink | $339,903 | 0.53x TQQQ | 53% | $180,148 | $159,754 | BUY 2,254 TQQQ |
 | IB Brokerage | $100,000 | 0.53x TQQQ | 53% | $53,000 | $47,000 | BUY 663 TQQQ |
-| **TOTAL** | **$632,949** | **—** | **—** | **$383,704** | **$249,243** | **—** |
+| **Active Subtotal** | **$632,949** | **—** | **—** | **$383,704** | **$249,243** | **—** |
+| **RESTRICTED/CUSTODIAL:** | | | | | | |
+| Colorado 401K | $365,968 | TBD (pending) | Pending | Pending | — | HOLD |
+| Eshaan Manna (Custodial) | $4,653 | Static | 100% | Current | — | HOLD |
+| Shreyaan Manna (Custodial) | $2,819 | Static | 100% | Current | — | HOLD |
+| Youth Account | $506 | Minimal | 100% | Current | — | HOLD |
+| **Custodial Subtotal** | **$373,946** | **—** | **—** | **—** | **—** | **—** |
+| **EMERGENCY RESERVE:** | | | | | | |
+| Cash Management (TOD) | $6,525 | Emergency fund | 100% | $6,525 | $6,525 | HOLD |
+| **GRAND TOTAL** | **$1,014,170** | **—** | **—** | **$390,229** | **$255,768** | **—** |
 
 **Summary:**
 - **Total deployed to ETFs:** $383,704 (61% of portfolio)
