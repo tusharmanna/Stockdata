@@ -272,15 +272,55 @@ Target exposure = 0.45 (target vol) / 0.854 (realized vol) = 0.53x
 
 ---
 
-### Colorado INTERMEDIATE 401K ($365,967.74)
+### Restricted / Custodial Accounts
+
+#### Colorado INTERMEDIATE 401K ($365,967.74)
 
 **Status:** ⏸️ PENDING  
 **Note:** Likely plan-restricted to indexed/managed funds. Check fund menu for Nasdaq-tilted options.
 
-**Options if available:**
-- If Nasdaq Index available → hold 100% (no vol-targeting, just growth)
-- If QQQ/Nasdaq ETF available → follow v2 QLD signals (78% target)
-- If restricted to mutual funds → discuss with plan admin
+**Recommended Allocations (if available):**
+- **If Nasdaq Index available:** Hold 100% in Nasdaq index fund (no vol-targeting, just growth)
+- **If QQQ/Nasdaq ETF available:** Follow v2 QLD signals → 78% Nasdaq, 22% cash
+- **If restricted to mutual funds:** Allocate to most growth-tilted fund available
+
+**Current Status:** Action pending fund menu review
+
+---
+
+#### Eshaan Manna - Custodial Account ($4,653.28)
+
+**Strategy:** Customized Static (conservative for minor)  
+**Recommendation:** Hold current allocation; custodial accounts typically have restricted trading rules
+
+**Action:** HOLD AS-IS
+
+---
+
+#### Shreyaan Manna - Custodial Account ($2,819.05)
+
+**Strategy:** Customized Static (conservative for minor)  
+**Recommendation:** Hold current allocation; custodial accounts typically have restricted trading rules
+
+**Action:** HOLD AS-IS
+
+---
+
+#### Individual - Youth Account ($506.04)
+
+**Strategy:** Minimal holding  
+**Recommendation:** Too small for active trading; hold as emergency backup
+
+**Action:** HOLD AS-IS
+
+---
+
+#### Cash Management (Individual - TOD) - $6,524.93
+
+**Purpose:** Emergency reserves (separate from v2 strategies)  
+**Recommendation:** Keep in high-yield savings or money market for liquidity
+
+**Action:** HOLD AS-IS (emergency fund)
 
 ---
 
@@ -332,12 +372,37 @@ Based on 2010–2026 backtest (defensive settings):
 
 ---
 
+## Comprehensive Account Summary - All Positions
+
+| Account | Balance | Strategy | Target Position | Target Cash | Action |
+|---------|---------|----------|-----------------|-------------|--------|
+| **ACTIVE v2 ACCOUNTS:** | | | | | |
+| Roth IRA | $81,420 | 78% QLD | 665 QLD @ $63,508 | $17,912 | **BUY** |
+| WELLSTRADE IRA | $39,640 | 78% QLD | 324 QLD @ $30,899 | $8,741 | **BUY** |
+| HSA | $27,257 | 78% QLD | 222 QLD @ $21,260 | $5,996 | **BUY** |
+| HSA Brokerage | $23,000 | 78% QLD | 188 QLD @ $17,940 | $5,060 | **BUY** |
+| Optum HSA 2023 | $21,729 | 78% QLD | 177 QLD @ $16,896 | $4,833 | **BUY** |
+| BrokerageLink | $339,903 | 53% TQQQ | 2,254 TQQQ @ $180,148 | $159,754 | **BUY** |
+| IB Brokerage | $100,000 | 53% TQQQ | 663 TQQQ @ $53,000 | $47,000 | **BUY** |
+| **Subtotal** | **$632,949** | — | **$383,704 deployed** | **$249,243 cash** | — |
+| **RESTRICTED/CUSTODIAL:** | | | | | |
+| Colorado 401K | $365,968 | TBD (pending) | Pending fund review | — | HOLD |
+| Eshaan Manna | $4,653 | Static | Hold current | — | HOLD |
+| Shreyaan Manna | $2,819 | Static | Hold current | — | HOLD |
+| Youth Account | $506 | Minimal | Hold current | — | HOLD |
+| **EMERGENCY RESERVE:** | | | | | |
+| Cash Management | $6,525 | Emergency fund | Hold liquid | $6,525 | HOLD |
+| **TOTAL PORTFOLIO** | **$1,014,170** | — | **$383,704** | **$255,768** | — |
+
+---
+
 ## Next Steps
 
-1. ✅ Document accounts (this file)
-2. ⏳ Set up trading at Fidelity/broker
-3. ⏳ Buy starting positions (665 QLD + 222 QLD + 2,254 TQQQ)
-4. ⏳ Park cash in 4-week T-bills (~$184k)
-5. ⏳ Create signal-to-shares helper script
-6. ⏳ Set up daily signal reminders (via task scheduler or manual)
-7. ⏳ Monitor first 3 months for signal stability & rebalancing cadence
+1. ✅ Document all accounts (this file)
+2. ⏳ **Execute Active Accounts:** Buy 1,576 QLD + 2,917 TQQQ shares
+3. ⏳ Park cash in 4-week T-bills (~$249k across active accounts)
+4. ⏳ Review Colorado 401K fund menu; request Nasdaq index if available
+5. ⏳ Confirm custodial accounts (Eshaan/Shreyaan) are properly allocated per guardianship
+6. ⏳ Set up daily signal runs (tushar_v2_signal.py + tushar_v2_qld_signal.py)
+7. ⏳ Use update_account_summary.py weekly to track rebalancing actions
+8. ⏳ Monitor first 3 months for signal stability & rebalancing cadence
