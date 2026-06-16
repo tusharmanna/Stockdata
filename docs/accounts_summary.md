@@ -1,7 +1,19 @@
 # Account Summary & v2 Strategy Allocation
 
-**Last Updated:** 2026-06-16  
+**Last Updated:** 2026-06-16 (End of Day)  
 **Snapshot Date:** 2026-06-16
+
+## TODAY'S SIGNALS (2026-06-16)
+
+**TQQQ Signal:** Hold 0.53x | Action: HOLD  
+**QLD Signal:** 78% of account | Action: SCALE DOWN  
+
+**Market Data:**
+- QQQ Close: $729.86
+- 189d High: $746.16  
+- % Below High: 2.2% (BULL regime)
+- TQQQ 20d Vol: 85.4% → exposure 0.53x
+- QLD 20d Vol: 57.5% → exposure 78%
 
 ---
 
@@ -71,6 +83,39 @@
 - **Total deployed to ETFs:** $348,815 (59% of portfolio)
 - **Total in cash/T-bills:** $239,403 (41% of portfolio)
 - **Annual T-bill yield (@ 5%):** ~$11,970/year
+
+---
+
+## Current Prices & Exact Share Positions
+
+**Current Market Prices (2026-06-16):**
+- QLD: $95.46/share
+- TQQQ: $79.93/share
+
+### All Accounts - Buy/Sell Actions
+
+| Account | Balance | Target ETF | Target % | Target $ | Target Shares | Target Cash | Action |
+|---------|---------|-----------|----------|----------|---------------|-------------|--------|
+| **Roth IRA** | $81,420 | QLD | 78% | $63,508 | **665 QLD** | $17,912 | BUY 665 |
+| **WELLSTRADE IRA** | $39,640 | QLD | 78% | $30,899 | **324 QLD** | $8,741 | BUY 324 |
+| **HSA** | $27,257 | QLD | 78% | $21,260 | **222 QLD** | $5,996 | BUY 222 |
+| **BrokerageLink** | $339,903 | TQQQ | 53% | $180,148 | **2,254 TQQQ** | $159,754 | BUY 2,254 |
+| **IB Brokerage** | $100,000 | TQQQ | 53% | $53,000 | **663 TQQQ** | $47,029 | BUY 663 |
+| **TOTAL** | **$588,219** | — | — | **$348,815** | — | **$239,403** | — |
+
+### Summary of Actions Needed
+
+**QLD to Buy:** 1,211 shares (~$115,667)
+- Roth IRA: 665 shares
+- WELLSTRADE IRA: 324 shares  
+- HSA: 222 shares
+
+**TQQQ to Buy:** 2,917 shares (~$233,148)
+- BrokerageLink: 2,254 shares
+- IB Brokerage: 663 shares
+
+**Total Cash to Deploy:** $348,815  
+**Total Cash to Keep:** $239,403 (T-bills @ 5%)
 
 ---
 
