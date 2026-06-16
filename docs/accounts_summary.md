@@ -12,23 +12,30 @@
 | ROTH IRA | $81,420.01 | v2 QLD (78%) | Starting positions |
 | Health Savings (HSA) | $27,256.63 | v2 QLD (78%) | Starting positions |
 | BrokerageLink (Self-Directed) | $339,902.67 | v2 TQQQ (53%) | Starting positions |
+| Cash Management (Individual - TOD) | $6,524.93 | Emergency fund | Hold cash |
 | Colorado INTERMEDIATE 401K | $365,967.74 | TBD (restricted) | Pending fund options |
+| Individual - Youth Account | $506.04 | Hold cash | Minimal |
 | Individual - TOD (Taxable) | $750.15 | Hold cash | Too small for trading |
-| Other (various) | ~$7,031 | Hold cash | Minimal |
-| **TOTAL** | **$822,328.20** | — | — |
+| **TOTAL** | **$822,328.17** | — | — |
 
 ---
 
 ## Portfolio Summary & Total Positions (2026-06-16)
 
-**Total Portfolio Value:** $448,579.31 (investable accounts only)
+**Total Portfolio Value:** $448,579.31 (investable accounts only)  
+**Cash Reserves:** $6,524.93 (emergency fund, not deployed)  
+**Grand Total:** $455,104.24
 
 | Metric | Value |
 |--------|-------|
 | Roth IRA (QLD) | $81,420.01 |
 | HSA (QLD) | $27,256.63 |
 | BrokerageLink (TQQQ) | $339,902.67 |
-| **TOTAL** | **$448,579.31** |
+| Cash Management (TOD) | $6,524.93 |
+| Other (Youth Account, etc.) | $506.04 |
+| **INVESTABLE TOTAL** | **$448,579.31** |
+| **CASH RESERVES** | **$6,524.93** |
+| **GRAND TOTAL** | **$455,104.24** |
 
 ---
 
