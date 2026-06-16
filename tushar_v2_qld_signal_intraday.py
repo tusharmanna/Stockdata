@@ -31,11 +31,17 @@ STALE_DAYS = 5
 
 
 def _fetch_intraday(ticker):
-    """Fetch intraday 1-min data for today + recent history."""
-    intra = yf.download(ticker, period="60d", interval="1m", progress=False, auto_adjust=True)
+    """Fetch intraday 1-min data for today + recent history.
+
+    Note: yfinance limits 1m data to ~7 days per request.
+    """
+    intra = yf.download(ticker, period="7d", interval="1m", progress=False, auto_adjust=True)
     if intra is None or intra.empty:
         sys.exit(f"ERROR: yfinance returned no intraday data for {ticker}.")
 
+    # Handle MultiIndex columns (can happen with intraday data)
+    if isinstance(intra.columns, pd.MultiIndex):
+        intra.columns = intra.columns.get_level_values(0)
     intra.columns = [col.lower() for col in intra.columns]
     intra.index = pd.to_datetime(intra.index).tz_localize(None)
     return intra
@@ -47,6 +53,9 @@ def _fetch_daily(ticker):
     if daily is None or daily.empty:
         sys.exit(f"ERROR: yfinance returned no daily data for {ticker}.")
 
+    # Handle MultiIndex columns
+    if isinstance(daily.columns, pd.MultiIndex):
+        daily.columns = daily.columns.get_level_values(0)
     daily.columns = [col.lower() for col in daily.columns]
     daily.index = pd.to_datetime(daily.index).tz_localize(None)
     return daily
@@ -145,7 +154,7 @@ def compute_intraday_signal():
 def report(s):
     bar = s["date"]
 
-    print(f"\n⚡ Tushar v2 QLD Intraday Signal (EXPERIMENTAL) — {bar.strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"\n[INTRADAY] Tushar v2 QLD Signal (EXPERIMENTAL) — {bar.strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"(Intraday data up to ~3:30 PM ET)")
     print(f"\nQQQ Close: ${s['qqq_close']:.2f}   189d High: ${s['high189']:.2f}   "
           f"% Below High: {s['pcthi']:.1f}%")
@@ -155,7 +164,7 @@ def report(s):
         print(f"Target: {pct}% of account in QLD   Action: {s['action']}")
     else:
         print(f"Target: CASH (0% QLD)   Action: {s['action']}")
-    print(f"\n⚠️  WARNING: Intraday signals are NOISIER than daily closes.")
+    print(f"\nWARNING: Intraday signals are NOISIER than daily closes.")
     print(f"   Only act if you're confident about same-day execution.")
 
 
