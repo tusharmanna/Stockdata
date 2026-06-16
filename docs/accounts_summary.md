@@ -15,9 +15,11 @@
 | BrokerageLink (Self-Directed) | $339,902.67 | v2 TQQQ (53%) | Starting positions |
 | Cash Management (Individual - TOD) | $6,524.93 | Emergency fund | Hold cash |
 | Colorado INTERMEDIATE 401K | $365,967.74 | TBD (restricted) | Pending fund options |
+| ESHAAN MANNA (Custodial) | $4,653.28 | Customized Static | Hold/restricted |
+| SHREYAAN MANNA (Custodial) | $2,819.05 | Customized Static | Hold/restricted |
 | Individual - Youth Account | $506.04 | Hold cash | Minimal |
 | Individual - TOD (Taxable) | $750.15 | Hold cash | Too small for trading |
-| **TOTAL** | **$861,968.08** | — | — |
+| **TOTAL** | **$869,440.41** | — | — |
 
 ---
 
@@ -25,19 +27,26 @@
 
 **Total Portfolio Value:** $488,219.22 (investable accounts only)  
 **Cash Reserves:** $6,524.93 (emergency fund, not deployed)  
-**Grand Total:** $862,244.15
+**Restricted/Custodial:** $7,472.33 (not for active trading)  
+**Grand Total:** $869,440.41
 
 | Metric | Value |
 |--------|-------|
+| **INVESTABLE (v2 strategies):** | |
 | Roth IRA (QLD) | $81,420.01 |
 | WELLSTRADE IRA (QLD) | $39,639.91 |
 | HSA (QLD) | $27,256.63 |
 | BrokerageLink (TQQQ) | $339,902.67 |
+| **Subtotal** | **$488,219.22** |
+| **CASH RESERVES:** | |
 | Cash Management (TOD) | $6,524.93 |
+| **RESTRICTED/CUSTODIAL:** | |
+| Eshaan Manna (Static) | $4,653.28 |
+| Shreyaan Manna (Static) | $2,819.05 |
+| Colorado 401K | $365,967.74 |
 | Other (Youth Account, etc.) | $506.04 |
-| **INVESTABLE TOTAL** | **$488,219.22** |
-| **CASH RESERVES** | **$6,524.93** |
-| **GRAND TOTAL** | **$862,244.15** |
+| **Subtotal** | **$374,446.11** |
+| **GRAND TOTAL** | **$869,440.41** |
 
 ---
 
