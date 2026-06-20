@@ -1,19 +1,20 @@
 # Account Summary & v2 Strategy Allocation
 
-**Last Updated:** 2026-06-16 (End of Day)  
+**Last Updated:** 2026-06-19 00:04
 **Snapshot Date:** 2026-06-16
 
-## TODAY'S SIGNALS (2026-06-16)
+## TODAY'S SIGNALS (2026-06-19)
 
-**TQQQ Signal:** Hold 0.53x | Action: HOLD  
-**QLD Signal:** 78% of account | Action: SCALE DOWN  
+**Regime Gate:** BULL - 0.7% below 189d high (threshold: 15%)
+
+**v2 Strategies (Comparison):**
+- **QQQ v2** (1.0x cap, no margin): Hold 1.0x | Vol: 30%
+- **TQQQ v2** (1.5x cap, with margin): Hold 0.51x | Vol: 88%
+- **QLD v2** (1.0x cap, no margin): 76% | Vol: 59%
 
 **Market Data:**
-- QQQ Close: $729.86
-- 189d High: $746.16  
-- % Below High: 2.2% (BULL regime)
-- TQQQ 20d Vol: 85.4% → exposure 0.53x
-- QLD 20d Vol: 57.5% → exposure 78%
+- QQQ Close: $740.62
+- 189d High: $740.62
 
 ---
 
@@ -28,13 +29,7 @@
 | Optum HSA 2023 | $21,729.41 | v2 QLD (78%) | Starting positions |
 | BrokerageLink (Self-Directed) | $339,902.67 | v2 TQQQ (53%) | Starting positions |
 | IB Brokerage | $100,000.00 | v2 TQQQ (53%) | Starting positions |
-| Cash Management (Individual - TOD) | $6,524.93 | Emergency fund | Hold cash |
-| Colorado INTERMEDIATE 401K | $365,967.74 | TBD (restricted) | Pending fund options |
-| ESHAAN MANNA (Custodial) | $4,653.28 | Customized Static | Hold/restricted |
-| SHREYAAN MANNA (Custodial) | $2,819.05 | Customized Static | Hold/restricted |
-| Individual - Youth Account | $506.04 | Hold cash | Minimal |
-| Individual - TOD (Taxable) | $750.15 | Hold cash | Too small for trading |
-| **TOTAL** | **$1,014,170.22** | — | — |
+| 4 **TOTAL** | **$1,014,170.22** | — | — |
 
 ---
 

@@ -14,7 +14,9 @@
       "PowerShell(python qqq_backtest_2010_2026.py)",
       "Bash(git commit -m 'Add pyramid 3/35 daily signal checker and Task Scheduler setup *)",
       "Bash(git commit -m 'Fix tier labels in pyramid signal output to reflect 3/35 MAs *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(start *)",
+      "PowerShell(start \"E:\\\\work\\\\Stockdata\\\\portfolio_dashboard.html\")"
     ],
     "deny": [],
     "ask": []

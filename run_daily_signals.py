@@ -6,12 +6,18 @@ Usage:
 This script:
 1. Runs tushar_v2_signal.py (TQQQ signal)
 2. Runs tushar_v2_qld_signal.py (QLD signal)
-3. Updates docs/accounts_summary.md with today's signals
+3. Fetches QQQ reference data (price, volatility)
+4. Updates docs/accounts_summary.md with today's signals
 """
 
 import subprocess
 import re
 from datetime import datetime
+import yfinance as yf
+import numpy as np
+import pandas as pd
+import webbrowser
+import os
 
 def run_signal(script_name):
     """Run a signal script and capture output."""
@@ -21,6 +27,27 @@ def run_signal(script_name):
         text=True,
     )
     return result.stdout + result.stderr
+
+def get_qqq_data():
+    """Fetch QQQ price and volatility reference data."""
+    try:
+        qqq_df = yf.download('QQQ', period='3mo', progress=False, auto_adjust=True)
+        if isinstance(qqq_df.columns, pd.MultiIndex):
+            qqq_df.columns = qqq_df.columns.get_level_values(0)
+
+        close = qqq_df['Close']
+        ret = close.pct_change()
+
+        qqq_close = close.iloc[-1]
+        qqq_vol = (ret.rolling(20).std() * np.sqrt(252)).iloc[-1] * 100
+
+        return {
+            'qqq_close': qqq_close,
+            'qqq_vol': qqq_vol
+        }
+    except Exception as e:
+        print(f"Warning: Could not fetch QQQ data: {e}")
+        return {'qqq_close': None, 'qqq_vol': None}
 
 def extract_signal_data(output_tqqq, output_qld):
     """Extract signal data from outputs."""
@@ -74,17 +101,22 @@ def update_document(signals):
         content = f.read()
 
     # Find and replace the signals section
+    qqq_ref = ""
+    if signals.get('qqq_close_ref') and signals.get('qqq_vol_ref'):
+        qqq_ref = f"\n- QQQ B&H (Ref): ${signals.get('qqq_close_ref'):.2f} | 20d Vol: {signals.get('qqq_vol_ref'):.0f}% | Always 100% invested"
+
     new_signals_section = f"""## TODAY'S SIGNALS ({datetime.now().strftime('%Y-%m-%d')})
 
-**TQQQ Signal:** Hold {signals.get('tqqq_exposure', '?')}x | Action: {signals.get('action', '?')}
-**QLD Signal:** {signals.get('qld_exposure', '?')}% of account | Action: SCALE DOWN
+**Regime Gate:** {signals.get('regime', '?')} - {signals.get('pcthi', '?'):.1f}% below 189d high (threshold: 15%)
+
+**v2 Strategies (Comparison):**
+- **QQQ v2** (1.0x cap, no margin): Hold {signals.get('qqq_exposure_v2', '?')}x | Vol: {signals.get('qqq_vol_v2', '?')}%
+- **TQQQ v2** (1.5x cap, with margin): Hold {signals.get('tqqq_exposure', '?')}x | Vol: {signals.get('tqqq_vol', '?')}%
+- **QLD v2** (1.0x cap, no margin): {signals.get('qld_exposure', '?')}% | Vol: {signals.get('qld_vol', '?')}%
 
 **Market Data:**
 - QQQ Close: ${signals.get('qqq_close', '?'):.2f}
-- 189d High: ${signals.get('high189', '?'):.2f}
-- % Below High: {signals.get('pcthi', '?'):.1f}% ({signals.get('regime', '?')} regime)
-- TQQQ 20d Vol: {signals.get('tqqq_vol', '?')}% -> exposure {signals.get('tqqq_exposure', '?')}x
-- QLD 20d Vol: {signals.get('qld_vol', '?')}% -> exposure {signals.get('qld_exposure', '?')}%"""
+- 189d High: ${signals.get('high189', '?'):.2f}{qqq_ref}"""
 
     # Replace old signals section
     pattern = r"## TODAY'S SIGNALS.*?(?=---)"
@@ -102,133 +134,101 @@ def update_document(signals):
 
     print(f"\n[DONE] Updated {doc_path}")
 
-def main():
-    print("Running daily signals...\n")
-    print("=" * 70)
+def get_last_7_days_exposure():
+    """Get the last 7 days of exposure % for all strategies."""
+    exposures = {'tqqq': [], 'qld': [], 'qqq': []}
 
-    # Run TQQQ signal
-    print("1. Running TQQQ Signal (tushar_v2_signal.py)...\n")
-    output_tqqq = run_signal("tushar_v2_signal.py")
-    print(output_tqqq)
+    # Read TQQQ exposure history
+    try:
+        tqqq_df = pd.read_csv("signals/tushar_v2_history.csv")
+        if 'exposure' in tqqq_df.columns and 'date' in tqqq_df.columns:
+            tqqq_df['date'] = pd.to_datetime(tqqq_df['date'])
+            tqqq_df = tqqq_df.sort_values('date')
+            last_7 = tqqq_df.tail(7)
+            for _, row in last_7.iterrows():
+                exposures['tqqq'].append((row['date'].strftime('%Y-%m-%d'), f"{row['exposure']*100:.0f}%"))
+    except Exception as e:
+        pass
 
-    print("\n" + "=" * 70)
+    # Read QLD exposure history
+    try:
+        qld_df = pd.read_csv("signals/tushar_v2_qld_history.csv")
+        if 'pct_in_qld' in qld_df.columns and 'date' in qld_df.columns:
+            qld_df['date'] = pd.to_datetime(qld_df['date'])
+            qld_df = qld_df.sort_values('date')
+            last_7 = qld_df.tail(7)
+            for _, row in last_7.iterrows():
+                exposures['qld'].append((row['date'].strftime('%Y-%m-%d'), f"{row['pct_in_qld']:.0f}%"))
+    except Exception as e:
+        pass
 
-    # Run QLD signal
-    print("2. Running QLD Signal (tushar_v2_qld_signal.py)...\n")
-    output_qld = run_signal("tushar_v2_qld_signal.py")
-    print(output_qld)
+    # Read QQQ exposure history
+    try:
+        qqq_df = pd.read_csv("signals/tushar_v2_qqq_history.csv")
+        if 'exposure' in qqq_df.columns and 'date' in qqq_df.columns:
+            qqq_df['date'] = pd.to_datetime(qqq_df['date'])
+            qqq_df = qqq_df.sort_values('date')
+            last_7 = qqq_df.tail(7)
+            for _, row in last_7.iterrows():
+                exposures['qqq'].append((row['date'].strftime('%Y-%m-%d'), f"{row['exposure']*100:.0f}%"))
+    except Exception as e:
+        pass
 
-    print("\n" + "=" * 70)
+    return exposures
 
-    # Extract and update document
-    print("3. Updating accounts_summary.md...\n")
-    signals = extract_signal_data(output_tqqq, output_qld)
-    update_document(signals)
+def display_7day_exposure(exposures):
+    """Display last 7 days of exposure % for all strategies."""
+    print("\nLAST 7 DAYS EXPOSURE %:")
+    print("-" * 70)
 
-    print("\n" + "=" * 70)
-    print("[DONE] Daily signals complete!")
-    print(f"\nToday's Signals ({datetime.now().strftime('%Y-%m-%d')}):")
-    print(f"  TQQQ: {signals.get('tqqq_exposure', '?')}x exposure")
-    print(f"  QLD:  {signals.get('qld_exposure', '?')}% of account")
-    print("=" * 70)
-
-def display_account_summary():
-    """Display the complete account summary with positions and projections."""
-    print("\n" + "=" * 150)
-    print("COMPLETE ACCOUNT SUMMARY & POSITIONS")
-    print("=" * 150)
-
-    accounts = [
-        ("ACTIVE v2 ACCOUNTS:", [
-            ("Roth IRA", 81420, "QLD", 78, 63508, "665 QLD", 17912, "BUY 665", 24915),
-            ("WELLSTRADE IRA", 39640, "QLD", 78, 30899, "324 QLD", 8741, "BUY 324", 12135),
-            ("HSA", 27257, "QLD", 78, 21260, "222 QLD", 5996, "BUY 222", 8352),
-            ("HSA Brokerage", 23000, "QLD", 78, 17940, "188 QLD", 5060, "BUY 188", 7043),
-            ("Optum HSA 2023", 21729, "QLD", 78, 16949, "177 QLD", 4780, "BUY 177", 6650),
-            ("BrokerageLink", 339903, "TQQQ", 53, 180148, "2,254 TQQQ", 159754, "BUY 2,254", 151266),
-            ("IB Brokerage", 100000, "TQQQ", 53, 53000, "663 TQQQ", 47000, "BUY 663", 44500),
-        ]),
-        ("RESTRICTED/CUSTODIAL:", [
-            ("Colorado 401K", 365968, "TBD", None, None, "Pending", None, "HOLD", None),
-            ("Eshaan Manna", 4653, "Static", 100, None, "Current", None, "HOLD", None),
-            ("Shreyaan Manna", 2819, "Static", 100, None, "Current", None, "HOLD", None),
-            ("Youth Account", 506, "Static", 100, None, "Current", None, "HOLD", None),
-        ]),
-        ("EMERGENCY RESERVE:", [
-            ("Cash Management (TOD)", 6525, "N/A", 100, 6525, None, 6525, "HOLD", None),
-        ])
-    ]
+    # Find max length for alignment
+    max_rows = max(len(exposures['tqqq']), len(exposures['qld']), len(exposures['qqq']))
 
     # Print header
-    header = f"{'Account':<25} {'Balance':>12} {'ETF':>8} {'%':>5} {'Target $':>12} {'Shares':>15} {'Cash':>12} {'Action':>15} {'Year1 Est':>12}"
-    print(header)
-    print("-" * 150)
+    print(f"{'Date':<12} {'TQQQ v2':<15} {'QLD v2':<15} {'QQQ v2':<15}")
+    print("-" * 70)
 
-    total_balance = 0
-    total_target = 0
-    total_cash = 0
-    total_year1 = 0
+    # Print rows
+    for i in range(max_rows):
+        tqqq_str = f"{exposures['tqqq'][i][1]}" if i < len(exposures['tqqq']) else "-"
+        qld_str = f"{exposures['qld'][i][1]}" if i < len(exposures['qld']) else "-"
+        qqq_str = f"{exposures['qqq'][i][1]}" if i < len(exposures['qqq']) else "-"
 
-    for section_name, section_accounts in accounts:
-        print(f"\n{section_name}")
-        print("-" * 150)
+        date_str = exposures['tqqq'][i][0] if i < len(exposures['tqqq']) else (exposures['qld'][i][0] if i < len(exposures['qld']) else (exposures['qqq'][i][0] if i < len(exposures['qqq']) else ""))
 
-        section_total_balance = 0
-        section_total_target = 0
-        section_total_cash = 0
-        section_total_year1 = 0
+        print(f"{date_str:<12} {tqqq_str:<15} {qld_str:<15} {qqq_str:<15}")
 
-        for acct in section_accounts:
-            name, balance, etf, pct, target, shares, cash, action, year1 = acct
+    print("-" * 70)
 
-            balance_str = f"${balance:,.0f}"
-            target_str = f"${target:,.0f}" if target else "-"
-            cash_str = f"${cash:,.0f}" if cash else "-"
-            year1_str = f"${year1:,.0f}" if year1 else "-"
-            pct_str = f"{pct}%" if pct else "-"
-            shares_str = str(shares) if shares else "-"
+def write_exposure_history_js(exposures):
+    """Write the 7-day exposure history to a JS file the dashboard can load.
 
-            print(f"{name:<25} {balance_str:>12} {etf:>8} {pct_str:>5} {target_str:>12} {shares_str:>15} {cash_str:>12} {action:>15} {year1_str:>12}")
+    Browsers block XHR/fetch to file:// for security, but <script src> works,
+    so we emit signals/exposure_history.js setting window.EXPOSURE_HISTORY.
+    """
+    # Merge all three strategies into a date-keyed map
+    history = {}
+    for strat in ('tqqq', 'qld', 'qqq'):
+        for date, pct in exposures.get(strat, []):
+            history.setdefault(date, {})[strat] = pct
 
-            if target:
-                section_total_balance += balance
-                section_total_target += target
-                if cash:
-                    section_total_cash += cash
-                if year1:
-                    section_total_year1 += year1
+    rows = [{"date": d, **history[d]} for d in sorted(history.keys())]
 
-        # Section subtotal
-        print("-" * 150)
-        subtotal_str = f"${section_total_balance:,.0f}"
-        target_str = f"${section_total_target:,.0f}" if section_total_target else "-"
-        cash_str = f"${section_total_cash:,.0f}" if section_total_cash else "-"
-        year1_str = f"${section_total_year1:,.0f}" if section_total_year1 else "-"
-        print(f"{'SUBTOTAL':<25} {subtotal_str:>12} {'-':>8} {'-':>5} {target_str:>12} {'-':>15} {cash_str:>12} {'-':>15} {year1_str:>12}")
+    import json
+    js = "window.EXPOSURE_HISTORY = " + json.dumps(rows) + ";"
+    out_path = os.path.join("signals", "exposure_history.js")
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(js)
+    print(f"[DONE] Wrote exposure history: {out_path}")
 
-        total_balance += section_total_balance
-        total_target += section_total_target
-        total_cash += section_total_cash
-        total_year1 += section_total_year1
-
-    # Grand total
-    print("\n" + "=" * 150)
-    grand_total_str = f"${total_balance:,.0f}"
-    target_str = f"${total_target:,.0f}"
-    cash_str = f"${total_cash:,.0f}"
-    year1_str = f"${total_year1:,.0f}"
-    print(f"{'GRAND TOTAL':<25} {grand_total_str:>12} {'-':>8} {'-':>5} {target_str:>12} {'4,493 shares':>15} {cash_str:>12} {'-':>15} {year1_str:>12}")
-    print("=" * 150)
-
-    # Summary stats
-    print(f"\nSUMMARY:")
-    print(f"  Total portfolio value:          ${total_balance:,.0f}")
-    print(f"  Total to deploy to ETFs:        ${total_target:,.0f}")
-    print(f"  Total cash (money market):      ${total_cash:,.0f}")
-    print(f"  Annual T-bill yield:            ${(total_cash * 0.05):,.0f}/year")
-    print(f"  Expected Year 1 return:         ${total_year1:,.0f}")
-    print(f"  Expected Year 1 ending balance: ${total_balance + total_year1:,.0f}")
-    print("=" * 150)
+def open_dashboard():
+    """Open the portfolio dashboard in default browser."""
+    dashboard_path = os.path.abspath("portfolio_dashboard.html")
+    if os.path.exists(dashboard_path):
+        webbrowser.open("file://" + dashboard_path)
+        print(f"\n[DONE] Dashboard opened: {dashboard_path}")
+    else:
+        print(f"\n[WARNING] Dashboard not found: {dashboard_path}")
 
 def main():
     print("Running daily signals...\n")
@@ -248,20 +248,45 @@ def main():
 
     print("\n" + "=" * 70)
 
-    # Extract and update document
-    print("3. Updating accounts_summary.md...\n")
+    # Run QQQ v2 signal (for comparison)
+    print("3. Running QQQ v2 Signal (tushar_v2_qqq_signal.py - comparison only)...\n")
+    output_qqq = run_signal("tushar_v2_qqq_signal.py")
+    print(output_qqq)
+
+    print("\n" + "=" * 70)
+
+    # Extract signals
     signals = extract_signal_data(output_tqqq, output_qld)
-    update_document(signals)
+    signals['qqq_close_ref'] = signals.get('qqq_close', None)
+    signals['qqq_vol_ref'] = None  # Will extract from QQQ signal
+
+    # Extract QQQ v2 signal
+    for line in output_qqq.split("\n"):
+        if "QQQ 20d Vol:" in line:
+            match = re.search(r"(\d+)%", line)
+            if match:
+                signals['qqq_vol_v2'] = int(match.group(1))
+        if "Target:" in line and "QQQ" in line:
+            match = re.search(r"Hold ([\d.]+)x QQQ", line)
+            if match:
+                signals['qqq_exposure_v2'] = float(match.group(1))
 
     print("\n" + "=" * 70)
     print("[DONE] Daily signals complete!")
     print(f"\nToday's Signals ({datetime.now().strftime('%Y-%m-%d')}):")
-    print(f"  TQQQ: {signals.get('tqqq_exposure', '?')}x exposure")
-    print(f"  QLD:  {signals.get('qld_exposure', '?')}% of account")
+    print(f"  Regime Gate: {signals.get('regime', '?')} ({signals.get('pcthi', '?'):.1f}% below 189d high, threshold 15%)")
+    print(f"  QQQ v2:  {signals.get('qqq_exposure_v2', '?')}x (1.0x cap, no margin) | Vol: {signals.get('qqq_vol_v2', '?'):.0f}%")
+    print(f"  TQQQ v2: {signals.get('tqqq_exposure', '?')}x (1.5x cap, with margin)")
+    print(f"  QLD v2:  {signals.get('qld_exposure', '?')}% (1.0x cap, no margin)")
     print("=" * 70)
 
-    # Display account summary
-    display_account_summary()
+    # Show last 7 days exposure
+    exposures = get_last_7_days_exposure()
+    display_7day_exposure(exposures)
+
+    # Write exposure history for the dashboard, then open it
+    write_exposure_history_js(exposures)
+    open_dashboard()
 
 if __name__ == "__main__":
     main()

@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tushar Portfolio Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-tqqq: #1e3a8a;
+            --primary-qld: #059669;
+            --primary-qqq: #7c3aed;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .dashboard-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .strategy-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .strategy-header {
+            border-bottom: 3px solid;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .strategy-header.tqqq {
+            border-color: var(--primary-tqqq);
+            color: var(--primary-tqqq);
+        }
+
+        .strategy-header.qld {
+            border-color: var(--primary-qld);
+            color: var(--primary-qld);
+        }
+
+        .strategy-header.qqq {
+            border-color: var(--primary-qqq);
+            color: var(--primary-qqq);
+        }
+
+        .strategy-stats {
+            display: flex;
+            gap: 2rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #999;
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #222;
+        }
+
+        table {
+            font-size: 0.95rem;
+        }
+
+        thead {
+            background-color: #f8f9fa;
+        }
+
+        thead th {
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+            padding: 1rem 0.75rem;
+        }
+
+        tbody td {
+            padding: 0.75rem;
+            vertical-align: middle;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tbody tr:hover {
+            background-color: #fafafa;
+        }
+
+        .input-percent {
+            width: 70px;
+            padding: 0.4rem 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .input-percent:focus {
+            outline: none;
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .value-positive {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .value-neutral {
+            color: #666;
+        }
+
+        .badge-etf {
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 0.4rem 0.8rem;
+        }
+
+        .badge-tqqq {
+            background-color: #dbeafe;
+            color: var(--primary-tqqq);
+        }
+
+        .badge-qld {
+            background-color: #dcfce7;
+            color: var(--primary-qld);
+        }
+
+        .badge-qqq {
+            background-color: #ede9fe;
+            color: var(--primary-qqq);
+        }
+
+        .totals-row {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            border-top: 2px solid #dee2e6;
+        }
+
+        .portfolio-totals {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .totals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .total-card {
+            border-left: 4px solid #0d6efd;
+            padding: 1.5rem;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .total-label {
+            font-size: 0.85rem;
+            color: #666;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .total-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #222;
+        }
+
+        .action-required {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .action-hold {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .badge-dark {
+            background-color: #e9ecef;
+            color: #495057;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: #999;
+        }
+
+        .container-xl {
+            max-width: 1400px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-xl py-4">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div>
+                    <h1 class="mb-2">📊 Tushar Portfolio Dashboard</h1>
+                    <p class="text-muted mb-0">Volatility-Targeted Position Sizing System | Last Updated: <span id="lastUpdate"></span></p>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div style="background-color: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #6c757d;">
+                        <label style="font-weight: 600; display: block; margin-bottom: 0.5rem; color: #666; font-size: 0.9rem;">Current % Exposure</label>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <input type="number" id="current-exposure" class="form-control" value="53" min="0" max="200" style="font-weight: 600; font-size: 1.3rem;" onchange="updateCurrentExposure(this.value)">
+                            <span style="font-size: 1.2rem; color: #666;">%</span>
+                        </div>
+                        <small style="color: #999; display: block; margin-top: 0.5rem;">Set baseline for all accounts</small>
+                    </div>
+                    <div style="background-color: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #0d6efd;">
+                        <label style="font-weight: 600; display: block; margin-bottom: 0.5rem; color: #666; font-size: 0.9rem;">New % Exposure</label>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <input type="number" id="new-exposure" class="form-control" value="53" min="0" max="200" style="font-weight: 600; font-size: 1.3rem;" onchange="updateNewExposure(this.value)">
+                            <span style="font-size: 1.2rem; color: #666;">%</span>
+                        </div>
+                        <small style="color: #999; display: block; margin-top: 0.5rem;">Target allocation for all accounts</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Last 7 Days Exposure History -->
+        <div class="strategy-section">
+            <h3 style="margin-bottom: 1.5rem; color: #222;">Last 7 Days Exposure History</h3>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Date</th>
+                            <th style="width: 28%;">TQQQ v2</th>
+                            <th style="width: 28%;">QLD v2</th>
+                            <th style="width: 28%;">QQQ v2</th>
+                        </tr>
+                    </thead>
+                    <tbody id="exposure-history-tbody">
+                        <tr><td colspan="4" style="text-align: center; color: #999;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Combined Accounts Table -->
+        <div class="strategy-section">
+            <h3 style="margin-bottom: 1.5rem; color: #222;">All Accounts</h3>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Account</th>
+                            <th>Balance</th>
+                            <th>Current Shares</th>
+                            <th>New Shares</th>
+                            <th>Difference</th>
+                            <th>Target $</th>
+                            <th>Cash</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="combined-tbody">
+                        <!-- Populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="totals-row mt-3 p-3" style="border-radius: 0 0 8px 8px;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                    <div><strong>Total Balance:</strong> <span id="combined-balance" class="value-positive">$632,949</span></div>
+                    <div><strong>Total Deploy:</strong> <span id="combined-target" class="value-positive">$383,704</span></div>
+                    <div><strong>Total Shares:</strong> <span id="combined-shares" class="value-positive">5,493</span></div>
+                    <div><strong>Total Cash:</strong> <span id="combined-cash" class="value-positive">$249,243</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Totals -->
+        <div class="portfolio-totals">
+            <h3 class="mb-3">Portfolio Totals</h3>
+            <div class="totals-grid">
+                <div class="total-card">
+                    <div class="total-label">Total Portfolio Value</div>
+                    <div class="total-value" id="portfolio-total">$632,949</div>
+                </div>
+                <div class="total-card">
+                    <div class="total-label">Total Deployed to ETFs</div>
+                    <div class="total-value" id="portfolio-deploy">$383,704</div>
+                </div>
+                <div class="total-card">
+                    <div class="total-label">Total Cash (T-Bills)</div>
+                    <div class="total-value" id="portfolio-cash">$249,243</div>
+                </div>
+                <div class="total-card">
+                    <div class="total-label">Annual T-Bill Yield</div>
+                    <div class="total-value" id="portfolio-yield">$12,462</div>
+                </div>
+                <div class="total-card">
+                    <div class="total-label">Expected Year 1 Return</div>
+                    <div class="total-value value-positive" id="portfolio-year1">$254,861</div>
+                </div>
+                <div class="total-card">
+                    <div class="total-label">Expected Year 1 Balance</div>
+                    <div class="total-value" id="portfolio-ending">$887,810</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align: center; margin-top: 3rem; color: #999; font-size: 0.85rem;">
+            <p>💡 Edit the "% Exposure" column to see real-time calculations. Changes are local only.</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Exposure history written by run_daily_signals.py (script tags bypass file:// CORS) -->
+    <script src="signals/exposure_history.js" onerror="window.EXPOSURE_HISTORY=null;"></script>
+    <script>
+        // Account Data
+        const accounts = {
+            tqqq: [
+                { name: "BrokerageLink", balance: 339903, etf: "TQQQ", vol: 88, pctDefault: 53, currentPct: 53, pricePerShare: 80.0 },
+                { name: "IB Brokerage", balance: 100000, etf: "TQQQ", vol: 88, pctDefault: 53, currentPct: 53, pricePerShare: 80.0 }
+            ],
+            qld: [
+                { name: "Roth IRA", balance: 81420, etf: "QLD", vol: 59, pctDefault: 78, currentPct: 78, pricePerShare: 95.5 },
+                { name: "WELLSTRADE IRA", balance: 39640, etf: "QLD", vol: 59, pctDefault: 78, currentPct: 78, pricePerShare: 95.5 },
+                { name: "HSA", balance: 27257, etf: "QLD", vol: 59, pctDefault: 78, currentPct: 78, pricePerShare: 95.5 },
+                { name: "HSA Brokerage", balance: 23000, etf: "QLD", vol: 59, pctDefault: 78, currentPct: 78, pricePerShare: 95.5 },
+                { name: "Optum HSA 2023", balance: 21729, etf: "QLD", vol: 59, pctDefault: 78, currentPct: 78, pricePerShare: 95.5 }
+            ],
+            qqq: [],
+            other: [
+                { name: "Cash Management (TOD)", balance: 6524.93, etf: "CASH", vol: 0, pctDefault: 0, currentPct: 0, pricePerShare: 1.0 },
+                { name: "Colorado 401K", balance: 365967.74, etf: "PENDING", vol: 0, pctDefault: 0, currentPct: 0, pricePerShare: 1.0 },
+                { name: "Eshaan Manna (Custodial)", balance: 4653.28, etf: "STATIC", vol: 0, pctDefault: 0, currentPct: 0, pricePerShare: 1.0 },
+                { name: "Shreyaan Manna (Custodial)", balance: 2819.05, etf: "STATIC", vol: 0, pctDefault: 0, currentPct: 0, pricePerShare: 1.0 },
+                { name: "Individual - Youth Account", balance: 506.04, etf: "CASH", vol: 0, pctDefault: 0, currentPct: 0, pricePerShare: 1.0 },
+                { name: "Individual - TOD (Taxable)", balance: 750.15, etf: "CASH", vol: 0, pctDefault: 0, currentPct: 0, pricePerShare: 1.0 }
+            ]
+        };
+
+        // Initialize with default values
+        let state = {
+            tqqq: accounts.tqqq.map(a => ({ ...a, pct: a.pctDefault, current: a.currentPct })),
+            qld: accounts.qld.map(a => ({ ...a, pct: a.pctDefault, current: a.currentPct })),
+            qqq: accounts.qqq.map(a => ({ ...a, pct: a.pctDefault, current: a.currentPct })),
+            other: accounts.other.map(a => ({ ...a, pct: a.pctDefault, current: a.currentPct }))
+        };
+
+        // Format Currency
+        const fmt = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(val);
+        const fmtNum = (val) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 0 }).format(Math.round(val));
+
+        // Calculate account row data
+        function calcAccount(account, useNew = true) {
+            const pct = useNew ? account.pct : account.current;
+            const targetDeploy = account.balance * (pct / 100);
+            const shares = Math.floor(targetDeploy / account.pricePerShare);
+            const costBasis = shares * account.pricePerShare;
+            const cash = account.balance - costBasis;
+            return { targetDeploy, shares, costBasis, cash };
+        }
+
+        // Render combined table
+        function renderCombinedTable() {
+            const tbody = document.getElementById('combined-tbody');
+            let html = '';
+
+            ['tqqq', 'qld', 'other'].forEach(strategy => {
+                state[strategy].forEach((acc, idx) => {
+                    const currentCalc = calcAccount(acc, false); // Use current exposure
+                    const newCalc = calcAccount(acc, true);      // Use new exposure
+                    const shareDiff = newCalc.shares - currentCalc.shares;
+                    const diffClass = shareDiff > 0 ? 'text-success' : (shareDiff < 0 ? 'text-danger' : 'text-muted');
+
+                    // All accounts use same action logic (no custom actions)
+                    const action = shareDiff > 0 ? 'BUY ' + shareDiff : (shareDiff < 0 ? 'SELL ' + Math.abs(shareDiff) : 'HOLD');
+                    const actionClass = shareDiff > 0 ? 'action-required' : (shareDiff < 0 ? 'action-required' : 'action-hold');
+
+                    html += `
+                        <tr>
+                            <td><strong>${acc.name}</strong></td>
+                            <td>
+                                <input type="number" class="input-balance"
+                                       value="${acc.balance.toFixed(2)}" min="0" step="0.01"
+                                       data-strategy="${strategy}" data-idx="${idx}"
+                                       onchange="updateBalance(this)"
+                                       style="width: 120px; padding: 0.4rem 0.5rem; border: 1px solid #ddd; border-radius: 4px; text-align: right;">
+                            </td>
+                            <td class="value-positive">${fmtNum(currentCalc.shares)}</td>
+                            <td class="value-positive">${fmtNum(newCalc.shares)}</td>
+                            <td class="${diffClass}" style="font-weight: 600;">${shareDiff > 0 ? '+' : ''}${fmtNum(shareDiff)}</td>
+                            <td class="value-positive">${fmt(newCalc.targetDeploy)}</td>
+                            <td class="value-positive">${fmt(newCalc.cash)}</td>
+                            <td><span class="${actionClass}">${action}</span></td>
+                        </tr>
+                    `;
+                });
+            });
+
+            tbody.innerHTML = html;
+            updateTotals();
+        }
+
+        // Update balance (and persist as current baseline)
+        function updateBalance(input) {
+            const strategy = input.getAttribute('data-strategy');
+            const idx = parseInt(input.getAttribute('data-idx'));
+            const newBalance = Math.max(0, parseFloat(input.value) || 0);
+            state[strategy][idx].balance = newBalance;
+            // Persist the new balance as the current baseline
+            state[strategy][idx].currentBalance = newBalance;
+            renderCombinedTable();
+        }
+
+        // Update current exposure (applied to all accounts)
+        function updateCurrentExposure(value) {
+            const pct = Math.max(0, Math.min(200, parseFloat(value) || 0));
+            document.getElementById('current-exposure').value = pct;
+
+            ['tqqq', 'qld', 'other'].forEach(strategy => {
+                state[strategy].forEach(acc => {
+                    acc.current = pct;
+                });
+            });
+            renderCombinedTable();
+        }
+
+        // Update new exposure (applied to all accounts)
+        function updateNewExposure(value) {
+            const pct = Math.max(0, Math.min(200, parseFloat(value) || 0));
+            document.getElementById('new-exposure').value = pct;
+
+            ['tqqq', 'qld', 'other'].forEach(strategy => {
+                state[strategy].forEach(acc => {
+                    acc.pct = pct;
+                });
+            });
+            renderCombinedTable();
+        }
+
+        // Update totals
+        function updateTotals() {
+            const calc = (s, useNew = true) => {
+                const rows = state[s];
+                if (rows.length === 0) return { balance: 0, deploy: 0, shares: 0, cash: 0, year1: 0 };
+                const balance = rows.reduce((a, r) => a + r.balance, 0);
+                const deploy = rows.reduce((a, r) => a + calcAccount(r, useNew).targetDeploy, 0);
+                const shares = rows.reduce((a, r) => a + calcAccount(r, useNew).shares, 0);
+                const cash = rows.reduce((a, r) => a + calcAccount(r, useNew).cash, 0);
+                const year1 = deploy * 0.54; // Rough estimate
+                return { balance, deploy, shares, cash, year1 };
+            };
+
+            const tNew = calc('tqqq', true);
+            const qNew = calc('qld', true);
+            const oNew = calc('other', true);
+
+            // Combined table totals (using new exposure)
+            const totalBalance = tNew.balance + qNew.balance + oNew.balance;
+            const totalDeploy = tNew.deploy + qNew.deploy + oNew.deploy;
+            const totalShares = tNew.shares + qNew.shares + oNew.shares;
+            const totalCash = tNew.cash + qNew.cash + oNew.cash;
+            const totalYear1 = tNew.year1 + qNew.year1 + oNew.year1;
+            const tbillYield = totalCash * 0.05;
+
+            document.getElementById('combined-balance').textContent = fmt(totalBalance);
+            document.getElementById('combined-target').textContent = fmt(totalDeploy);
+            document.getElementById('combined-shares').textContent = fmtNum(totalShares);
+            document.getElementById('combined-cash').textContent = fmt(totalCash);
+
+            // Portfolio totals
+            document.getElementById('portfolio-total').textContent = fmt(totalBalance);
+            document.getElementById('portfolio-deploy').textContent = fmt(totalDeploy);
+            document.getElementById('portfolio-cash').textContent = fmt(totalCash);
+            document.getElementById('portfolio-yield').textContent = fmt(tbillYield);
+            document.getElementById('portfolio-year1').textContent = fmt(totalYear1);
+            document.getElementById('portfolio-ending').textContent = fmt(totalBalance + totalYear1);
+        }
+
+        // Load and display 7-day exposure history.
+        // Data comes from signals/exposure_history.js (window.EXPOSURE_HISTORY),
+        // written by run_daily_signals.py. Falls back to XHR CSV parsing if served
+        // over http(s); pure file:// only gets the data via the script tag.
+        function loadExposureHistory() {
+            const tbody = document.getElementById('exposure-history-tbody');
+            let rows = [];
+
+            if (Array.isArray(window.EXPOSURE_HISTORY) && window.EXPOSURE_HISTORY.length) {
+                // Preferred path: data injected via script tag
+                rows = window.EXPOSURE_HISTORY.slice(-7).map(r => ({
+                    date: r.date,
+                    tqqq: r.tqqq || '-',
+                    qld: r.qld || '-',
+                    qqq: r.qqq || '-'
+                }));
+            } else {
+                // Fallback: parse CSVs (works when served over http://, not file://)
+                const exposureMap = {};
+                function loadCSV(filePath, parser) {
+                    try {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('GET', filePath, false);
+                        xhr.send();
+                        if (xhr.status === 0 || xhr.status === 200) {
+                            xhr.responseText.split('\n').slice(1).forEach(line => parser(line, exposureMap));
+                        }
+                    } catch (e) { /* blocked under file:// */ }
+                }
+                loadCSV('signals/tushar_v2_history.csv', (line, map) => {
+                    if (!line.trim()) return;
+                    const p = line.split(',');
+                    if (p.length >= 7) { (map[p[0].trim()] ??= {}).tqqq = (parseFloat(p[5]) * 100).toFixed(0) + '%'; }
+                });
+                loadCSV('signals/tushar_v2_qld_history.csv', (line, map) => {
+                    if (!line.trim()) return;
+                    const p = line.split(',');
+                    if (p.length >= 6) { (map[p[0].trim()] ??= {}).qld = parseInt(p[5]) + '%'; }
+                });
+                loadCSV('signals/tushar_v2_qqq_history.csv', (line, map) => {
+                    if (!line.trim()) return;
+                    const p = line.split(',');
+                    if (p.length >= 7) { (map[p[0].trim()] ??= {}).qqq = (parseFloat(p[5]) * 100).toFixed(0) + '%'; }
+                });
+                rows = Object.keys(exposureMap).sort().slice(-7).map(date => ({
+                    date,
+                    tqqq: exposureMap[date].tqqq || '-',
+                    qld: exposureMap[date].qld || '-',
+                    qqq: exposureMap[date].qqq || '-'
+                }));
+            }
+
+            if (rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">No history available — run <code>python run_daily_signals.py</code> to generate it.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = rows.map(r => `
+                <tr>
+                    <td><strong>${r.date}</strong></td>
+                    <td class="value-positive">${r.tqqq}</td>
+                    <td class="value-positive">${r.qld}</td>
+                    <td class="value-positive">${r.qqq}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Initialize
+        document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+        renderCombinedTable();
+        loadExposureHistory();
+    </script>
+</body>
+</html>
