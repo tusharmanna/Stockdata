@@ -42,7 +42,7 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "Daily Signal - ${{ env.TODAY }}"
           to: ${{ secrets.EMAIL_ADDRESS }}
-          from: ${{ secrets.EMAIL_ADDRESS }}
+          from: tusharmanna@gmail.com
           body: file://signals/run_output.txt
 
       - name: Send SMS
@@ -54,7 +54,7 @@ jobs:
           secure: true
           username: ${{ secrets.EMAIL_ADDRESS }}
           password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: ""
+          subject: "Signal"
           to: ${{ secrets.PHONE_NUMBER }}@txt.att.net
-          from: ${{ secrets.EMAIL_ADDRESS }}
+          from: tusharmanna@gmail.com
           body: file://signals/sms_summary.txt
