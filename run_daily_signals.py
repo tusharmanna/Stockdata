@@ -229,6 +229,11 @@ def send_notifications(signals, exposures):
     """Email full report + SMS summary. Failures never crash the script."""
     email_addr = os.environ.get("EMAIL_ADDRESS", "")
     phone      = os.environ.get("PHONE_NUMBER", "")
+
+    # Debug: confirm what Python sees (values masked)
+    print(f"[notify] EMAIL_ADDRESS : {'SET' if email_addr else 'NOT SET'}")
+    print(f"[notify] EMAIL_PASSWORD: {'SET' if os.environ.get('EMAIL_PASSWORD') else 'NOT SET'}")
+    print(f"[notify] PHONE_NUMBER  : {'SET' if phone else 'NOT SET'}")
     today      = datetime.now().strftime("%Y-%m-%d")
     regime     = signals.get("regime", "?")
     t_expo     = signals.get("tqqq_exposure", "?")
