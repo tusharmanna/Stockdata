@@ -31,6 +31,7 @@ VEHICLE = "QLD"        # 2x Nasdaq-100 (leverage is internal to the fund)
 PERIOD = "1y"
 HISTORY_CSV = os.path.join("signals", "tushar_v2_qld_history.csv")
 STALE_DAYS = 5
+BACKFILL_DAYS = 5   # backfill up to this many missed trading days
 
 
 def _fetch(ticker):
@@ -49,7 +50,45 @@ def exposure_for(regime_bull, realized_vol):
     return float(np.clip(TARGET_VOL / realized_vol, 0.0, LEV_CAP))
 
 
+def _build_rows(sig, rv, idx):
+    """Compute signal rows for every date in idx (skips first row — needs prev)."""
+    rows = []
+    for i in range(1, len(idx)):
+        today = sig.iloc[i]
+        prev  = sig.iloc[i - 1]
+        bull      = today["regime"] == "BUY_TQQQ"
+        prev_bull = prev["regime"]  == "BUY_TQQQ"
+        expo      = exposure_for(bull,      float(rv.iloc[i]))
+        prev_expo = exposure_for(prev_bull, float(rv.iloc[i - 1]))
+
+        if not prev_bull and bull:
+            action = "ENTER"
+        elif prev_bull and not bull:
+            action = "EXIT"
+        elif not bull:
+            action = "IN CASH"
+        elif expo > prev_expo + 0.02:
+            action = "SCALE UP"
+        elif expo < prev_expo - 0.02:
+            action = "SCALE DOWN"
+        else:
+            action = "HOLD"
+
+        rows.append({
+            "date":      idx[i],
+            "qqq_close": float(today["close"]),
+            "high189":   float(today["high252"]),
+            "pcthi":     float(today["pcthi"]),
+            "regime":    "BULL" if bull else "CASH",
+            "qld_vol":   float(rv.iloc[i]),
+            "exposure":  expo,
+            "action":    action,
+        })
+    return rows
+
+
 def compute():
+    """Return signal rows for any dates missing from history (up to BACKFILL_DAYS)."""
     qqq = _fetch("QQQ")
     qld = _fetch(VEHICLE)
 
@@ -57,41 +96,22 @@ def compute():
     sig = compute_signal_v1(qqq_low)
 
     qld_ret = qld["Close"].pct_change()
-    rv = (qld_ret.rolling(VOL_WINDOW).std() * np.sqrt(TRADING_DAYS)).bfill()
+    rv      = (qld_ret.rolling(VOL_WINDOW).std() * np.sqrt(TRADING_DAYS)).bfill()
 
-    idx = sig.index.intersection(rv.index)
+    idx     = sig.index.intersection(rv.index)
     sig, rv = sig.loc[idx], rv.loc[idx]
 
-    today, prev = sig.iloc[-1], sig.iloc[-2]
-    bull = today["regime"] == "BUY_TQQQ"
-    prev_bull = prev["regime"] == "BUY_TQQQ"
+    all_rows = _build_rows(sig, rv, idx)
 
-    expo = exposure_for(bull, float(rv.iloc[-1]))
-    prev_expo = exposure_for(prev_bull, float(rv.iloc[-2]))
+    logged = set()
+    if os.path.exists(HISTORY_CSV):
+        hist   = pd.read_csv(HISTORY_CSV, dtype={"date": str})
+        logged = set(hist["date"].tolist())
 
-    if not prev_bull and bull:
-        action = "ENTER"
-    elif prev_bull and not bull:
-        action = "EXIT"
-    elif not bull:
-        action = "IN CASH"
-    elif expo > prev_expo + 0.02:
-        action = "SCALE UP"
-    elif expo < prev_expo - 0.02:
-        action = "SCALE DOWN"
-    else:
-        action = "HOLD"
-
-    return {
-        "date": idx[-1],
-        "qqq_close": float(today["close"]),
-        "high189": float(today["high252"]),
-        "pcthi": float(today["pcthi"]),
-        "regime": "BULL" if bull else "CASH",
-        "qld_vol": float(rv.iloc[-1]),
-        "exposure": expo,
-        "action": action,
-    }
+    recent  = all_rows[-BACKFILL_DAYS:]   # only the last N trading days
+    missing = [r for r in recent
+               if r["date"].date().isoformat() not in logged]
+    return missing
 
 
 def report(s):
@@ -108,33 +128,41 @@ def report(s):
         print(f"Target: {pct}% of account in {VEHICLE}   Action: {s['action']}")
     else:
         print(f"Target: CASH (0% {VEHICLE})   Action: {s['action']}")
+    if age > 1:
+        print(f"NOTE: signal is {age} day(s) old — backfilled from historical data.")
 
 
-def append_history(s):
+def append_history(rows):
     os.makedirs(os.path.dirname(HISTORY_CSV), exist_ok=True)
-    row = pd.DataFrame([{
-        "date": s["date"].date().isoformat(),
-        "qqq_close": round(s["qqq_close"], 2),
-        "pcthi": round(s["pcthi"], 1),
-        "regime": s["regime"],
-        "qld_vol": round(s["qld_vol"], 3),
-        "pct_in_qld": int(round(s["exposure"] * 100)),
-        "action": s["action"],
-    }])
+    new = pd.DataFrame([{
+        "date":       r["date"].date().isoformat(),
+        "qqq_close":  round(r["qqq_close"], 2),
+        "pcthi":      round(r["pcthi"], 1),
+        "regime":     r["regime"],
+        "qld_vol":    round(r["qld_vol"], 3),
+        "pct_in_qld": int(round(r["exposure"] * 100)),
+        "action":     r["action"],
+    } for r in rows])
     if os.path.exists(HISTORY_CSV):
-        hist = pd.read_csv(HISTORY_CSV, dtype={"date": str})
-        hist = hist[hist["date"] != row.at[0, "date"]]
-        hist = pd.concat([hist, row], ignore_index=True).sort_values("date")
+        hist  = pd.read_csv(HISTORY_CSV, dtype={"date": str})
+        dates = set(new["date"].tolist())
+        hist  = hist[~hist["date"].isin(dates)]
+        hist  = pd.concat([hist, new], ignore_index=True).sort_values("date")
     else:
-        hist = row
+        hist = new
     hist.to_csv(HISTORY_CSV, index=False)
-    print(f"Logged to {HISTORY_CSV}")
+    print(f"Logged {len(rows)} row(s) to {HISTORY_CSV}")
 
 
 def main():
-    s = compute()
-    report(s)
-    append_history(s)
+    rows = compute()
+    if not rows:
+        print("No new dates to log — already up to date.")
+        return
+    if len(rows) > 1:
+        print(f"Backfilling {len(rows) - 1} missed day(s)...")
+    report(rows[-1])
+    append_history(rows)
 
 
 if __name__ == "__main__":

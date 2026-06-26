@@ -1,0 +1,34 @@
+name: Daily Signals
+
+on:
+  schedule:
+    # 3:30 PM EDT (UTC-4, summer). In winter EST (UTC-5) this fires at 2:30 PM ET.
+    # Adjust to "30 20 * * 1-5" (3:30 PM EST) if you prefer winter accuracy.
+    - cron: "30 19 * * 1-5"
+  workflow_dispatch:  # allows manual trigger from GitHub Actions UI
+
+jobs:
+  run-signals:
+    runs-on: ubuntu-latest
+
+    env:
+      EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+      EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+      PHONE_NUMBER: ${{ secrets.PHONE_NUMBER }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run daily signals
+        run: python run_daily_signals.py

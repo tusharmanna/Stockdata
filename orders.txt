@@ -2,7 +2,6 @@
 # Example:
 # AAPL
 # MSFT
-AROC
-arxs
-
-
+cold
+klac
+mtsi
