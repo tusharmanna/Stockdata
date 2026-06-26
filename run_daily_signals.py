@@ -110,6 +110,21 @@ def display_7day_exposure(exposures):
     print("-" * 70)
 
 
+def write_sms_summary(signals):
+    """Write a short SMS-ready summary (<160 chars) to signals/sms_summary.txt."""
+    today  = datetime.now().strftime("%m/%d")
+    regime = signals.get("regime", "?")
+    pcthi  = signals.get("pcthi", 0)
+    t_expo = signals.get("tqqq_exposure", "?")
+    t_vol  = signals.get("tqqq_vol", "?")
+    q_expo = signals.get("qld_exposure", "?")
+    text   = f"{today} {regime} {pcthi:.1f}%|TQQQ:{t_expo}x({t_vol}%vol)|QLD:{q_expo}%"
+    os.makedirs("signals", exist_ok=True)
+    with open("signals/sms_summary.txt", "w") as f:
+        f.write(text[:160])
+    print(f"[notify] SMS summary: {text[:160]}")
+
+
 def write_exposure_history_js(exposures):
     history = {}
     for strat in ("tqqq", "qld", "qqq"):
@@ -230,10 +245,6 @@ def send_notifications(signals, exposures):
     email_addr = os.environ.get("EMAIL_ADDRESS", "")
     phone      = os.environ.get("PHONE_NUMBER", "")
 
-    # Debug: confirm what Python sees (values masked)
-    print(f"[notify] EMAIL_ADDRESS : {'SET' if email_addr else 'NOT SET'}")
-    print(f"[notify] EMAIL_PASSWORD: {'SET' if os.environ.get('EMAIL_PASSWORD') else 'NOT SET'}")
-    print(f"[notify] PHONE_NUMBER  : {'SET' if phone else 'NOT SET'}")
     today      = datetime.now().strftime("%Y-%m-%d")
     regime     = signals.get("regime", "?")
     t_expo     = signals.get("tqqq_exposure", "?")
@@ -340,6 +351,11 @@ def main():
             write_exposure_history_js(exposures)
         except Exception as e:
             print(f"[WARNING] Could not write exposure JS: {e}")
+
+        try:
+            write_sms_summary(signals)
+        except Exception as e:
+            print(f"[WARNING] Could not write SMS summary: {e}")
 
         try:
             update_document(signals)

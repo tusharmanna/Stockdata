@@ -2,8 +2,7 @@ name: Daily Signals
 
 on:
   schedule:
-    # 3:30 PM EDT (UTC-4, summer). In winter EST (UTC-5) this fires at 2:30 PM ET.
-    - cron: "30 19 * * 1-5"
+    - cron: "30 19 * * 1-5"   # 3:30 PM EDT (UTC-4)
   workflow_dispatch:
 
 jobs:
@@ -24,19 +23,38 @@ jobs:
           pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      - name: Verify secrets are present
-        run: |
-          if [ -z "$EMAIL_ADDRESS" ]; then echo "WARNING: EMAIL_ADDRESS is empty"; else echo "OK: EMAIL_ADDRESS is set"; fi
-          if [ -z "$EMAIL_PASSWORD" ]; then echo "WARNING: EMAIL_PASSWORD is empty"; else echo "OK: EMAIL_PASSWORD is set"; fi
-          if [ -z "$PHONE_NUMBER" ];   then echo "WARNING: PHONE_NUMBER is empty";   else echo "OK: PHONE_NUMBER is set";   fi
-        env:
-          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
-          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-          PHONE_NUMBER: ${{ secrets.PHONE_NUMBER }}
-
       - name: Run daily signals
-        run: python run_daily_signals.py
-        env:
-          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
-          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-          PHONE_NUMBER: ${{ secrets.PHONE_NUMBER }}
+        run: |
+          mkdir -p signals
+          python run_daily_signals.py 2>&1 | tee signals/run_output.txt
+
+      - name: Set report date
+        run: echo "TODAY=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+
+      - name: Send email report
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.EMAIL_ADDRESS }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "Daily Signal - ${{ env.TODAY }}"
+          to: ${{ secrets.EMAIL_ADDRESS }}
+          from: ${{ secrets.EMAIL_ADDRESS }}
+          body: file://signals/run_output.txt
+
+      - name: Send SMS
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.EMAIL_ADDRESS }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: ""
+          to: ${{ secrets.PHONE_NUMBER }}@txt.att.net
+          from: ${{ secrets.EMAIL_ADDRESS }}
+          body: file://signals/sms_summary.txt
