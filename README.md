@@ -25,7 +25,7 @@ Your regular Gmail password will not work — you need a Google App Password.
 3. Under "How you sign in to Google", click **2-Step Verification** (must be enabled)
 4. Scroll to the bottom and click **App passwords**
 5. Under "Select app" choose **Mail**, under "Select device" choose **Other** and type `GitHub Actions`
-6. Click **Generate** — Google shows a 16-character password like `wqjo xspx wfbe yoqr`
+6. Click **Generate** — Google shows a 16-character password like `abcd efgh ijkl mnop`
 7. Copy it (spaces are fine, Gmail accepts them) and paste it as the `EMAIL_PASSWORD` secret
 
 > If you don't see "App passwords", 2-Step Verification is not enabled — enable it first.
