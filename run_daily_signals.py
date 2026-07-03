@@ -22,7 +22,7 @@ import os
 def run_signal(script_name):
     """Run a signal script and capture output."""
     result = subprocess.run(
-        ["python", script_name],
+        ["python3", script_name],
         capture_output=True,
         text=True,
     )

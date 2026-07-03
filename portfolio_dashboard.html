@@ -240,11 +240,11 @@
                     <h1 class="mb-2">📊 Tushar Portfolio Dashboard</h1>
                     <p class="text-muted mb-0">Volatility-Targeted Position Sizing System | Last Updated: <span id="lastUpdate"></span></p>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
                     <div style="background-color: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #6c757d;">
                         <label style="font-weight: 600; display: block; margin-bottom: 0.5rem; color: #666; font-size: 0.9rem;">Current % Exposure</label>
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <input type="number" id="current-exposure" class="form-control" value="53" min="0" max="200" style="font-weight: 600; font-size: 1.3rem;" onchange="updateCurrentExposure(this.value)">
+                            <input type="number" id="current-exposure" class="form-control" value="45" min="0" max="200" style="font-weight: 600; font-size: 1.3rem;" onchange="updateCurrentExposure(this.value)">
                             <span style="font-size: 1.2rem; color: #666;">%</span>
                         </div>
                         <small style="color: #999; display: block; margin-top: 0.5rem;">Set baseline for all accounts</small>
@@ -252,10 +252,17 @@
                     <div style="background-color: #f8f9fa; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #0d6efd;">
                         <label style="font-weight: 600; display: block; margin-bottom: 0.5rem; color: #666; font-size: 0.9rem;">New % Exposure</label>
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <input type="number" id="new-exposure" class="form-control" value="53" min="0" max="200" style="font-weight: 600; font-size: 1.3rem;" onchange="updateNewExposure(this.value)">
+                            <input type="number" id="new-exposure" class="form-control" value="45" min="0" max="200" style="font-weight: 600; font-size: 1.3rem;" onchange="updateNewExposure(this.value)">
                             <span style="font-size: 1.2rem; color: #666;">%</span>
                         </div>
                         <small style="color: #999; display: block; margin-top: 0.5rem;">Target allocation for all accounts</small>
+                    </div>
+                    <div style="background-color: #fff3e0; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #ff9800;">
+                        <label style="font-weight: 600; display: block; margin-bottom: 0.5rem; color: #666; font-size: 0.9rem;">Current TQQQ Price</label>
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span style="font-size: 1.8rem; font-weight: 700; color: #ff9800;" id="tqqq-price">$73.35</span>
+                        </div>
+                        <small style="color: #999; display: block; margin-top: 0.5rem;">Live market price</small>
                     </div>
                 </div>
             </div>
@@ -290,17 +297,18 @@
                     <thead>
                         <tr>
                             <th>Account</th>
+                            <th>ETF</th>
                             <th>Balance</th>
                             <th>Current Shares</th>
-                            <th>New Shares</th>
+                            <th>Current Exposure</th>
+                            <th>Target Shares</th>
+                            <th>Target Exposure</th>
                             <th>Difference</th>
-                            <th>Target $</th>
-                            <th>Cash</th>
                             <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="combined-tbody">
-                        <!-- Populated by JavaScript -->
+                        <tr><td colspan="9" style="text-align: center; color: #999;">Loading accounts...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -352,170 +360,190 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Exposure history written by run_daily_signals.py (script tags bypass file:// CORS) -->
+    <!-- Account data auto-generated from account_transactions.json -->
+    <script src="signals/account_data.js" onerror="window.ACCOUNT_DATA=null;"></script>
+    <!-- Exposure history written by run_daily_signals.py -->
     <script src="signals/exposure_history.js" onerror="window.EXPOSURE_HISTORY=null;"></script>
     <script>
-        // Account Data
-        const accounts = {
-            tqqq: [
-                { name: "BrokerageLink", balance: 339903, etf: "TQQQ", vol: 88, pctDefault: 53, currentPct: 53, pricePerShare: 80.0 },
-                { name: "IB Brokerage", balance: 100000, etf: "TQQQ", vol: 88, pctDefault: 53, currentPct: 53, pricePerShare: 80.0 }
-            ],
-            qld: [
-                { name: "Roth IRA", balance: 81420, etf: "QLD", vol: 59, pctDefault: 78, currentPct: 78, pricePerShare: 95.5 },
-                { name: "WELLSTRADE IRA", balance: 39640, etf: "QLD", vol: 59, pctDefault: 78, currentPct: 78, pricePerShare: 95.5 },
-                { name: "HSA", balance: 27257, etf: "QLD", vol: 59, pctDefault: 78, currentPct: 78, pricePerShare: 95.5 },
-                { name: "HSA Brokerage", balance: 23000, etf: "QLD", vol: 59, pctDefault: 78, currentPct: 78, pricePerShare: 95.5 },
-                { name: "Optum HSA 2023", balance: 21729, etf: "QLD", vol: 59, pctDefault: 78, currentPct: 78, pricePerShare: 95.5 }
-            ],
-            qqq: [],
-            other: [
-                { name: "Cash Management (TOD)", balance: 6524.93, etf: "CASH", vol: 0, pctDefault: 0, currentPct: 0, pricePerShare: 1.0 },
-                { name: "Colorado 401K", balance: 365967.74, etf: "PENDING", vol: 0, pctDefault: 0, currentPct: 0, pricePerShare: 1.0 },
-                { name: "Eshaan Manna (Custodial)", balance: 4653.28, etf: "STATIC", vol: 0, pctDefault: 0, currentPct: 0, pricePerShare: 1.0 },
-                { name: "Shreyaan Manna (Custodial)", balance: 2819.05, etf: "STATIC", vol: 0, pctDefault: 0, currentPct: 0, pricePerShare: 1.0 },
-                { name: "Individual - Youth Account", balance: 506.04, etf: "CASH", vol: 0, pctDefault: 0, currentPct: 0, pricePerShare: 1.0 },
-                { name: "Individual - TOD (Taxable)", balance: 750.15, etf: "CASH", vol: 0, pctDefault: 0, currentPct: 0, pricePerShare: 1.0 }
-            ]
-        };
+        // ============ GENERIC EXPOSURE CALCULATION ENGINE ============
+        // Works for any account, any ETF, any balance
 
-        // Initialize with default values
-        let state = {
-            tqqq: accounts.tqqq.map(a => ({ ...a, pct: a.pctDefault, current: a.currentPct })),
-            qld: accounts.qld.map(a => ({ ...a, pct: a.pctDefault, current: a.currentPct })),
-            qqq: accounts.qqq.map(a => ({ ...a, pct: a.pctDefault, current: a.currentPct })),
-            other: accounts.other.map(a => ({ ...a, pct: a.pctDefault, current: a.currentPct }))
-        };
+        class PortfolioAccount {
+            constructor(accountData) {
+                this.id = accountData.id;
+                this.name = accountData.name;
+                this.etf = accountData.etf;
+                this.balance = accountData.current_balance;
+                this.price = accountData.current_price;
+                this.transactions = accountData.transactions || [];
+            }
+
+            // Calculate current shares from transaction history
+            getCurrentShares() {
+                return this.transactions.reduce((sum, tx) => {
+                    return tx.action === 'BUY' ? sum + tx.shares : sum - tx.shares;
+                }, 0);
+            }
+
+            // Current exposure percentage based on actual holdings
+            getCurrentExposurePercent() {
+                const currentShares = this.getCurrentShares();
+                const holdingsValue = currentShares * this.price;
+                return (holdingsValue / this.balance) * 100;
+            }
+
+            // Calculate holdings for target exposure percentage
+            getTargetShares(targetPercent) {
+                const targetValue = this.balance * (targetPercent / 100);
+                return Math.floor(targetValue / this.price);
+            }
+
+            // How many shares to buy (positive) or sell (negative)
+            getSharesAction(targetPercent) {
+                const current = this.getCurrentShares();
+                const target = this.getTargetShares(targetPercent);
+                return target - current;
+            }
+
+            // Full account state
+            getState(targetPercent) {
+                const currentShares = this.getCurrentShares();
+                const currentExposure = this.getCurrentExposurePercent();
+                const targetShares = this.getTargetShares(targetPercent);
+                const sharesAction = this.getSharesAction(targetPercent);
+                const currentValue = currentShares * this.price;
+                const targetValue = targetShares * this.price;
+                const cash = this.balance - currentValue;
+                const targetCash = this.balance - targetValue;
+
+                return {
+                    id: this.id,
+                    name: this.name,
+                    etf: this.etf,
+                    balance: this.balance,
+                    price: this.price,
+                    // Current state
+                    currentShares,
+                    currentExposure,
+                    currentValue,
+                    currentCash: cash,
+                    // Target state
+                    targetPercent,
+                    targetShares,
+                    targetValue,
+                    targetCash,
+                    // Action
+                    sharesAction,
+                    action: sharesAction > 0 ? 'BUY' : (sharesAction < 0 ? 'SELL' : 'HOLD'),
+                    transactions: this.transactions
+                };
+            }
+        }
+
+        // Load account data from embedded window.ACCOUNT_DATA
+        let allAccounts = [];
+        function loadAccountData() {
+            try {
+                if (!window.ACCOUNT_DATA || !window.ACCOUNT_DATA.accounts) {
+                    throw new Error('Account data not loaded. Make sure signals/account_data.js is accessible.');
+                }
+                allAccounts = window.ACCOUNT_DATA.accounts.map(a => new PortfolioAccount(a));
+                renderCombinedTable();
+                loadExposureHistory();
+            } catch (error) {
+                console.error('Error loading account data:', error);
+                document.getElementById('combined-tbody').innerHTML =
+                    `<tr><td colspan="9" style="text-align: center; color: red;">Error: ${error.message}</td></tr>`;
+            }
+        }
 
         // Format Currency
         const fmt = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(val);
         const fmtNum = (val) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 0 }).format(Math.round(val));
+        const fmtPct = (val) => val.toFixed(1) + '%';
 
-        // Calculate account row data
-        function calcAccount(account, useNew = true) {
-            const pct = useNew ? account.pct : account.current;
-            const targetDeploy = account.balance * (pct / 100);
-            const shares = Math.floor(targetDeploy / account.pricePerShare);
-            const costBasis = shares * account.pricePerShare;
-            const cash = account.balance - costBasis;
-            return { targetDeploy, shares, costBasis, cash };
+        // Get target exposure from input
+        function getTargetExposure() {
+            return parseFloat(document.getElementById('new-exposure').value) || 45;
         }
 
-        // Render combined table
+        // Render combined table with transaction-based calculations
         function renderCombinedTable() {
             const tbody = document.getElementById('combined-tbody');
+            const targetExposure = getTargetExposure();
             let html = '';
 
-            ['tqqq', 'qld', 'other'].forEach(strategy => {
-                state[strategy].forEach((acc, idx) => {
-                    const currentCalc = calcAccount(acc, false); // Use current exposure
-                    const newCalc = calcAccount(acc, true);      // Use new exposure
-                    const shareDiff = newCalc.shares - currentCalc.shares;
-                    const diffClass = shareDiff > 0 ? 'text-success' : (shareDiff < 0 ? 'text-danger' : 'text-muted');
+            allAccounts.forEach(account => {
+                const state = account.getState(targetExposure);
+                const diffClass = state.sharesAction > 0 ? 'text-success' : (state.sharesAction < 0 ? 'text-danger' : 'text-muted');
+                const actionClass = state.sharesAction > 0 ? 'action-required' : (state.sharesAction < 0 ? 'action-required' : 'action-hold');
 
-                    // All accounts use same action logic (no custom actions)
-                    const action = shareDiff > 0 ? 'BUY ' + shareDiff : (shareDiff < 0 ? 'SELL ' + Math.abs(shareDiff) : 'HOLD');
-                    const actionClass = shareDiff > 0 ? 'action-required' : (shareDiff < 0 ? 'action-required' : 'action-hold');
-
-                    html += `
-                        <tr>
-                            <td><strong>${acc.name}</strong></td>
-                            <td>
-                                <input type="number" class="input-balance"
-                                       value="${acc.balance.toFixed(2)}" min="0" step="0.01"
-                                       data-strategy="${strategy}" data-idx="${idx}"
-                                       onchange="updateBalance(this)"
-                                       style="width: 120px; padding: 0.4rem 0.5rem; border: 1px solid #ddd; border-radius: 4px; text-align: right;">
-                            </td>
-                            <td class="value-positive">${fmtNum(currentCalc.shares)}</td>
-                            <td class="value-positive">${fmtNum(newCalc.shares)}</td>
-                            <td class="${diffClass}" style="font-weight: 600;">${shareDiff > 0 ? '+' : ''}${fmtNum(shareDiff)}</td>
-                            <td class="value-positive">${fmt(newCalc.targetDeploy)}</td>
-                            <td class="value-positive">${fmt(newCalc.cash)}</td>
-                            <td><span class="${actionClass}">${action}</span></td>
-                        </tr>
-                    `;
-                });
+                html += `
+                    <tr>
+                        <td><strong>${state.name}</strong></td>
+                        <td><span class="badge badge-etf badge-${state.etf.toLowerCase()}">${state.etf}</span></td>
+                        <td>${fmt(state.balance)}</td>
+                        <td>${state.currentShares}</td>
+                        <td class="value-positive">${fmtPct(state.currentExposure)}</td>
+                        <td>${state.targetShares}</td>
+                        <td class="value-positive">${fmtPct(state.targetPercent)}</td>
+                        <td class="${diffClass}" style="font-weight: 600;">${state.sharesAction > 0 ? '+' : ''}${state.sharesAction}</td>
+                        <td><span class="${actionClass}">${state.action} ${Math.abs(state.sharesAction)}</span></td>
+                    </tr>
+                `;
             });
 
-            tbody.innerHTML = html;
+            tbody.innerHTML = html || '<tr><td colspan="9" style="text-align: center; color: #999;">No accounts loaded</td></tr>';
             updateTotals();
         }
 
-        // Update balance (and persist as current baseline)
-        function updateBalance(input) {
-            const strategy = input.getAttribute('data-strategy');
-            const idx = parseInt(input.getAttribute('data-idx'));
-            const newBalance = Math.max(0, parseFloat(input.value) || 0);
-            state[strategy][idx].balance = newBalance;
-            // Persist the new balance as the current baseline
-            state[strategy][idx].currentBalance = newBalance;
-            renderCombinedTable();
-        }
-
-        // Update current exposure (applied to all accounts)
-        function updateCurrentExposure(value) {
-            const pct = Math.max(0, Math.min(200, parseFloat(value) || 0));
-            document.getElementById('current-exposure').value = pct;
-
-            ['tqqq', 'qld', 'other'].forEach(strategy => {
-                state[strategy].forEach(acc => {
-                    acc.current = pct;
-                });
-            });
-            renderCombinedTable();
-        }
-
-        // Update new exposure (applied to all accounts)
+        // Update target exposure (applied to all accounts)
         function updateNewExposure(value) {
             const pct = Math.max(0, Math.min(200, parseFloat(value) || 0));
             document.getElementById('new-exposure').value = pct;
-
-            ['tqqq', 'qld', 'other'].forEach(strategy => {
-                state[strategy].forEach(acc => {
-                    acc.pct = pct;
-                });
-            });
             renderCombinedTable();
         }
 
-        // Update totals
+        // Update current exposure display (informational)
+        function updateCurrentExposure(value) {
+            const pct = Math.max(0, Math.min(200, parseFloat(value) || 0));
+            document.getElementById('current-exposure').value = pct;
+            // This is just for reference; actual current exposure comes from transactions
+        }
+
+        // Update totals from all accounts
         function updateTotals() {
-            const calc = (s, useNew = true) => {
-                const rows = state[s];
-                if (rows.length === 0) return { balance: 0, deploy: 0, shares: 0, cash: 0, year1: 0 };
-                const balance = rows.reduce((a, r) => a + r.balance, 0);
-                const deploy = rows.reduce((a, r) => a + calcAccount(r, useNew).targetDeploy, 0);
-                const shares = rows.reduce((a, r) => a + calcAccount(r, useNew).shares, 0);
-                const cash = rows.reduce((a, r) => a + calcAccount(r, useNew).cash, 0);
-                const year1 = deploy * 0.54; // Rough estimate
-                return { balance, deploy, shares, cash, year1 };
-            };
+            const targetExposure = getTargetExposure();
 
-            const tNew = calc('tqqq', true);
-            const qNew = calc('qld', true);
-            const oNew = calc('other', true);
+            // Sum across all accounts
+            const totals = allAccounts.reduce((acc, account) => {
+                const state = account.getState(targetExposure);
+                return {
+                    balance: acc.balance + state.balance,
+                    currentValue: acc.currentValue + state.currentValue,
+                    currentShares: acc.currentShares + state.currentShares,
+                    currentCash: acc.currentCash + state.currentCash,
+                    targetValue: acc.targetValue + state.targetValue,
+                    targetCash: acc.targetCash + state.targetCash,
+                    targetShares: acc.targetShares + state.targetShares
+                };
+            }, { balance: 0, currentValue: 0, currentShares: 0, currentCash: 0, targetValue: 0, targetCash: 0, targetShares: 0 });
 
-            // Combined table totals (using new exposure)
-            const totalBalance = tNew.balance + qNew.balance + oNew.balance;
-            const totalDeploy = tNew.deploy + qNew.deploy + oNew.deploy;
-            const totalShares = tNew.shares + qNew.shares + oNew.shares;
-            const totalCash = tNew.cash + qNew.cash + oNew.cash;
-            const totalYear1 = tNew.year1 + qNew.year1 + oNew.year1;
-            const tbillYield = totalCash * 0.05;
+            const tbillYield = totals.targetCash * 0.05;
+            const year1Return = totals.targetValue * 0.54; // Rough estimate
 
-            document.getElementById('combined-balance').textContent = fmt(totalBalance);
-            document.getElementById('combined-target').textContent = fmt(totalDeploy);
-            document.getElementById('combined-shares').textContent = fmtNum(totalShares);
-            document.getElementById('combined-cash').textContent = fmt(totalCash);
+            document.getElementById('combined-balance').textContent = fmt(totals.balance);
+            document.getElementById('combined-target').textContent = fmt(totals.targetValue);
+            document.getElementById('combined-shares').textContent = fmtNum(totals.targetShares);
+            document.getElementById('combined-cash').textContent = fmt(totals.targetCash);
 
             // Portfolio totals
-            document.getElementById('portfolio-total').textContent = fmt(totalBalance);
-            document.getElementById('portfolio-deploy').textContent = fmt(totalDeploy);
-            document.getElementById('portfolio-cash').textContent = fmt(totalCash);
+            document.getElementById('portfolio-total').textContent = fmt(totals.balance);
+            document.getElementById('portfolio-deploy').textContent = fmt(totals.targetValue);
+            document.getElementById('portfolio-cash').textContent = fmt(totals.targetCash);
             document.getElementById('portfolio-yield').textContent = fmt(tbillYield);
-            document.getElementById('portfolio-year1').textContent = fmt(totalYear1);
-            document.getElementById('portfolio-ending').textContent = fmt(totalBalance + totalYear1);
+            document.getElementById('portfolio-year1').textContent = fmt(year1Return);
+            document.getElementById('portfolio-ending').textContent = fmt(totals.balance + year1Return);
         }
 
         // Load and display 7-day exposure history.
@@ -585,10 +613,24 @@
             `).join('');
         }
 
+        // Update TQQQ price display
+        function updateTQQQPrice() {
+            if (allAccounts.length > 0) {
+                // Get the most recent TQQQ price from any account
+                const tqqq_account = allAccounts.find(a => a.etf === 'TQQQ');
+                if (tqqq_account) {
+                    const price = tqqq_account.price;
+                    document.getElementById('tqqq-price').textContent = '$' + price.toFixed(2);
+                }
+            }
+        }
+
         // Initialize
         document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
-        renderCombinedTable();
-        loadExposureHistory();
+        loadAccountData(); // Load from transaction file
+
+        // Update price display after accounts load
+        setTimeout(updateTQQQPrice, 100);
     </script>
 </body>
 </html>

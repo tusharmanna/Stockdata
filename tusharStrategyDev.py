@@ -15,6 +15,7 @@ import argparse
 import math
 from collections import defaultdict
 from datetime import date
+from typing import Optional
 
 import pandas as pd
 import yfinance as yf
@@ -88,7 +89,7 @@ def compute_signal_v1(qqq_df: pd.DataFrame) -> pd.DataFrame:
 
 
 
-def _price_on(df: pd.DataFrame, dt) -> float | None:
+def _price_on(df: pd.DataFrame, dt) -> Optional[float]:
     if dt in df.index:
         return float(df.loc[dt, "close"])
     avail = df.index[df.index <= dt]
