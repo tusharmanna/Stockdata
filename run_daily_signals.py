@@ -6,21 +6,31 @@ Usage:
 This script:
 1. Runs tushar_v2_signal.py (TQQQ signal)
 2. Runs tushar_v2_qld_signal.py (QLD signal)
-3. Fetches QQQ reference data (price, volatility)
-4. Updates docs/accounts_summary.md with today's signals
+3. Runs tushar_v2_qqq_signal.py (QQQ comparison)
+4. Emails results to EMAIL_ADDRESS via Gmail SMTP
+5. Texts a short summary via AT&T email-to-SMS gateway
 """
 
-import subprocess
+import json
+import os
 import re
+import smtplib
+import ssl
+import subprocess
+import traceback
+import webbrowser
 from datetime import datetime
-import yfinance as yf
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+
 import numpy as np
 import pandas as pd
-import webbrowser
-import os
+import yfinance as yf
+
+
+# ── Signal runners ─────────────────────────────────────────────────────────────
 
 def run_signal(script_name):
-    """Run a signal script and capture output."""
     result = subprocess.run(
         ["python3", script_name],
         capture_output=True,
@@ -28,265 +38,343 @@ def run_signal(script_name):
     )
     return result.stdout + result.stderr
 
-def get_qqq_data():
-    """Fetch QQQ price and volatility reference data."""
-    try:
-        qqq_df = yf.download('QQQ', period='3mo', progress=False, auto_adjust=True)
-        if isinstance(qqq_df.columns, pd.MultiIndex):
-            qqq_df.columns = qqq_df.columns.get_level_values(0)
 
-        close = qqq_df['Close']
-        ret = close.pct_change()
-
-        qqq_close = close.iloc[-1]
-        qqq_vol = (ret.rolling(20).std() * np.sqrt(252)).iloc[-1] * 100
-
-        return {
-            'qqq_close': qqq_close,
-            'qqq_vol': qqq_vol
-        }
-    except Exception as e:
-        print(f"Warning: Could not fetch QQQ data: {e}")
-        return {'qqq_close': None, 'qqq_vol': None}
+# ── Data helpers ───────────────────────────────────────────────────────────────
 
 def extract_signal_data(output_tqqq, output_qld):
-    """Extract signal data from outputs."""
+    """Read signal data from CSVs (authoritative); fall back to output parsing for high189."""
     signals = {}
 
-    # Parse TQQQ signal
-    for line in output_tqqq.split("\n"):
-        if "QQQ Close:" in line:
-            match = re.search(r"\$(\d+\.\d+)", line)
-            if match:
-                signals["qqq_close"] = float(match.group(1))
-        if "189d High:" in line:
-            match = re.search(r"\$(\d+\.\d+)", line)
-            if match:
-                signals["high189"] = float(match.group(1))
-        if "% Below High:" in line:
-            match = re.search(r"([\d.]+)%", line)
-            if match:
-                signals["pcthi"] = float(match.group(1))
-        if "Regime:" in line:
-            signals["regime"] = "BULL" if "BULL" in line else "CASH"
-        if "TQQQ 20d Vol:" in line:
-            match = re.search(r"(\d+)%", line)
-            if match:
-                signals["tqqq_vol"] = int(match.group(1))
-        if "Target:" in line and "TQQQ" in line:
-            match = re.search(r"Hold ([\d.]+)x TQQQ", line)
-            if match:
-                signals["tqqq_exposure"] = float(match.group(1))
-        if "Action:" in line and "TQQQ" not in line:
-            signals["action"] = line.split("Action: ")[1].strip()
+    try:
+        df  = pd.read_csv("signals/tushar_v2_history.csv", dtype={"date": str})
+        row = df.sort_values("date").iloc[-1]
+        signals["qqq_close"]     = float(row["qqq_close"])
+        signals["pcthi"]         = float(row["pcthi"])
+        signals["regime"]        = str(row["regime"])
+        signals["tqqq_vol"]      = int(round(float(row["tqqq_vol"]) * 100))
+        signals["tqqq_exposure"] = float(row["exposure"])
+    except Exception as e:
+        print(f"Warning: could not read TQQQ history CSV: {e}")
 
-    # Parse QLD signal
-    for line in output_qld.split("\n"):
-        if "QLD 20d Vol:" in line:
-            match = re.search(r"(\d+)%", line)
-            if match:
-                signals["qld_vol"] = int(match.group(1))
-        if "Target:" in line and "QLD" in line:
-            match = re.search(r"(\d+)% of account in QLD", line)
-            if match:
-                signals["qld_exposure"] = int(match.group(1))
+    try:
+        df  = pd.read_csv("signals/tushar_v2_qld_history.csv", dtype={"date": str})
+        row = df.sort_values("date").iloc[-1]
+        signals["qld_vol"]      = int(round(float(row["qld_vol"]) * 100))
+        signals["qld_exposure"] = int(row["pct_in_qld"])
+    except Exception as e:
+        print(f"Warning: could not read QLD history CSV: {e}")
+
+    for line in output_tqqq.split("\n"):
+        if "189d High:" in line:
+            m = re.search(r"\$(\d+\.\d+)", line)
+            if m:
+                signals["high189"] = float(m.group(1))
+                break
 
     return signals
 
-def update_document(signals):
-    """Update accounts_summary.md with today's signals."""
-    doc_path = "docs/accounts_summary.md"
-
-    with open(doc_path, "r", encoding="utf-8") as f:
-        content = f.read()
-
-    # Find and replace the signals section
-    qqq_ref = ""
-    if signals.get('qqq_close_ref') and signals.get('qqq_vol_ref'):
-        qqq_ref = f"\n- QQQ B&H (Ref): ${signals.get('qqq_close_ref'):.2f} | 20d Vol: {signals.get('qqq_vol_ref'):.0f}% | Always 100% invested"
-
-    new_signals_section = f"""## TODAY'S SIGNALS ({datetime.now().strftime('%Y-%m-%d')})
-
-**Regime Gate:** {signals.get('regime', '?')} - {signals.get('pcthi', '?'):.1f}% below 189d high (threshold: 15%)
-
-**v2 Strategies (Comparison):**
-- **QQQ v2** (1.0x cap, no margin): Hold {signals.get('qqq_exposure_v2', '?')}x | Vol: {signals.get('qqq_vol_v2', '?')}%
-- **TQQQ v2** (1.5x cap, with margin): Hold {signals.get('tqqq_exposure', '?')}x | Vol: {signals.get('tqqq_vol', '?')}%
-- **QLD v2** (1.0x cap, no margin): {signals.get('qld_exposure', '?')}% | Vol: {signals.get('qld_vol', '?')}%
-
-**Market Data:**
-- QQQ Close: ${signals.get('qqq_close', '?'):.2f}
-- 189d High: ${signals.get('high189', '?'):.2f}{qqq_ref}"""
-
-    # Replace old signals section
-    pattern = r"## TODAY'S SIGNALS.*?(?=---)"
-    content = re.sub(pattern, new_signals_section + "\n\n", content, flags=re.DOTALL)
-
-    # Update Last Updated timestamp
-    content = re.sub(
-        r"\*\*Last Updated:\*\*.*",
-        f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M')}",
-        content
-    )
-
-    with open(doc_path, "w", encoding="utf-8") as f:
-        f.write(content)
-
-    print(f"\n[DONE] Updated {doc_path}")
 
 def get_last_7_days_exposure():
-    """Get the last 7 days of exposure % for all strategies."""
-    exposures = {'tqqq': [], 'qld': [], 'qqq': []}
+    exposures = {"tqqq": [], "qld": [], "qqq": []}
 
-    # Read TQQQ exposure history
-    try:
-        tqqq_df = pd.read_csv("signals/tushar_v2_history.csv")
-        if 'exposure' in tqqq_df.columns and 'date' in tqqq_df.columns:
-            tqqq_df['date'] = pd.to_datetime(tqqq_df['date'])
-            tqqq_df = tqqq_df.sort_values('date')
-            last_7 = tqqq_df.tail(7)
-            for _, row in last_7.iterrows():
-                exposures['tqqq'].append((row['date'].strftime('%Y-%m-%d'), f"{row['exposure']*100:.0f}%"))
-    except Exception as e:
-        pass
-
-    # Read QLD exposure history
-    try:
-        qld_df = pd.read_csv("signals/tushar_v2_qld_history.csv")
-        if 'pct_in_qld' in qld_df.columns and 'date' in qld_df.columns:
-            qld_df['date'] = pd.to_datetime(qld_df['date'])
-            qld_df = qld_df.sort_values('date')
-            last_7 = qld_df.tail(7)
-            for _, row in last_7.iterrows():
-                exposures['qld'].append((row['date'].strftime('%Y-%m-%d'), f"{row['pct_in_qld']:.0f}%"))
-    except Exception as e:
-        pass
-
-    # Read QQQ exposure history
-    try:
-        qqq_df = pd.read_csv("signals/tushar_v2_qqq_history.csv")
-        if 'exposure' in qqq_df.columns and 'date' in qqq_df.columns:
-            qqq_df['date'] = pd.to_datetime(qqq_df['date'])
-            qqq_df = qqq_df.sort_values('date')
-            last_7 = qqq_df.tail(7)
-            for _, row in last_7.iterrows():
-                exposures['qqq'].append((row['date'].strftime('%Y-%m-%d'), f"{row['exposure']*100:.0f}%"))
-    except Exception as e:
-        pass
+    csv_map = {
+        "tqqq": ("signals/tushar_v2_history.csv",     "exposure",   lambda r: f"{r['exposure']*100:.0f}%"),
+        "qld":  ("signals/tushar_v2_qld_history.csv", "pct_in_qld", lambda r: f"{r['pct_in_qld']:.0f}%"),
+        "qqq":  ("signals/tushar_v2_qqq_history.csv", "exposure",   lambda r: f"{r['exposure']*100:.0f}%"),
+    }
+    for key, (path, col, fmt) in csv_map.items():
+        try:
+            df = pd.read_csv(path)
+            if col in df.columns and "date" in df.columns:
+                df["date"] = pd.to_datetime(df["date"])
+                for _, row in df.sort_values("date").tail(7).iterrows():
+                    exposures[key].append((row["date"].strftime("%Y-%m-%d"), fmt(row)))
+        except Exception:
+            pass
 
     return exposures
 
+
 def display_7day_exposure(exposures):
-    """Display last 7 days of exposure % for all strategies."""
     print("\nLAST 7 DAYS EXPOSURE %:")
     print("-" * 70)
-
-    # Find max length for alignment
-    max_rows = max(len(exposures['tqqq']), len(exposures['qld']), len(exposures['qqq']))
-
-    # Print header
     print(f"{'Date':<12} {'TQQQ v2':<15} {'QLD v2':<15} {'QQQ v2':<15}")
     print("-" * 70)
-
-    # Print rows
+    max_rows = max(len(v) for v in exposures.values())
     for i in range(max_rows):
-        tqqq_str = f"{exposures['tqqq'][i][1]}" if i < len(exposures['tqqq']) else "-"
-        qld_str = f"{exposures['qld'][i][1]}" if i < len(exposures['qld']) else "-"
-        qqq_str = f"{exposures['qqq'][i][1]}" if i < len(exposures['qqq']) else "-"
-
-        date_str = exposures['tqqq'][i][0] if i < len(exposures['tqqq']) else (exposures['qld'][i][0] if i < len(exposures['qld']) else (exposures['qqq'][i][0] if i < len(exposures['qqq']) else ""))
-
-        print(f"{date_str:<12} {tqqq_str:<15} {qld_str:<15} {qqq_str:<15}")
-
+        t = exposures["tqqq"][i] if i < len(exposures["tqqq"]) else ("", "-")
+        q = exposures["qld"][i]  if i < len(exposures["qld"])  else ("", "-")
+        u = exposures["qqq"][i]  if i < len(exposures["qqq"])  else ("", "-")
+        date_str = t[0] or q[0] or u[0]
+        print(f"{date_str:<12} {t[1]:<15} {q[1]:<15} {u[1]:<15}")
     print("-" * 70)
 
-def write_exposure_history_js(exposures):
-    """Write the 7-day exposure history to a JS file the dashboard can load.
 
-    Browsers block XHR/fetch to file:// for security, but <script src> works,
-    so we emit signals/exposure_history.js setting window.EXPOSURE_HISTORY.
-    """
-    # Merge all three strategies into a date-keyed map
+def write_sms_summary(signals):
+    """Write a short SMS-ready summary (<160 chars) to signals/sms_summary.txt."""
+    today  = datetime.now().strftime("%m/%d")
+    regime = signals.get("regime", "?")
+    pcthi  = signals.get("pcthi", 0)
+    t_expo = signals.get("tqqq_exposure", "?")
+    t_vol  = signals.get("tqqq_vol", "?")
+    q_expo = signals.get("qld_exposure", "?")
+    text   = f"{today} {regime} {pcthi:.1f}%|TQQQ:{t_expo}x({t_vol}%vol)|QLD:{q_expo}%"
+    os.makedirs("signals", exist_ok=True)
+    with open("signals/sms_summary.txt", "w") as f:
+        f.write(text[:160])
+    print(f"[notify] SMS summary: {text[:160]}")
+
+
+def write_exposure_history_js(exposures):
     history = {}
-    for strat in ('tqqq', 'qld', 'qqq'):
+    for strat in ("tqqq", "qld", "qqq"):
         for date, pct in exposures.get(strat, []):
             history.setdefault(date, {})[strat] = pct
-
-    rows = [{"date": d, **history[d]} for d in sorted(history.keys())]
-
-    import json
-    js = "window.EXPOSURE_HISTORY = " + json.dumps(rows) + ";"
+    rows     = [{"date": d, **history[d]} for d in sorted(history.keys())]
     out_path = os.path.join("signals", "exposure_history.js")
     with open(out_path, "w", encoding="utf-8") as f:
-        f.write(js)
+        f.write("window.EXPOSURE_HISTORY = " + json.dumps(rows) + ";")
     print(f"[DONE] Wrote exposure history: {out_path}")
 
+
+def update_document(signals):
+    doc_path = "docs/accounts_summary.md"
+    with open(doc_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    new_section = (
+        f"## TODAY'S SIGNALS ({datetime.now().strftime('%Y-%m-%d')})\n\n"
+        f"**Regime Gate:** {signals.get('regime','?')} - "
+        f"{signals.get('pcthi', 0):.1f}% below 189d high (threshold: 15%)\n\n"
+        f"**v2 Strategies:**\n"
+        f"- TQQQ v2 (1.5x cap): Hold {signals.get('tqqq_exposure','?')}x | Vol: {signals.get('tqqq_vol','?')}%\n"
+        f"- QLD v2 (1.0x cap): {signals.get('qld_exposure','?')}% | Vol: {signals.get('qld_vol','?')}%\n\n"
+        f"**Market Data:**\n"
+        f"- QQQ Close: ${signals.get('qqq_close', 0):.2f}\n"
+        f"- 189d High: ${signals.get('high189', 0):.2f}"
+    )
+    content = re.sub(r"## TODAY'S SIGNALS.*?(?=---)", new_section + "\n\n",
+                     content, flags=re.DOTALL)
+    content = re.sub(r"\*\*Last Updated:\*\*.*",
+                     f"**Last Updated:** {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+                     content)
+    with open(doc_path, "w", encoding="utf-8") as f:
+        f.write(content)
+    print(f"[DONE] Updated {doc_path}")
+
+
 def open_dashboard():
-    """Open the portfolio dashboard in default browser."""
-    dashboard_path = os.path.abspath("portfolio_dashboard.html")
-    if os.path.exists(dashboard_path):
-        webbrowser.open("file://" + dashboard_path)
-        print(f"\n[DONE] Dashboard opened: {dashboard_path}")
+    path = os.path.abspath("portfolio_dashboard.html")
+    if os.path.exists(path):
+        webbrowser.open("file://" + path)
+        print(f"[DONE] Dashboard opened: {path}")
     else:
-        print(f"\n[WARNING] Dashboard not found: {dashboard_path}")
+        print(f"[WARNING] Dashboard not found: {path}")
+
+
+# ── Notifications ──────────────────────────────────────────────────────────────
+
+def _smtp_send(to_addr, subject, body):
+    """Send plain-text email via Gmail SMTP. Returns True on success."""
+    email_addr = os.environ.get("EMAIL_ADDRESS", "")
+    email_pass = os.environ.get("EMAIL_PASSWORD", "")
+    if not email_addr or not email_pass:
+        print("[notify] EMAIL_ADDRESS or EMAIL_PASSWORD not set — skipping.")
+        return False
+    try:
+        msg            = MIMEMultipart()
+        msg["From"]    = email_addr
+        msg["To"]      = to_addr
+        msg["Subject"] = subject
+        msg.attach(MIMEText(body, "plain"))
+        ctx = ssl.create_default_context()
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as server:
+            server.login(email_addr, email_pass)
+            server.sendmail(email_addr, to_addr, msg.as_string())
+        return True
+    except Exception as e:
+        print(f"[notify] SMTP error: {e}")
+        return False
+
+
+def _build_email_body(signals, exposures):
+    today  = datetime.now().strftime("%Y-%m-%d")
+    regime = signals.get("regime", "?")
+    pcthi  = signals.get("pcthi", 0)
+    qqq_cl = signals.get("qqq_close", 0)
+    hi189  = signals.get("high189", 0)
+    t_vol  = signals.get("tqqq_vol", "?")
+    t_expo = signals.get("tqqq_exposure", "?")
+    q_vol  = signals.get("qld_vol", "?")
+    q_expo = signals.get("qld_exposure", "?")
+
+    lines = [
+        f"=== TUSHAR V2 DAILY SIGNALS -- {today} ===",
+        "",
+        f"REGIME : {regime}",
+        f"QQQ    : ${qqq_cl:.2f}  |  189d High: ${hi189:.2f}  |  {pcthi:.1f}% below high  |  Gate at 15%",
+        "",
+        "TQQQ v2  (taxable / margin account)",
+        f"  Target Exposure  : {t_expo}x TQQQ   (cap 1.5x)",
+        f"  20d Vol          : {t_vol}%",
+        "",
+        "QLD v2  (Roth / HSA / 401k -- no margin)",
+        f"  Target Allocation: {q_expo}% of account   (cap 100%)",
+        f"  20d Vol          : {q_vol}%",
+        "",
+        "LAST 7 DAYS EXPOSURE:",
+        f"{'Date':<12} {'TQQQ v2':>9} {'QLD v2':>9} {'QQQ v2':>9}",
+        "-" * 44,
+    ]
+
+    all_dates = sorted({d for strat in exposures.values() for d, _ in strat})
+    t_map = dict(exposures.get("tqqq", []))
+    q_map = dict(exposures.get("qld",  []))
+    u_map = dict(exposures.get("qqq",  []))
+    for d in all_dates:
+        lines.append(
+            f"{d:<12} {t_map.get(d,'-'):>9} {q_map.get(d,'-'):>9} {u_map.get(d,'-'):>9}"
+        )
+
+    lines += ["", "---", "Automated signal | Tushar v2 strategy"]
+    return "\n".join(lines)
+
+
+def send_notifications(signals, exposures):
+    """Email full report + SMS summary. Failures never crash the script."""
+    email_addr = os.environ.get("EMAIL_ADDRESS", "")
+    phone      = os.environ.get("PHONE_NUMBER", "")
+
+    today      = datetime.now().strftime("%Y-%m-%d")
+    regime     = signals.get("regime", "?")
+    t_expo     = signals.get("tqqq_exposure", "?")
+    q_expo     = signals.get("qld_exposure", "?")
+    pcthi      = signals.get("pcthi", 0)
+    t_vol      = signals.get("tqqq_vol", "?")
+
+    # Email
+    try:
+        subject = f"Daily Signal - {today} | {regime} | TQQQ: {t_expo}x | QLD: {q_expo}%"
+        body    = _build_email_body(signals, exposures)
+        ok      = _smtp_send(email_addr, subject, body)
+        if ok:
+            print(f"[notify] Email sent to {email_addr}")
+    except Exception as e:
+        print(f"[notify] Email error: {e}")
+
+    # SMS via AT&T email-to-SMS gateway
+    try:
+        if phone:
+            sms_addr = f"{phone}@txt.att.net"
+            sms_body = f"{today} {regime} {pcthi:.1f}%below189d|TQQQ:{t_expo}x({t_vol}%vol)|QLD:{q_expo}%"
+            ok = _smtp_send(sms_addr, "", sms_body[:160])
+            if ok:
+                print(f"[notify] SMS sent to {sms_addr}")
+        else:
+            print("[notify] PHONE_NUMBER not set — skipping SMS.")
+    except Exception as e:
+        print(f"[notify] SMS error: {e}")
+
+
+def send_failure_email(error_msg):
+    """Send failure alert. Safe to call from an except block."""
+    try:
+        email_addr = os.environ.get("EMAIL_ADDRESS", "")
+        today      = datetime.now().strftime("%Y-%m-%d")
+        subject    = f"Daily Signal FAILED - {today}"
+        body       = f"The daily signal script failed on {today}.\n\nError:\n{error_msg}"
+        ok         = _smtp_send(email_addr, subject, body)
+        if ok:
+            print(f"[notify] Failure email sent to {email_addr}")
+    except Exception as e:
+        print(f"[notify] Could not send failure email: {e}")
+
+
+# ── Main ───────────────────────────────────────────────────────────────────────
 
 def main():
-    print("Running daily signals...\n")
-    print("=" * 70)
+    try:
+        print("Running daily signals...\n")
+        print("=" * 70)
 
-    # Run TQQQ signal
-    print("1. Running TQQQ Signal (tushar_v2_signal.py)...\n")
-    output_tqqq = run_signal("tushar_v2_signal.py")
-    print(output_tqqq)
+        print("1. Running TQQQ Signal (tushar_v2_signal.py)...\n")
+        output_tqqq = run_signal("tushar_v2_signal.py")
+        print(output_tqqq)
 
-    print("\n" + "=" * 70)
+        print("\n" + "=" * 70)
 
-    # Run QLD signal
-    print("2. Running QLD Signal (tushar_v2_qld_signal.py)...\n")
-    output_qld = run_signal("tushar_v2_qld_signal.py")
-    print(output_qld)
+        print("2. Running QLD Signal (tushar_v2_qld_signal.py)...\n")
+        output_qld = run_signal("tushar_v2_qld_signal.py")
+        print(output_qld)
 
-    print("\n" + "=" * 70)
+        print("\n" + "=" * 70)
 
-    # Run QQQ v2 signal (for comparison)
-    print("3. Running QQQ v2 Signal (tushar_v2_qqq_signal.py - comparison only)...\n")
-    output_qqq = run_signal("tushar_v2_qqq_signal.py")
-    print(output_qqq)
+        print("3. Running QQQ v2 Signal (tushar_v2_qqq_signal.py)...\n")
+        output_qqq = run_signal("tushar_v2_qqq_signal.py")
+        print(output_qqq)
 
-    print("\n" + "=" * 70)
+        print("\n" + "=" * 70)
 
-    # Extract signals
-    signals = extract_signal_data(output_tqqq, output_qld)
-    signals['qqq_close_ref'] = signals.get('qqq_close', None)
-    signals['qqq_vol_ref'] = None  # Will extract from QQQ signal
+        signals = extract_signal_data(output_tqqq, output_qld)
+        signals["qqq_close_ref"] = signals.get("qqq_close")
+        signals["qqq_vol_ref"]   = None
 
-    # Extract QQQ v2 signal
-    for line in output_qqq.split("\n"):
-        if "QQQ 20d Vol:" in line:
-            match = re.search(r"(\d+)%", line)
-            if match:
-                signals['qqq_vol_v2'] = int(match.group(1))
-        if "Target:" in line and "QQQ" in line:
-            match = re.search(r"Hold ([\d.]+)x QQQ", line)
-            if match:
-                signals['qqq_exposure_v2'] = float(match.group(1))
+        for line in output_qqq.split("\n"):
+            if "QQQ 20d Vol:" in line:
+                m = re.search(r"(\d+)%", line)
+                if m:
+                    signals["qqq_vol_v2"] = int(m.group(1))
+            if "Target:" in line and "QQQ" in line:
+                m = re.search(r"Hold ([\d.]+)x QQQ", line)
+                if m:
+                    signals["qqq_exposure_v2"] = float(m.group(1))
 
-    print("\n" + "=" * 70)
-    print("[DONE] Daily signals complete!")
-    print(f"\nToday's Signals ({datetime.now().strftime('%Y-%m-%d')}):")
-    print(f"  Regime Gate: {signals.get('regime', '?')} ({signals.get('pcthi', '?'):.1f}% below 189d high, threshold 15%)")
-    print(f"  QQQ v2:  {signals.get('qqq_exposure_v2', '?')}x (1.0x cap, no margin) | Vol: {signals.get('qqq_vol_v2', '?'):.0f}%")
-    print(f"  TQQQ v2: {signals.get('tqqq_exposure', '?')}x (1.5x cap, with margin)")
-    print(f"  QLD v2:  {signals.get('qld_exposure', '?')}% (1.0x cap, no margin)")
-    print("=" * 70)
+        def _fmt(v, spec):
+            try:
+                return format(v, spec)
+            except (TypeError, ValueError):
+                return "?"
 
-    # Show last 7 days exposure
-    exposures = get_last_7_days_exposure()
-    display_7day_exposure(exposures)
+        print("\n" + "=" * 70)
+        print("[DONE] Daily signals complete!")
+        print(f"\nToday's Signals ({datetime.now().strftime('%Y-%m-%d')}):")
+        print(f"  Regime Gate: {signals.get('regime','?')} ({_fmt(signals.get('pcthi'),'.1f')}% below 189d high)")
+        print(f"  QQQ v2 : {signals.get('qqq_exposure_v2','?')}x | Vol: {_fmt(signals.get('qqq_vol_v2'),'.0f')}%")
+        print(f"  TQQQ v2: {signals.get('tqqq_exposure','?')}x (cap 1.5x, with margin)")
+        print(f"  QLD v2 : {signals.get('qld_exposure','?')}% (cap 100%, no margin)")
+        print("=" * 70)
 
-    # Write exposure history for the dashboard, then open it
-    write_exposure_history_js(exposures)
-    open_dashboard()
+        exposures = get_last_7_days_exposure()
+        display_7day_exposure(exposures)
+
+        try:
+            write_exposure_history_js(exposures)
+        except Exception as e:
+            print(f"[WARNING] Could not write exposure JS: {e}")
+
+        try:
+            write_sms_summary(signals)
+        except Exception as e:
+            print(f"[WARNING] Could not write SMS summary: {e}")
+
+        try:
+            update_document(signals)
+        except Exception as e:
+            print(f"[WARNING] Could not update accounts_summary.md: {e}")
+
+        try:
+            open_dashboard()
+        except Exception as e:
+            print(f"[WARNING] Could not open dashboard: {e}")
+
+        send_notifications(signals, exposures)
+
+    except Exception:
+        err = traceback.format_exc()
+        print(f"\n[ERROR] Script failed:\n{err}")
+        send_failure_email(err)
+        raise
+
 
 if __name__ == "__main__":
     main()

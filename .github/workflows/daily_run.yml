@@ -1,0 +1,59 @@
+name: Daily Signals
+
+on:
+  schedule:
+    - cron: "30 19 * * 1-5"   # 3:30 PM EDT (UTC-4)
+  workflow_dispatch:
+
+jobs:
+  run-signals:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run daily signals
+        run: |
+          mkdir -p signals
+          python run_daily_signals.py 2>&1 | tee signals/run_output.txt
+
+      - name: Set report date
+        run: echo "TODAY=$(date +%Y-%m-%d)" >> $GITHUB_ENV
+
+      - name: Send email report
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.EMAIL_ADDRESS }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "Daily Signal - ${{ env.TODAY }}"
+          to: ${{ secrets.EMAIL_ADDRESS }}
+          from: tusharmanna@gmail.com
+          body: file://signals/run_output.txt
+
+      - name: Send SMS
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.EMAIL_ADDRESS }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "Signal"
+          to: ${{ secrets.PHONE_NUMBER }}@txt.att.net
+          from: tusharmanna@gmail.com
+          body: file://signals/sms_summary.txt
