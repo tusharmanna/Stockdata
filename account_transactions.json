@@ -4,8 +4,8 @@
       "id": "brokeragelink",
       "name": "BrokerageLink",
       "etf": "TQQQ",
-      "current_balance": 339903,
-      "initial_balance": 339903,
+      "current_balance": 18000,
+      "initial_balance": 18000,
       "current_price": 73.35,
       "transactions": [
         {
@@ -28,8 +28,8 @@
       "id": "ib_brokerage",
       "name": "IB Brokerage",
       "etf": "TQQQ",
-      "current_balance": 100000,
-      "initial_balance": 100000,
+      "current_balance": 35000,
+      "initial_balance": 35000,
       "current_price": 73.35,
       "transactions": [
         {
@@ -47,156 +47,6 @@
           "note": "SELL at $81.29 - IB Account U1207581"
         }
       ]
-    },
-    {
-      "id": "roth_ira",
-      "name": "Roth IRA",
-      "etf": "TQQQ",
-      "current_balance": 81420,
-      "initial_balance": 81420,
-      "current_price": 73.35,
-      "transactions": [
-        {
-          "date": "06/30/2026",
-          "action": "SELL",
-          "shares": 2,
-          "price": 81.0,
-          "note": "SELL at $81.0"
-        },
-        {
-          "date": "06/24/2026",
-          "action": "BUY",
-          "shares": 20,
-          "price": 72.95,
-          "note": "BUY at $72.95"
-        }
-      ]
-    },
-    {
-      "id": "wellstrade_ira",
-      "name": "WELLSTRADE IRA",
-      "etf": "QLD",
-      "current_balance": 39640,
-      "initial_balance": 39640,
-      "current_price": 95.5,
-      "transactions": []
-    },
-    {
-      "id": "hsa_main",
-      "name": "HSA",
-      "etf": "TQQQ",
-      "current_balance": 27257,
-      "initial_balance": 27257,
-      "current_price": 73.35,
-      "transactions": [
-        {
-          "date": "06/30/2026",
-          "action": "SELL",
-          "shares": 3,
-          "price": 81.0,
-          "note": "SELL at $81.0"
-        },
-        {
-          "date": "06/24/2026",
-          "action": "BUY",
-          "shares": 14,
-          "price": 72.81,
-          "note": "BUY at $72.81"
-        }
-      ]
-    },
-    {
-      "id": "hsa_brokerage",
-      "name": "HSA Brokerage",
-      "etf": "QLD",
-      "current_balance": 23000,
-      "initial_balance": 23000,
-      "current_price": 95.5,
-      "transactions": []
-    },
-    {
-      "id": "optum_hsa_2023",
-      "name": "Optum HSA 2023",
-      "etf": "QLD",
-      "current_balance": 21729,
-      "initial_balance": 21729,
-      "current_price": 95.5,
-      "transactions": []
-    },
-    {
-      "id": "cash_management",
-      "name": "Cash Management (TOD)",
-      "etf": "TQQQ",
-      "current_balance": 6524.93,
-      "initial_balance": 6524.93,
-      "current_price": 73.35,
-      "transactions": [
-        {
-          "date": "06/30/2026",
-          "action": "SELL",
-          "shares": 2,
-          "price": 81.0,
-          "note": "SELL at $81.0"
-        },
-        {
-          "date": "06/24/2026",
-          "action": "BUY",
-          "shares": 19,
-          "price": 72.73,
-          "note": "BUY at $72.73"
-        }
-      ],
-      "note": "Non-trading account"
-    },
-    {
-      "id": "colorado_401k",
-      "name": "Colorado 401K",
-      "etf": "PENDING",
-      "current_balance": 365967.74,
-      "initial_balance": 365967.74,
-      "current_price": 1.0,
-      "transactions": [],
-      "note": "Non-trading account - pending allocation"
-    },
-    {
-      "id": "eshaan_custodial",
-      "name": "Eshaan Manna (Custodial)",
-      "etf": "STATIC",
-      "current_balance": 4653.28,
-      "initial_balance": 4653.28,
-      "current_price": 1.0,
-      "transactions": [],
-      "note": "Non-trading account"
-    },
-    {
-      "id": "shreyaan_custodial",
-      "name": "Shreyaan Manna (Custodial)",
-      "etf": "STATIC",
-      "current_balance": 2819.05,
-      "initial_balance": 2819.05,
-      "current_price": 1.0,
-      "transactions": [],
-      "note": "Non-trading account"
-    },
-    {
-      "id": "youth_account",
-      "name": "Individual - Youth Account",
-      "etf": "CASH",
-      "current_balance": 506.04,
-      "initial_balance": 506.04,
-      "current_price": 1.0,
-      "transactions": [],
-      "note": "Non-trading account"
-    },
-    {
-      "id": "tod_taxable",
-      "name": "Individual - TOD (Taxable)",
-      "etf": "CASH",
-      "current_balance": 750.15,
-      "initial_balance": 750.15,
-      "current_price": 1.0,
-      "transactions": [],
-      "note": "Non-trading account"
     }
   ]
 }
