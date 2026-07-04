@@ -3,7 +3,11 @@
     "allow": [
       "Bash(python manage_transactions.py:*)",
       "Bash(python3:*)",
-      "Read(//Users/tusharmanna/Downloads/**)"
+      "Read(//Users/tusharmanna/Downloads/**)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []
