@@ -23,37 +23,21 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Run daily signals
+        env:
+          EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          PHONE_NUMBER: ${{ secrets.PHONE_NUMBER }}
         run: |
           mkdir -p signals
           python run_daily_signals.py 2>&1 | tee signals/run_output.txt
 
-      - name: Set report date
-        run: echo "TODAY=$(date +%Y-%m-%d)" >> $GITHUB_ENV
-
-      - name: Send email report
+      - name: Upload signal outputs
         if: always()
-        uses: dawidd6/action-send-mail@v3
+        uses: actions/upload-artifact@v4
         with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          secure: true
-          username: ${{ secrets.EMAIL_ADDRESS }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: "Daily Signal - ${{ env.TODAY }}"
-          to: ${{ secrets.EMAIL_ADDRESS }}
-          from: tusharmanna@gmail.com
-          body: file://signals/run_output.txt
-
-      - name: Send SMS
-        if: always()
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          secure: true
-          username: ${{ secrets.EMAIL_ADDRESS }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: "Signal"
-          to: ${{ secrets.PHONE_NUMBER }}@txt.att.net
-          from: tusharmanna@gmail.com
-          body: file://signals/sms_summary.txt
+          name: signal-outputs-${{ github.run_number }}
+          path: |
+            signals/*.csv
+            signals/*.txt
+            signals/*.js
+          retention-days: 30
