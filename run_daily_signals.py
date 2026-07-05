@@ -27,6 +27,8 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
+from sync_account_data import sync_account_data
+
 
 # ── Signal runners ─────────────────────────────────────────────────────────────
 
@@ -361,6 +363,11 @@ def main():
             update_document(signals)
         except Exception as e:
             print(f"[WARNING] Could not update accounts_summary.md: {e}")
+
+        try:
+            sync_account_data()
+        except Exception as e:
+            print(f"[WARNING] Could not sync account data: {e}")
 
         try:
             open_dashboard()
