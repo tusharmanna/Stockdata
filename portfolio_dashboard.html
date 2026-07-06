@@ -260,7 +260,7 @@
                     <div style="background-color: #fff3e0; padding: 1.5rem; border-radius: 8px; border-left: 4px solid #ff9800;">
                         <label style="font-weight: 600; display: block; margin-bottom: 0.5rem; color: #666; font-size: 0.9rem;">Current TQQQ Price</label>
                         <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <span style="font-size: 1.8rem; font-weight: 700; color: #ff9800;" id="tqqq-price">$73.35</span>
+                            <span style="font-size: 1.8rem; font-weight: 700; color: #ff9800;" id="tqqq-price">--</span>
                         </div>
                         <small style="color: #999; display: block; margin-top: 0.5rem;">Live market price</small>
                     </div>
@@ -448,6 +448,15 @@
                     throw new Error('Account data not loaded. Make sure signals/account_data.js is accessible.');
                 }
                 allAccounts = window.ACCOUNT_DATA.accounts.map(a => new PortfolioAccount(a));
+
+                // Auto-populate target exposure from latest v2 signal
+                const sig = window.ACCOUNT_DATA.latest_signal;
+                if (sig && sig.exposure_pct !== undefined) {
+                    document.getElementById('new-exposure').value = sig.exposure_pct;
+                    const label = document.querySelector('#new-exposure').closest('div').parentElement.querySelector('small');
+                    if (label) label.textContent = `v2 signal ${sig.date} (${sig.regime})`;
+                }
+
                 renderCombinedTable();
                 loadExposureHistory();
             } catch (error) {

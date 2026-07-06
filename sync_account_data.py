@@ -26,10 +26,33 @@ def _fetch_price(ticker: str) -> float:
         return 0.0
 
 
+def _latest_signal(signals_dir: Path) -> dict:
+    """Read the most recent row from tushar_v2_history.csv. Returns {} on failure."""
+    try:
+        csv = signals_dir / "tushar_v2_history.csv"
+        if not csv.exists():
+            return {}
+        df = pd.read_csv(csv, dtype={"date": str})
+        row = df.sort_values("date").iloc[-1]
+        return {
+            "date":         str(row["date"]),
+            "regime":       str(row["regime"]),
+            "exposure":     round(float(row["exposure"]), 2),
+            "exposure_pct": round(float(row["exposure"]) * 100, 1),
+            "tqqq_vol_pct": round(float(row["tqqq_vol"]) * 100, 1),
+            "pcthi":        round(float(row["pcthi"]), 1),
+        }
+    except Exception:
+        return {}
+
+
 def sync_account_data():
     """Generate account_data.js from account_transactions.json with live prices."""
     accounts_file = Path(__file__).parent / "account_transactions.json"
     data = json.loads(accounts_file.read_text())
+
+    signals_dir = Path(__file__).parent / "signals"
+    signals_dir.mkdir(exist_ok=True)
 
     # Fetch live prices for each unique ETF
     etfs = {a["etf"] for a in data.get("accounts", []) if "etf" in a}
@@ -41,6 +64,11 @@ def sync_account_data():
         if etf and prices.get(etf, 0.0) > 0:
             account["current_price"] = round(prices[etf], 2)
 
+    # Embed latest v2 signal so the dashboard can auto-set target exposure
+    sig = _latest_signal(signals_dir)
+    if sig:
+        data["latest_signal"] = sig
+
     js_content = (
         "// Auto-generated account data\n"
         "// Source: account_transactions.json\n"
@@ -48,13 +76,13 @@ def sync_account_data():
         f"window.ACCOUNT_DATA = {json.dumps(data, indent=2)};\n"
     )
 
-    signals_dir = Path(__file__).parent / "signals"
-    signals_dir.mkdir(exist_ok=True)
     out = signals_dir / "account_data.js"
     out.write_text(js_content)
 
     for etf, price in prices.items():
         print(f"  {etf}: ${price:.2f}")
+    if sig:
+        print(f"  Signal ({sig['date']}): {sig['regime']} {sig['exposure_pct']}% exposure")
     print(f"Synced account_transactions.json -> {out}")
     return True
 
