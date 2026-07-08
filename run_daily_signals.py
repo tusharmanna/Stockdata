@@ -20,6 +20,7 @@ import subprocess
 import traceback
 import webbrowser
 from datetime import datetime
+from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -176,8 +177,11 @@ def open_dashboard():
 
 # ── Notifications ──────────────────────────────────────────────────────────────
 
-def _smtp_send(to_addr, subject, body):
-    """Send plain-text email via Gmail SMTP. Returns True on success."""
+def _smtp_send(to_addr, subject, body, attachments=None):
+    """Send plain-text email via Gmail SMTP. Returns True on success.
+
+    attachments: optional list of (filename, content_str) tuples.
+    """
     email_addr = os.environ.get("EMAIL_ADDRESS", "")
     email_pass = os.environ.get("EMAIL_PASSWORD", "")
     if not email_addr or not email_pass:
@@ -189,6 +193,10 @@ def _smtp_send(to_addr, subject, body):
         msg["To"]      = to_addr
         msg["Subject"] = subject
         msg.attach(MIMEText(body, "plain"))
+        for filename, content in attachments or []:
+            part = MIMEApplication(content.encode("utf-8"), _subtype="html")
+            part.add_header("Content-Disposition", "attachment", filename=filename)
+            msg.attach(part)
         ctx = ssl.create_default_context()
         with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as server:
             server.login(email_addr, email_pass)
@@ -197,6 +205,29 @@ def _smtp_send(to_addr, subject, body):
     except Exception as e:
         print(f"[notify] SMTP error: {e}")
         return False
+
+
+def _self_contained_dashboard():
+    """Dashboard HTML with local signals/*.js inlined so it renders standalone.
+
+    Returns the HTML string, or None if the dashboard file is missing."""
+    path = "portfolio_dashboard.html"
+    if not os.path.exists(path):
+        print(f"[notify] {path} not found — sending email without dashboard.")
+        return None
+    with open(path, "r", encoding="utf-8") as f:
+        html = f.read()
+
+    def inline(m):
+        src = m.group(1)
+        try:
+            with open(src, "r", encoding="utf-8") as jf:
+                return "<script>\n" + jf.read() + "\n</script>"
+        except OSError as e:
+            print(f"[notify] Could not inline {src}: {e}")
+            return m.group(0)
+
+    return re.sub(r'<script src="(signals/[^"]+)"[^>]*></script>', inline, html)
 
 
 def _build_email_body(signals, exposures):
@@ -258,7 +289,11 @@ def send_notifications(signals, exposures):
     try:
         subject = f"Daily Signal - {today} | {regime} | TQQQ: {t_expo}x | QLD: {q_expo}%"
         body    = _build_email_body(signals, exposures)
-        ok      = _smtp_send(email_addr, subject, body)
+        attachments = []
+        dashboard   = _self_contained_dashboard()
+        if dashboard:
+            attachments.append(("portfolio_dashboard.html", dashboard))
+        ok = _smtp_send(email_addr, subject, body, attachments)
         if ok:
             print(f"[notify] Email sent to {email_addr}")
     except Exception as e:
