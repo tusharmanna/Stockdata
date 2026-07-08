@@ -250,6 +250,57 @@ def _ntfy_send(topic, title, message):
         return False
 
 
+def _account_rebalance_rows():
+    """Per-account rebalance plan from signals/account_data.js (same math as the
+    dashboard): current shares from the transaction ledger, target shares from
+    balance x target exposure / price. Returns [] if the file is unavailable."""
+    path = "signals/account_data.js"
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            txt = f.read()
+        data = json.loads(txt[txt.index("{"): txt.rindex("}") + 1])
+    except Exception as e:
+        print(f"[notify] Could not read {path}: {e}")
+        return []
+
+    target = float(data.get("latest_signal", {}).get("exposure", 0))
+    rows = []
+    for acc in data.get("accounts", []):
+        bal = float(acc.get("current_balance", 0))
+        px = float(acc.get("current_price", 0))
+        shares = sum(t["shares"] if t["action"] == "BUY" else -t["shares"]
+                     for t in acc.get("transactions", []))
+        cur_exp = shares * px / bal * 100 if bal else 0.0
+        tgt_shares = int(bal * target / px) if px else 0
+        diff = tgt_shares - shares
+        action = f"BUY {diff}" if diff > 0 else (f"SELL {-diff}" if diff < 0 else "HOLD")
+        rows.append({
+            "name": acc.get("name", "?"), "etf": acc.get("etf", "?"),
+            "balance": bal, "shares": shares, "cur_exp": cur_exp,
+            "tgt_shares": tgt_shares, "tgt_exp": target * 100,
+            "diff": diff, "action": action,
+        })
+    return rows
+
+
+def _ntfy_send_file(topic, title, filename, content):
+    """Push a file attachment via ntfy.sh. Returns True on success."""
+    try:
+        import requests
+        r = requests.put(
+            f"https://ntfy.sh/{topic}",
+            data=content.encode("utf-8"),
+            headers={"Title": title, "Filename": filename, "Tags": "bar_chart"},
+            timeout=30,
+        )
+        if not r.ok:
+            print(f"[notify] ntfy file error: HTTP {r.status_code} {r.text[:200]}")
+        return r.ok
+    except Exception as e:
+        print(f"[notify] ntfy file error: {e}")
+        return False
+
+
 def _build_email_body(signals, exposures):
     today  = datetime.now().strftime("%Y-%m-%d")
     regime = signals.get("regime", "?")
@@ -289,6 +340,22 @@ def _build_email_body(signals, exposures):
             f"{d:<12} {t_map.get(d,'-'):>9} {q_map.get(d,'-'):>9} {u_map.get(d,'-'):>9}"
         )
 
+    rebal = _account_rebalance_rows()
+    if rebal:
+        lines += [
+            "",
+            "ACCOUNT REBALANCE PLAN:",
+            f"{'Account':<15}{'ETF':<6}{'Balance':>10}{'Shares':>8}{'Expo':>8}"
+            f"{'Target':>8}{'Tgt%':>7}{'Diff':>6}  Action",
+            "-" * 78,
+        ]
+        for r in rebal:
+            lines.append(
+                f"{r['name']:<15}{r['etf']:<6}{r['balance']:>10,.0f}{r['shares']:>8}"
+                f"{r['cur_exp']:>7.1f}%{r['tgt_shares']:>8}{r['tgt_exp']:>6.1f}%"
+                f"{r['diff']:>+6}  {r['action']}"
+            )
+
     lines += ["", "---", "Automated signal | Tushar v2 strategy"]
     return "\n".join(lines)
 
@@ -304,12 +371,13 @@ def send_notifications(signals, exposures):
     pcthi      = signals.get("pcthi", 0)
     t_vol      = signals.get("tqqq_vol", "?")
 
+    dashboard = _self_contained_dashboard()
+
     # Email
     try:
         subject = f"Daily Signal - {today} | {regime} | TQQQ: {t_expo}x | QLD: {q_expo}%"
         body    = _build_email_body(signals, exposures)
         attachments = []
-        dashboard   = _self_contained_dashboard()
         if dashboard:
             attachments.append(("portfolio_dashboard.html", dashboard))
         ok = _smtp_send(email_addr, subject, body, attachments)
@@ -326,6 +394,10 @@ def send_notifications(signals, exposures):
             push_body  = f"{today} {regime} {pcthi:.1f}% below 189d high | TQQQ: {t_expo}x ({t_vol}% vol) | QLD: {q_expo}%"
             if _ntfy_send(ntfy_topic, push_title, push_body):
                 print("[notify] Push sent via ntfy.sh")
+            if dashboard and _ntfy_send_file(
+                    ntfy_topic, f"Dashboard {today}",
+                    "portfolio_dashboard.html", dashboard):
+                print("[notify] Dashboard pushed via ntfy.sh")
         else:
             print("[notify] NTFY_TOPIC not set — skipping phone push.")
     except Exception as e:
