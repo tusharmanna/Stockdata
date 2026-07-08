@@ -2,6 +2,6 @@
 # Example:
 # AAPL
 # MSFT
-cold
-klac
-mtsi
+ntap
+srad
+
