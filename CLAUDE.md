@@ -140,7 +140,7 @@ Logs accumulate in `logs\` — not auto-purged.
 
 ## GitHub Actions (Daily Signals Automation)
 
-The `.github/workflows/daily_run.yml` workflow runs all v2 strategy signals (TQQQ, QLD, QQQ) automatically Monday-Friday at 3:30 PM EDT and sends email + SMS notifications.
+The `.github/workflows/daily_run.yml` workflow runs all v2 strategy signals (TQQQ, QLD, QQQ) automatically Monday-Friday at 3:30 PM EDT and sends email + ntfy.sh push notifications.
 
 **What it does:**
 1. Runs `tushar_v2_signal.py` (TQQQ 3x vol-targeted)
@@ -148,15 +148,15 @@ The `.github/workflows/daily_run.yml` workflow runs all v2 strategy signals (TQQ
 3. Runs `tushar_v2_qqq_signal.py` (QQQ comparison)
 4. Updates `docs/accounts_summary.md` with today's signals
 5. Writes exposure history to `signals/exposure_history.js`
-6. Sends email report (full signal details + 7-day exposure history)
-7. Sends SMS summary (short format: `MM/DD REGIME X.X%|TQQQ:X.XXx(XX%vol)|QLD:XX%`)
+6. Sends email report (full signal details + 7-day exposure history + self-contained `portfolio_dashboard.html` attachment)
+7. Sends phone push via ntfy.sh (AT&T shut down the txt.att.net email-to-SMS gateway on 2025-06-17)
 8. Uploads signal outputs as GitHub Actions artifacts (retained 30 days)
 
 **Setup required (one-time):**
 Configure three GitHub repository secrets for notifications (see `docs/NOTIFICATION_SETUP.md`):
 - `EMAIL_ADDRESS` — Gmail address for sending/receiving notifications
 - `EMAIL_PASSWORD` — Gmail App Password (NOT regular password)
-- `PHONE_NUMBER` — 10-digit AT&T number for SMS (no dashes/spaces)
+- `NTFY_TOPIC` — ntfy.sh topic name; subscribe to the same topic in the ntfy phone app
 
 **Useful commands:**
 ```bash
@@ -187,7 +187,7 @@ gh secret delete EMAIL_ADDRESS
 **Notification formats:**
 - **Email subject**: `Daily Signal - YYYY-MM-DD | REGIME | TQQQ: X.XXx | QLD: XX%`
 - **Email body**: Full signal report including regime, QQQ price, 189d high, target exposures, 7-day history
-- **SMS text**: `MM/DD REGIME X.X%|TQQQ:X.XXx(XX%vol)|QLD:XX%` (max 160 chars)
+- **Push (ntfy)**: title `REGIME | TQQQ X.XXx | QLD XX%`, body `YYYY-MM-DD REGIME X.X% below 189d high | TQQQ: X.XXx (XX% vol) | QLD: XX%`
 
 See `docs/NOTIFICATION_SETUP.md` for complete setup instructions and troubleshooting.
 

@@ -230,6 +230,26 @@ def _self_contained_dashboard():
     return re.sub(r'<script src="(signals/[^"]+)"[^>]*></script>', inline, html)
 
 
+def _ntfy_send(topic, title, message):
+    """Push notification via ntfy.sh. Returns True on success.
+
+    Replaces the AT&T email-to-SMS gateway, which AT&T shut down 2025-06-17."""
+    try:
+        import requests
+        r = requests.post(
+            f"https://ntfy.sh/{topic}",
+            data=message.encode("utf-8"),
+            headers={"Title": title, "Tags": "chart_with_upwards_trend"},
+            timeout=15,
+        )
+        if not r.ok:
+            print(f"[notify] ntfy error: HTTP {r.status_code} {r.text[:200]}")
+        return r.ok
+    except Exception as e:
+        print(f"[notify] ntfy error: {e}")
+        return False
+
+
 def _build_email_body(signals, exposures):
     today  = datetime.now().strftime("%Y-%m-%d")
     regime = signals.get("regime", "?")
@@ -276,7 +296,6 @@ def _build_email_body(signals, exposures):
 def send_notifications(signals, exposures):
     """Email full report + SMS summary. Failures never crash the script."""
     email_addr = os.environ.get("EMAIL_ADDRESS", "")
-    phone      = os.environ.get("PHONE_NUMBER", "")
 
     today      = datetime.now().strftime("%Y-%m-%d")
     regime     = signals.get("regime", "?")
@@ -299,18 +318,18 @@ def send_notifications(signals, exposures):
     except Exception as e:
         print(f"[notify] Email error: {e}")
 
-    # SMS via AT&T email-to-SMS gateway
+    # Phone push via ntfy.sh (AT&T killed the txt.att.net email-to-SMS gateway)
     try:
-        if phone:
-            sms_addr = f"{phone}@txt.att.net"
-            sms_body = f"{today} {regime} {pcthi:.1f}%below189d|TQQQ:{t_expo}x({t_vol}%vol)|QLD:{q_expo}%"
-            ok = _smtp_send(sms_addr, "", sms_body[:160])
-            if ok:
-                print(f"[notify] SMS sent to {sms_addr}")
+        ntfy_topic = os.environ.get("NTFY_TOPIC", "")
+        if ntfy_topic:
+            push_title = f"{regime} | TQQQ {t_expo}x | QLD {q_expo}%"
+            push_body  = f"{today} {regime} {pcthi:.1f}% below 189d high | TQQQ: {t_expo}x ({t_vol}% vol) | QLD: {q_expo}%"
+            if _ntfy_send(ntfy_topic, push_title, push_body):
+                print("[notify] Push sent via ntfy.sh")
         else:
-            print("[notify] PHONE_NUMBER not set — skipping SMS.")
+            print("[notify] NTFY_TOPIC not set — skipping phone push.")
     except Exception as e:
-        print(f"[notify] SMS error: {e}")
+        print(f"[notify] Push error: {e}")
 
 
 def send_failure_email(error_msg):
