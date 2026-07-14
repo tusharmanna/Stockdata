@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Repository Structure
 
 **Prime Strategies (Active):**
-- **Tushar v2 (vol-targeted)** — `tushar_v2_backtest.py`, `tushar_v2_signal.py` (TQQQ 3x, defensive `target_vol=0.45`), plus `tushar_v2_walkforward.py` and `tushar_v2_stresstest.py` for validation.
+- **Tushar v2 (volatility-targeted)** — `tushar_v2_backtest.py`, `tushar_v2_signal.py` (TQQQ 3x, defensive `target_vol=0.45`), plus `tushar_v2_walkforward.py` and `tushar_v2_stresstest.py` for validation. v2 keeps the v1 regime gate and changes only position sizing while invested: `exposure = clip(target_vol / realized_vol, 0, 1.5)`.
 - **QLD no-margin variant** — `tushar_v2_qld_signal.py` (QLD 2x, cap 1.0, for Roth/HSA/401k).
 - `tusharStrategyDev.py` — **retained as the shared regime engine** (`_load`, `compute_signal_v1`); v2 and QLD both import it. Also contains the original v1 strategy.
 - `all_strategies_backtest.py` + `docs/STRATEGY_COMPARISON.md` — consolidated comparison/rationale for choosing v2 + QLD.
@@ -212,16 +212,15 @@ python EnterOrdersIB.py --all            # send all orders without per-order con
 - **Limit orders (--limit)**: `TICKER PRICE` — uses specified price from file
 
 **Order logic:**
-- Connects to IB, validates connection.
-- **Entry**: Market order (default, fetches current price) OR limit order if `--limit` flag + price specified.
-- **Stop**: Current day's low from yfinance (live market data, not database).
-- **Profit Target** (OCA linked):
-  - **Target** at Entry + 3R: sells all shares (1:3 reward/risk)
-- **Position sizing**: Shares = `floor($50 / (entry − current_low))` (Risk = $50 per trade).
-- **Max Gain**: `shares × 3R` — all shares sold at 1:3 reward/risk ratio.
-- **OCA bracket**: Stop and Target linked via OCA group — first fill cancels the other.
-- Prints full order summary with entry, stop, target, and gain projections.
-- Steps through each order for individual confirmation (unless `--all` flag).
+- Connects to IB, validates connection, then loads each order from `orders.txt`.
+- **Entry**: Market order by default, or limit order when `--limit` is set and a price is present in the file.
+- **Stop**: Current day's low from yfinance live data.
+- **Risk model**: Fixed `RISK_DOLLARS = 50.0` per trade.
+- **Position sizing**: `shares = floor(50 / (entry - current_low))`.
+- **Profit target**: `entry + 3R`, where `R = entry - stop`; all shares are sold at the target.
+- **Bracket**: Parent buy plus stop-loss sell plus target limit sell, with stop and target linked by OCA.
+- Prints the full order summary with entry, stop, target, risk, shares, and gain projection.
+- Steps through each order for individual confirmation unless `--all` is supplied.
 - Per-order prompt: `[y]` = send to IB, `[n]` = skip, `[q]` = quit remaining.
 
 **Example trade (market order):**

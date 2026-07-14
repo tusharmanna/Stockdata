@@ -1,7 +1,10 @@
 # orders.txt — one ticker per line, # for comments
 # Example:
 # AAPL
-# MSFT
-ntap
-srad
+# MSFT/usa
+amrx
+PTON
+
+
+
 

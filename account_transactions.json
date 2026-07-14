@@ -21,6 +21,20 @@
           "shares": 15,
           "price": 81.0,
           "note": "SELL at $81.0"
+        },
+        {
+          "date": "07/10/2026",
+          "action": "BUY",
+          "shares": 39,
+          "price": 76.05,
+          "note": "Adjust to reported current shares = 124 (cost basis set to $9,043)"
+        },
+        {
+          "date": "07/13/2026",
+          "action": "BUY",
+          "shares": 10,
+          "price": 72.805,
+          "note": "Adjust to reported current shares = 134 (cost basis set to $9,771)"
         }
       ]
     },
@@ -45,6 +59,20 @@
           "shares": 15,
           "price": 81.292,
           "note": "SELL at $81.29 - IB Account U1207581"
+        },
+        {
+          "date": "07/10/2026",
+          "action": "BUY",
+          "shares": 156,
+          "price": 73.70,
+          "note": "Adjust to reported current shares = 241 (cost basis set to $17,563)"
+        },
+        {
+          "date": "07/13/2026",
+          "action": "BUY",
+          "shares": 19,
+          "price": 72.74631578947368,
+          "note": "Adjust to reported current shares = 260 (cost basis set to $18,946)"
         }
       ]
     }

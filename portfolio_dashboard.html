@@ -300,15 +300,16 @@
                             <th>ETF</th>
                             <th>Balance</th>
                             <th>Current Shares</th>
-                            <th>Current Exposure</th>
-                            <th>Target Shares</th>
-                            <th>Target Exposure</th>
-                            <th>Difference</th>
-                            <th>Action</th>
+                                                        <th>Cost Basis</th>
+                                                        <th>Current Exposure</th>
+                                                        <th>Target Shares</th>
+                                                        <th>Target Exposure</th>
+                                                        <th>Difference</th>
+                                                        <th>Action</th>
                         </tr>
                     </thead>
                     <tbody id="combined-tbody">
-                        <tr><td colspan="9" style="text-align: center; color: #999;">Loading accounts...</td></tr>
+                        <tr><td colspan="10" style="text-align: center; color: #999;">Loading accounts...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -368,15 +369,16 @@
         // ============ GENERIC EXPOSURE CALCULATION ENGINE ============
         // Works for any account, any ETF, any balance
 
-        class PortfolioAccount {
-            constructor(accountData) {
-                this.id = accountData.id;
-                this.name = accountData.name;
-                this.etf = accountData.etf;
-                this.balance = accountData.current_balance;
-                this.price = accountData.current_price;
-                this.transactions = accountData.transactions || [];
-            }
+        const MATCH_TARGET = false; // Set true to treat current holdings as already matched to target shares (disabled to use actual shares)
+                class PortfolioAccount {
+                    constructor(accountData) {
+                        this.id = accountData.id;
+                        this.name = accountData.name;
+                        this.etf = accountData.etf;
+                        this.balance = accountData.current_balance;
+                        this.price = accountData.current_price;
+                        this.transactions = accountData.transactions || [];
+                    }
 
             // Calculate current shares from transaction history
             getCurrentShares() {
@@ -385,7 +387,22 @@
                 }, 0);
             }
 
-            // Current exposure percentage based on actual holdings
+            // Total cost basis (buys minus sells at their prices)
+            getTotalCost() {
+                // Treat SELL as reducing cost basis proportionally (simple FIFO not applied)
+                return this.transactions.reduce((sum, tx) => {
+                    return tx.action === 'BUY' ? sum + (tx.shares * tx.price) : sum - (tx.shares * tx.price);
+                }, 0);
+            }
+
+            // Average cost per share (based on current shares)
+            getAvgCost() {
+                const shares = this.getCurrentShares();
+                if (shares === 0) return 0.0;
+                return this.getTotalCost() / shares;
+            }
+
+            // Current exposure percentage based on actual holdings (market value)
             getCurrentExposurePercent() {
                 const currentShares = this.getCurrentShares();
                 const holdingsValue = currentShares * this.price;
@@ -407,14 +424,24 @@
 
             // Full account state
             getState(targetPercent) {
-                const currentShares = this.getCurrentShares();
-                const currentExposure = this.getCurrentExposurePercent();
+                // Compute baseline values
+                let currentShares = this.getCurrentShares();
+                let currentExposure = this.getCurrentExposurePercent();
                 const targetShares = this.getTargetShares(targetPercent);
-                const sharesAction = this.getSharesAction(targetPercent);
-                const currentValue = currentShares * this.price;
+                let sharesAction = this.getSharesAction(targetPercent);
+                let currentValue = currentShares * this.price;
                 const targetValue = targetShares * this.price;
-                const cash = this.balance - currentValue;
+                let cash = this.balance - currentValue;
                 const targetCash = this.balance - targetValue;
+
+                // If MATCH_TARGET is enabled, reflect that current holdings equal the target
+                if (typeof MATCH_TARGET !== 'undefined' && MATCH_TARGET) {
+                    currentShares = targetShares;
+                    currentExposure = (targetValue / this.balance) * 100;
+                    currentValue = targetValue;
+                    cash = targetCash;
+                    sharesAction = 0;
+                }
 
                 return {
                     id: this.id,
@@ -427,16 +454,19 @@
                     currentExposure,
                     currentValue,
                     currentCash: cash,
-                    // Target state
-                    targetPercent,
-                    targetShares,
-                    targetValue,
-                    targetCash,
-                    // Action
-                    sharesAction,
-                    action: sharesAction > 0 ? 'BUY' : (sharesAction < 0 ? 'SELL' : 'HOLD'),
-                    transactions: this.transactions
-                };
+                        // Cost basis info
+                        totalCost: this.getTotalCost(),
+                        avgCost: this.getAvgCost(),
+                        // Target state
+                        targetPercent,
+                        targetShares,
+                        targetValue,
+                        targetCash,
+                        // Action
+                        sharesAction,
+                        action: sharesAction > 0 ? 'BUY' : (sharesAction < 0 ? 'SELL' : 'HOLD'),
+                        transactions: this.transactions
+                    };
             }
         }
 
@@ -462,7 +492,7 @@
             } catch (error) {
                 console.error('Error loading account data:', error);
                 document.getElementById('combined-tbody').innerHTML =
-                    `<tr><td colspan="9" style="text-align: center; color: red;">Error: ${error.message}</td></tr>`;
+                    `<tr><td colspan="10" style="text-align: center; color: red;">Error: ${error.message}</td></tr>`;
             }
         }
 
@@ -493,6 +523,7 @@
                         <td><span class="badge badge-etf badge-${state.etf.toLowerCase()}">${state.etf}</span></td>
                         <td>${fmt(state.balance)}</td>
                         <td>${state.currentShares}</td>
+                        <td>${fmt(state.totalCost)} <br><small>avg ${state.avgCost > 0 ? ('$' + state.avgCost.toFixed(2)) : '-'}</small></td>
                         <td class="value-positive">${fmtPct(state.currentExposure)}</td>
                         <td>${state.targetShares}</td>
                         <td class="value-positive">${fmtPct(state.targetPercent)}</td>
@@ -502,7 +533,7 @@
                 `;
             });
 
-            tbody.innerHTML = html || '<tr><td colspan="9" style="text-align: center; color: #999;">No accounts loaded</td></tr>';
+            tbody.innerHTML = html || '<tr><td colspan="10" style="text-align: center; color: #999;">No accounts loaded</td></tr>';
             updateTotals();
         }
 
@@ -543,7 +574,7 @@
 
             document.getElementById('combined-balance').textContent = fmt(totals.balance);
             document.getElementById('combined-target').textContent = fmt(totals.targetValue);
-            document.getElementById('combined-shares').textContent = fmtNum(totals.targetShares);
+                        document.getElementById('combined-shares').textContent = fmtNum(totals.currentShares);
             document.getElementById('combined-cash').textContent = fmt(totals.targetCash);
 
             // Portfolio totals
