@@ -270,7 +270,9 @@ def _account_rebalance_rows():
         px = float(acc.get("current_price", 0))
         shares = sum(t["shares"] if t["action"] == "BUY" else -t["shares"]
                      for t in acc.get("transactions", []))
-        cur_exp = shares * px / bal * 100 if bal else 0.0
+        cost_basis = sum(t["shares"] * t["price"] if t["action"] == "BUY" else -t["shares"] * t["price"]
+                         for t in acc.get("transactions", []))
+        cur_exp = cost_basis / bal * 100 if bal else 0.0
         tgt_shares = int(bal * target / px) if px else 0
         diff = tgt_shares - shares
         action = f"BUY {diff}" if diff > 0 else (f"SELL {-diff}" if diff < 0 else "HOLD")
@@ -345,7 +347,7 @@ def _build_email_body(signals, exposures):
         lines += [
             "",
             "ACCOUNT REBALANCE PLAN:",
-            f"{'Account':<15}{'ETF':<6}{'Balance':>10}{'Shares':>8}{'Expo':>8}"
+            f"{'Account':<15}{'ETF':<6}{'Balance':>10}{'Shares':>8}{'CostExp':>8}"
             f"{'Target':>8}{'Tgt%':>7}{'Diff':>6}  Action",
             "-" * 78,
         ]

@@ -34,7 +34,7 @@
           "action": "BUY",
           "shares": 10,
           "price": 72.805,
-          "note": "Adjust to reported current shares = 134 (cost basis set to $9,771)"
+          "note": "Adjust to reported current shares = 131 (cost basis set to $9,570.13)"
         }
       ]
     },
@@ -72,7 +72,7 @@
           "action": "BUY",
           "shares": 19,
           "price": 72.74631578947368,
-          "note": "Adjust to reported current shares = 260 (cost basis set to $18,946)"
+          "note": "Adjust to reported current shares = 254 (cost basis set to $18,516)"
         }
       ]
     }

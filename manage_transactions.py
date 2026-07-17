@@ -38,13 +38,15 @@ def list_accounts():
     """List all accounts with their current state."""
     data = load_accounts()
     print("\n" + "="*100)
-    print(f"{'Account':<40} {'ETF':<8} {'Balance':>15} {'Shares':>8} {'Exposure':>12} {'Price':>8}")
+    print(f"{'Account':<40} {'ETF':<8} {'Balance':>15} {'Shares':>8} {'Cost Basis Expo':>12} {'Price':>8}")
     print("="*100)
 
     for acc in data['accounts']:
         shares = sum(t['shares'] if t['action'] == 'BUY' else -t['shares']
                     for t in acc['transactions'])
-        exposure = (shares * acc['current_price'] / acc['current_balance'] * 100) if shares > 0 else 0
+        cost_basis = sum(t['shares'] * t['price'] if t['action'] == 'BUY' else -t['shares'] * t['price']
+                         for t in acc['transactions'])
+        exposure = (cost_basis / acc['current_balance'] * 100) if acc['current_balance'] else 0
         print(f"{acc['name']:<40} {acc['etf']:<8} ${acc['current_balance']:>14,.0f} {shares:>8} {exposure:>11.1f}% ${acc['current_price']:>7.2f}")
 
     print("="*100 + "\n")
@@ -66,21 +68,24 @@ def show_history(account_id):
         print("No transactions recorded.\n")
         return
 
-    print(f"{'Date':<12} {'Action':<6} {'Shares':>8} {'Price':>8} {'Exposure':>12} {'Note':<30}")
+    print(f"{'Date':<12} {'Action':<6} {'Shares':>8} {'Price':>8} {'Cost Basis Expo':>12} {'Note':<30}")
     print("-"*80)
 
     running_shares = 0
+    running_cost = 0.0
     for tx in acc['transactions']:
         if tx['action'] == 'BUY':
             running_shares += tx['shares']
+            running_cost += tx['shares'] * tx['price']
         else:
             running_shares -= tx['shares']
-        exposure = (running_shares * acc['current_price'] / acc['current_balance'] * 100) if running_shares > 0 else 0
+            running_cost -= tx['shares'] * tx['price']
+        exposure = (running_cost / acc['current_balance'] * 100) if acc['current_balance'] else 0
         note = tx.get('note', '')
         print(f"{tx['date']:<12} {tx['action']:<6} {tx['shares']:>8} ${tx['price']:>7.2f} {exposure:>11.1f}% {note:<30}")
 
     final_shares = running_shares
-    final_exposure = (final_shares * acc['current_price'] / acc['current_balance'] * 100) if final_shares > 0 else 0
+    final_exposure = (running_cost / acc['current_balance'] * 100) if acc['current_balance'] else 0
     print("-"*80)
     print(f"{'CURRENT':<12} {'':6} {final_shares:>8} {'':>8} {final_exposure:>11.1f}%")
     print()
@@ -110,9 +115,10 @@ def add_transaction(account_id, action, shares, price, note=''):
         'action': action.upper(),
         'shares': shares,
         'price': price,
-        'exposure_at_trade': (sum(t['shares'] if t['action'] == 'BUY' else -t['shares']
-                                 for t in acc['transactions']) * acc['current_price'] /
-                             acc['current_balance'] * 100) if acc['transactions'] else 0,
+        'exposure_at_trade': (
+            sum(t['shares'] * t['price'] if t['action'] == 'BUY' else -t['shares'] * t['price']
+                for t in acc['transactions']) / acc['current_balance'] * 100
+        ) if acc['current_balance'] else 0,
         'note': note
     }
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Sync account_transactions.json to signals/account_data.js
-Fetches live prices from yfinance so the dashboard always shows current values.
-Run this after modifying account_transactions.json to update the dashboard.
+Sync account_transactions.json to signals/account_data.js.
+Fetches live prices from yfinance for target-share calculations.
+Editable account overrides live in account_overrides.json.
 """
 
 import json
@@ -50,11 +50,14 @@ def sync_account_data():
     """Generate account_data.js from account_transactions.json with live prices."""
     accounts_file = Path(__file__).parent / "account_transactions.json"
     data = json.loads(accounts_file.read_text())
+    overrides_file = Path(__file__).parent / "account_overrides.json"
+    overrides = json.loads(overrides_file.read_text()) if overrides_file.exists() else {}
 
     signals_dir = Path(__file__).parent / "signals"
     signals_dir.mkdir(exist_ok=True)
 
-    # Fetch live prices for each unique ETF
+    # Fetch live prices for each unique ETF. The dashboard still uses current_price
+    # for target-share math, but current exposure is now cost-basis based.
     etfs = {a["etf"] for a in data.get("accounts", []) if "etf" in a}
     prices = {etf: _fetch_price(etf) for etf in etfs}
 
@@ -63,6 +66,23 @@ def sync_account_data():
         etf = account.get("etf")
         if etf and prices.get(etf, 0.0) > 0:
             account["current_price"] = round(prices[etf], 2)
+        account_override = overrides.get(account.get("id"), {})
+        if account_override:
+            if "current_shares" in account_override:
+                account["current_shares"] = account_override["current_shares"]
+            if "total_cost" in account_override:
+                account["total_cost"] = round(float(account_override["total_cost"]), 2)
+                if "current_shares" in account_override:
+                    shares = float(account_override["current_shares"])
+                    if shares:
+                        account["avg_cost"] = round(float(account_override["total_cost"]) / shares, 2)
+            elif "avg_cost" in account_override:
+                account["avg_cost"] = round(float(account_override["avg_cost"]), 2)
+            if "avg_cost" not in account_override and "total_cost" not in account_override:
+                account.pop("total_cost", None)
+
+        if "total_cost" not in account and isinstance(account.get("current_shares"), (int, float)) and isinstance(account.get("avg_cost"), (int, float)):
+            account["total_cost"] = round(float(account["current_shares"]) * float(account["avg_cost"]), 2)
 
     # Embed latest v2 signal so the dashboard can auto-set target exposure
     sig = _latest_signal(signals_dir)
@@ -83,7 +103,7 @@ def sync_account_data():
         print(f"  {etf}: ${price:.2f}")
     if sig:
         print(f"  Signal ({sig['date']}): {sig['regime']} {sig['exposure_pct']}% exposure")
-    print(f"Synced account_transactions.json -> {out}")
+    print(f"Synced account_transactions.json + account_overrides.json -> {out}")
     return True
 
 
