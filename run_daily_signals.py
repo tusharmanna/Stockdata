@@ -251,9 +251,7 @@ def _ntfy_send(topic, title, message):
 
 
 def _account_rebalance_rows():
-    """Per-account rebalance plan from signals/account_data.js (same math as the
-    dashboard): current shares from the transaction ledger, target shares from
-    balance x target exposure / price. Returns [] if the file is unavailable."""
+    """Per-account rebalance plan from signals/account_data.js (dashboard math)."""
     path = "signals/account_data.js"
     try:
         with open(path, "r", encoding="utf-8") as f:
