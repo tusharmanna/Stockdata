@@ -1,8 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git stash drop:*)",
-      "Bash(git restore:*)"
+      "Bash(python manage_transactions.py:*)",
+      "Bash(python3:*)",
+      "Read(//Users/tusharmanna/Downloads/**)",
+      "Bash(git push:*)",
+      "Bash(git pull:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(python *)"
     ],
     "deny": [],
     "ask": []
