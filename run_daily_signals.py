@@ -251,7 +251,7 @@ def _ntfy_send(topic, title, message):
 
 
 def _account_rebalance_rows():
-    """Per-account rebalance plan from signals/account_data.js (dashboard math)."""
+    """Per-account rebalance plan matching dashboard Live Price View."""
     path = "signals/account_data.js"
     try:
         with open(path, "r", encoding="utf-8") as f:
@@ -261,26 +261,68 @@ def _account_rebalance_rows():
         print(f"[notify] Could not read {path}: {e}")
         return []
 
-    target = float(data.get("latest_signal", {}).get("exposure", 0))
+    sig = data.get("latest_signal", {})
+    target = float(sig.get("exposure", 0))
+    target_pct = float(sig.get("exposure_pct", target * 100))
     rows = []
     for acc in data.get("accounts", []):
         bal = float(acc.get("current_balance", 0))
         px = float(acc.get("current_price", 0))
-        shares = sum(t["shares"] if t["action"] == "BUY" else -t["shares"]
-                     for t in acc.get("transactions", []))
-        cost_basis = sum(t["shares"] * t["price"] if t["action"] == "BUY" else -t["shares"] * t["price"]
-                         for t in acc.get("transactions", []))
-        cur_exp = cost_basis / bal * 100 if bal else 0.0
+        txs = acc.get("transactions", [])
+        if isinstance(acc.get("current_shares"), (int, float)):
+            shares = int(acc["current_shares"])
+        else:
+            shares = sum(t["shares"] if t["action"] == "BUY" else -t["shares"] for t in txs)
+        # Live Price View (same as portfolio_dashboard.html)
+        live_exp = (shares * px / bal * 100) if bal and px else 0.0
         tgt_shares = int(bal * target / px) if px else 0
         diff = tgt_shares - shares
-        action = f"BUY {diff}" if diff > 0 else (f"SELL {-diff}" if diff < 0 else "HOLD")
+        if diff > 0:
+            recommendation = f"ADD {diff}"
+        elif diff < 0:
+            recommendation = f"REDUCE {-diff}"
+        else:
+            recommendation = "HOLD"
         rows.append({
-            "name": acc.get("name", "?"), "etf": acc.get("etf", "?"),
-            "balance": bal, "shares": shares, "cur_exp": cur_exp,
-            "tgt_shares": tgt_shares, "tgt_exp": target * 100,
-            "diff": diff, "action": action,
+            "name": acc.get("name", "?"),
+            "etf": acc.get("etf", "?"),
+            "balance": bal,
+            "price": px,
+            "shares": shares,
+            "live_exp": live_exp,
+            "tgt_shares": tgt_shares,
+            "tgt_exp": target_pct,
+            "diff": diff,
+            "recommendation": recommendation,
+            "sig_date": sig.get("date", ""),
         })
     return rows
+
+
+def display_live_rebalance():
+    """Print dashboard Live Price View to the console."""
+    rows = _account_rebalance_rows()
+    if not rows:
+        print("\n[WARNING] No account rebalance data available.")
+        return
+
+    sig_date = rows[0].get("sig_date") or "?"
+    tgt = rows[0].get("tgt_exp", 0)
+    px = rows[0].get("price", 0)
+    print("\n" + "=" * 70)
+    print(f"LIVE PRICE VIEW  (signal {sig_date} | target {tgt:.1f}% | TQQQ ${px:.2f})")
+    print("=" * 70)
+    print(
+        f"{'Account':<18}{'ETF':<6}{'Live Exp':>10}{'Tgt Shares':>12}"
+        f"{'Diff':>8}  Recommendation"
+    )
+    print("-" * 70)
+    for r in rows:
+        print(
+            f"{r['name']:<18}{r['etf']:<6}{r['live_exp']:>9.1f}%"
+            f"{r['tgt_shares']:>12}{r['diff']:>+8}  {r['recommendation']}"
+        )
+    print("=" * 70)
 
 
 def _ntfy_send_file(topic, title, filename, content):
@@ -344,16 +386,16 @@ def _build_email_body(signals, exposures):
     if rebal:
         lines += [
             "",
-            "ACCOUNT REBALANCE PLAN:",
-            f"{'Account':<15}{'ETF':<6}{'Balance':>10}{'Shares':>8}{'CostExp':>8}"
-            f"{'Target':>8}{'Tgt%':>7}{'Diff':>6}  Action",
-            "-" * 78,
+            "LIVE PRICE VIEW (dashboard):",
+            f"{'Account':<15}{'ETF':<6}{'LiveExp':>9}{'TgtSh':>8}"
+            f"{'Tgt%':>7}{'Diff':>6}  Recommendation",
+            "-" * 70,
         ]
         for r in rebal:
             lines.append(
-                f"{r['name']:<15}{r['etf']:<6}{r['balance']:>10,.0f}{r['shares']:>8}"
-                f"{r['cur_exp']:>7.1f}%{r['tgt_shares']:>8}{r['tgt_exp']:>6.1f}%"
-                f"{r['diff']:>+6}  {r['action']}"
+                f"{r['name']:<15}{r['etf']:<6}{r['live_exp']:>8.1f}%"
+                f"{r['tgt_shares']:>8}{r['tgt_exp']:>6.1f}%"
+                f"{r['diff']:>+6}  {r['recommendation']}"
             )
 
     lines += ["", "---", "Automated signal | Tushar v2 strategy"]
@@ -494,6 +536,11 @@ def main():
             sync_account_data()
         except Exception as e:
             print(f"[WARNING] Could not sync account data: {e}")
+
+        try:
+            display_live_rebalance()
+        except Exception as e:
+            print(f"[WARNING] Could not display live rebalance: {e}")
 
         try:
             open_dashboard()
