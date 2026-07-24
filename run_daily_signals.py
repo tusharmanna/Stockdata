@@ -312,24 +312,59 @@ def display_live_rebalance():
     if not rows:
         print("\n[WARNING] No account rebalance data available.")
         return
+    print("\n" + "\n".join(_format_live_rebalance_block(rows)))
+
+
+def _format_live_rebalance_block(rows=None):
+    """Full LIVE PRICE VIEW block (console + email)."""
+    rows = rows if rows is not None else _account_rebalance_rows()
+    if not rows:
+        return ["LIVE PRICE VIEW: (no account data)"]
 
     sig_date = rows[0].get("sig_date") or "?"
     tgt = rows[0].get("tgt_exp", 0)
     px = rows[0].get("price", 0)
-    print("\n" + "=" * 70)
-    print(f"LIVE PRICE VIEW  (signal {sig_date} | target {tgt:.1f}% | TQQQ ${px:.2f})")
-    print("=" * 70)
-    print(
+    lines = [
+        "=" * 70,
+        f"LIVE PRICE VIEW  (signal {sig_date} | target {tgt:.1f}% | TQQQ ${px:.2f})",
+        "=" * 70,
         f"{'Account':<18}{'ETF':<6}{'Live Exp':>10}{'Tgt Shares':>12}"
-        f"{'Diff':>8}  Recommendation"
-    )
-    print("-" * 70)
+        f"{'Diff':>8}  Recommendation",
+        "-" * 70,
+    ]
     for r in rows:
-        print(
+        lines.append(
             f"{r['name']:<18}{r['etf']:<6}{r['live_exp']:>9.1f}%"
             f"{r['tgt_shares']:>12}{r['diff']:>+8}  {r['recommendation']}"
         )
-    print("=" * 70)
+    lines.append("=" * 70)
+    return lines
+
+
+def _format_live_rebalance_ntfy(rows=None):
+    """Compact LIVE PRICE VIEW for ntfy push body."""
+    rows = rows if rows is not None else _account_rebalance_rows()
+    if not rows:
+        return "LIVE: (no account data)"
+
+    tgt = rows[0].get("tgt_exp", 0)
+    px = rows[0].get("price", 0)
+    lines = [f"LIVE PRICE VIEW | target {tgt:.1f}% | TQQQ ${px:.2f}"]
+    for r in rows:
+        lines.append(
+            f"{r['name']}: {r['live_exp']:.1f}% → {r['tgt_shares']} sh "
+            f"({r['diff']:+d}) {r['recommendation']}"
+        )
+    return "\n".join(lines)
+
+
+def _live_rebalance_title_suffix(rows=None):
+    """Short recommendation summary for email/ntfy titles."""
+    rows = rows if rows is not None else _account_rebalance_rows()
+    if not rows:
+        return ""
+    parts = [r["recommendation"] for r in rows]
+    return " | " + " / ".join(parts)
 
 
 def _ntfy_send_file(topic, title, filename, content):
@@ -361,6 +396,8 @@ def _build_email_body(signals, exposures):
     q_vol  = signals.get("qld_vol", "?")
     q_expo = signals.get("qld_exposure", "?")
 
+    rebal = _account_rebalance_rows()
+
     lines = [
         f"=== TUSHAR V2 DAILY SIGNALS -- {today} ===",
         "",
@@ -374,6 +411,12 @@ def _build_email_body(signals, exposures):
         "QLD v2  (Roth / HSA / 401k -- no margin)",
         f"  Target Allocation: {q_expo}% of account   (cap 100%)",
         f"  20d Vol          : {q_vol}%",
+        "",
+    ]
+
+    # Live Price View near the top so recommendations are obvious in email.
+    lines += _format_live_rebalance_block(rebal)
+    lines += [
         "",
         "LAST 7 DAYS EXPOSURE:",
         f"{'Date':<12} {'TQQQ v2':>9} {'QLD v2':>9} {'QQQ v2':>9}",
@@ -389,28 +432,12 @@ def _build_email_body(signals, exposures):
             f"{d:<12} {t_map.get(d,'-'):>9} {q_map.get(d,'-'):>9} {u_map.get(d,'-'):>9}"
         )
 
-    rebal = _account_rebalance_rows()
-    if rebal:
-        lines += [
-            "",
-            "LIVE PRICE VIEW (dashboard):",
-            f"{'Account':<15}{'ETF':<6}{'LiveExp':>9}{'TgtSh':>8}"
-            f"{'Tgt%':>7}{'Diff':>6}  Recommendation",
-            "-" * 70,
-        ]
-        for r in rebal:
-            lines.append(
-                f"{r['name']:<15}{r['etf']:<6}{r['live_exp']:>8.1f}%"
-                f"{r['tgt_shares']:>8}{r['tgt_exp']:>6.1f}%"
-                f"{r['diff']:>+6}  {r['recommendation']}"
-            )
-
     lines += ["", "---", "Automated signal | Tushar v2 strategy"]
     return "\n".join(lines)
 
 
 def send_notifications(signals, exposures):
-    """Email full report + SMS summary. Failures never crash the script."""
+    """Email full report + ntfy push with Live Price View. Failures never crash the script."""
     email_addr = os.environ.get("EMAIL_ADDRESS", "")
 
     today      = datetime.now().strftime("%Y-%m-%d")
@@ -420,11 +447,18 @@ def send_notifications(signals, exposures):
     pcthi      = signals.get("pcthi", 0)
     t_vol      = signals.get("tqqq_vol", "?")
 
+    rebal = _account_rebalance_rows()
+    rec_suffix = _live_rebalance_title_suffix(rebal)
+    live_ntfy = _format_live_rebalance_ntfy(rebal)
+
     dashboard = _self_contained_dashboard()
 
     # Email
     try:
-        subject = f"Daily Signal - {today} | {regime} | TQQQ: {t_expo}x | QLD: {q_expo}%"
+        subject = (
+            f"Daily Signal - {today} | {regime} | TQQQ: {t_expo}x | QLD: {q_expo}%"
+            f"{rec_suffix}"
+        )
         body    = _build_email_body(signals, exposures)
         attachments = []
         if dashboard:
@@ -439,8 +473,12 @@ def send_notifications(signals, exposures):
     try:
         ntfy_topic = os.environ.get("NTFY_TOPIC", "")
         if ntfy_topic:
-            push_title = f"{regime} | TQQQ {t_expo}x | QLD {q_expo}%"
-            push_body  = f"{today} {regime} {pcthi:.1f}% below 189d high | TQQQ: {t_expo}x ({t_vol}% vol) | QLD: {q_expo}%"
+            push_title = f"{regime} | TQQQ {t_expo}x | QLD {q_expo}%{rec_suffix}"
+            push_body = (
+                f"{today} {regime} {pcthi:.1f}% below 189d high | "
+                f"TQQQ: {t_expo}x ({t_vol}% vol) | QLD: {q_expo}%\n\n"
+                f"{live_ntfy}"
+            )
             if _ntfy_send(ntfy_topic, push_title, push_body):
                 print("[notify] Push sent via ntfy.sh")
             if dashboard and _ntfy_send_file(
