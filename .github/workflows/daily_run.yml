@@ -2,7 +2,7 @@ name: Daily Signals
 
 on:
   schedule:
-    - cron: "30 19 * * 1-5"   # 3:30 PM EDT (UTC-4)
+    - cron: "30 17 * * 1-5"   # 1:30 PM EDT (UTC-4); 12:30 PM EST in winter
   workflow_dispatch:
 
 jobs:
