@@ -17,6 +17,7 @@ import re
 import smtplib
 import ssl
 import subprocess
+import sys
 import traceback
 import webbrowser
 from datetime import datetime
@@ -34,12 +35,18 @@ from sync_account_data import sync_account_data
 # ── Signal runners ─────────────────────────────────────────────────────────────
 
 def run_signal(script_name):
+    """Run a signal script with the same Python interpreter as this process."""
     result = subprocess.run(
-        ["python3", script_name],
+        [sys.executable, script_name],
         capture_output=True,
         text=True,
     )
-    return result.stdout + result.stderr
+    output = result.stdout + result.stderr
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"{script_name} failed (exit {result.returncode}):\n{output}"
+        )
+    return output
 
 
 # ── Data helpers ───────────────────────────────────────────────────────────────
