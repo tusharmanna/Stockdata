@@ -1,18 +1,18 @@
 # Account Summary & v2 Strategy Allocation
 
-**Last Updated:** 2026-08-05 16:30
+**Last Updated:** 2026-08-10 15:35
 **Snapshot Date:** 2026-06-16
 
-## TODAY'S SIGNALS (2026-08-05)
+## TODAY'S SIGNALS (2026-08-10)
 
-**Regime Gate:** BULL - 3.3% below 189d high (threshold: 15%)
+**Regime Gate:** BULL - 3.2% below 189d high (threshold: 15%)
 
 **v2 Strategies:**
-- TQQQ v2 (1.5x cap): Hold 0.57x | Vol: 78%
-- QLD v2 (1.0x cap): 85% | Vol: 53%
+- TQQQ v2 (1.5x cap): Hold 0.6x | Vol: 75%
+- QLD v2 (1.0x cap): 89% | Vol: 50%
 
 **Market Data:**
-- QQQ Close: $720.72
+- QQQ Close: $721.53
 - 189d High: $0.00
 
 ---
