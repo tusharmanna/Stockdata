@@ -1,10 +1,11 @@
 {
   "brokeragelink": {
-    "current_shares": 140,
-    "total_cost": 9395
+    "current_shares": 145,
+    "total_cost": 9764
   },
   "ib_brokerage": {
-    "current_shares": 274,
-    "total_cost": 19468
+    "current_shares": 284,
+    "total_cost": 20207
   }
 }
+
