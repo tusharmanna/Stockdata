@@ -1,6 +1,6 @@
 # Stockdata — Tushar v2 Daily Signals
 
-Runs the TQQQ v2 and QLD v2 volatility-targeted strategy signals every weekday at 3:30 PM ET via GitHub Actions, then emails you a full report and texts a short summary.
+Runs the TQQQ v2, QLD v2, and QQQ v2 volatility-targeted strategy signals via GitHub Actions, then emails you a full report and sends a phone push notification through ntfy.sh.
 
 ---
 
@@ -12,7 +12,7 @@ Go to your repo on GitHub → **Settings → Secrets and variables → Actions �
 |---|---|---|
 | `EMAIL_ADDRESS` | `tusharmanna@gmail.com` | Gmail address (sender and recipient) |
 | `EMAIL_PASSWORD` | your 16-char app password | Gmail App Password (NOT your regular password) |
-| `PHONE_NUMBER` | `6789943844` | Mobile number for SMS (digits only, no dashes) |
+| `NTFY_TOPIC` | a long random private topic name | ntfy.sh topic used for phone push notifications |
 
 ---
 
@@ -42,21 +42,23 @@ Your regular Gmail password will not work — you need a Google App Password.
 
 The run appears in the list within a few seconds. Click it to watch live logs.
 
+You can do the same from your phone using the GitHub mobile app or your phone's browser. Open the repository, select **Actions**, select **Daily Signals**, and choose **Run workflow**.
+
 ---
 
 ## Schedule Details
 
-The workflow runs **Monday–Friday at 3:30 PM EDT (19:30 UTC)**.
+The workflow currently runs **Monday–Friday at 1:30 PM EDT (17:30 UTC)**.
 
 GitHub Actions cron uses UTC and does **not** auto-adjust for Daylight Saving Time:
-- **Summer (Mar–Nov)**: fires at 3:30 PM EDT — correct
-- **Winter (Nov–Mar)**: fires at 2:30 PM EST — one hour early
+- **Summer (Mar–Nov)**: fires at 1:30 PM EDT
+- **Winter (Nov–Mar)**: fires at 12:30 PM EST
 
-To keep it at 3:30 PM EST in winter, change the cron in `.github/workflows/daily_run.yml` to:
+To run at 3:30 PM ET during daylight-saving time, change the cron in `.github/workflows/daily_run.yml` to:
 ```
-- cron: "30 20 * * 1-5"
+- cron: "30 19 * * 1-5"
 ```
-This makes it 4:30 PM EDT in summer. Pick whichever offset matters more to you.
+This will run at 3:30 PM EDT in summer and 2:30 PM EST in winter. GitHub Actions cannot express a single cron that automatically adjusts for daylight saving time.
 
 ---
 
@@ -68,9 +70,11 @@ This makes it 4:30 PM EDT in summer. Pick whichever offset matters more to you.
 - QLD v2 target allocation and volatility
 - Last 7 days exposure history table
 
-**SMS** (AT&T) — one line under 160 characters, e.g.:
+**Phone push notification** (ntfy.sh) — a short summary plus live rebalance recommendations. Install the ntfy app, subscribe to the same topic stored in `NTFY_TOPIC`, and keep the topic private.
+
+Example summary:
 ```
-2026-06-25 BULL 3.8%below189d|TQQQ:0.48x(93%vol)|QLD:71%
+2026-06-25 BULL 3.8% below 189d high | TQQQ: 0.48x (93% vol) | QLD: 71%
 ```
 
 If the script crashes, you get a **failure email** with the full traceback instead.
@@ -97,10 +101,10 @@ Common issues:
 # Install dependencies
 pip install -r requirements.txt
 
-# Run signals + send email/SMS (requires env vars set)
+# Run signals + send email/phone notifications (requires env vars set)
 set EMAIL_ADDRESS=tusharmanna@gmail.com
 set EMAIL_PASSWORD=your_app_password
-set PHONE_NUMBER=6789943844
+set NTFY_TOPIC=your_private_ntfy_topic
 python run_daily_signals.py
 
 # Run just the TQQQ signal (no email)
