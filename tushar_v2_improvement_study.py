@@ -1,7 +1,7 @@
 """Tushar v2 improvement study — four candidate upgrades, one honest protocol.
 
 Goal: better OUT-OF-SAMPLE risk-adjusted returns than current v2 (target_vol=0.45,
-20d rolling vol, cap 1.5). Raising target_vol is out of scope — the walk-forward
+20d rolling vol, cap 1.0). Raising target_vol is out of scope — the walk-forward
 already showed it buys return at the same Sharpe.
 
 Experiments (each fitted on 2010-2018, judged on 2019-2026, after-cost, causal):
@@ -24,7 +24,7 @@ from tusharStrategyDev import (_load, compute_signal_v1, QQQ_TICKER, TQQQ_TICKER
                                HIGH_PERIOD)
 
 TRADING_DAYS = 252
-LEV_CAP = 1.5
+LEV_CAP = 1.0
 BASE_TARGET = 0.45
 VOL_WINDOW = 20
 IS_END = pd.Timestamp("2018-12-31")

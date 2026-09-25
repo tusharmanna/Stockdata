@@ -9,7 +9,7 @@ to 2010-2026 history? Protocol:
   3. Robustness: show OOS Sharpe across ALL target_vols. If it's flat, the edge is
      structural (not param-dependent). If it's peaky, it's fragile/overfit.
 
-Uses after-cost returns (financing on margin + cash yield), cap = 1.5 (aggressive).
+Uses after-cost returns (cash yield; generic financing logic retained), cap = 1.0.
 Reuses v1 regime logic from tusharStrategyDev.py.
 """
 
@@ -19,7 +19,7 @@ import pandas as pd
 from tusharStrategyDev import _load, compute_signal_v1, QQQ_TICKER, TQQQ_TICKER
 
 TRADING_DAYS = 252
-LEV_CAP = 1.5
+LEV_CAP = 1.0
 VOL_WINDOW = 20
 IS_END = "2018-12-31"          # in-sample through 2018, OOS from 2019
 TARGET_GRID = [0.45, 0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90]
@@ -91,7 +91,7 @@ def main():
           f"Out-of-sample: 2019-01-01 .. {idx[-1].date()}")
 
     print("\n" + "=" * 78)
-    print("STEP 1-3: target_vol grid  (after-cost, cap 1.5x)")
+    print("STEP 1-3: target_vol grid  (after-cost, cap 1.0x)")
     print("=" * 78)
     print(f"{'target':>7}{'  | IS Sharpe':>13}{'IS CAGR':>10}{'  || OOS Sharpe':>16}"
           f"{'OOS CAGR':>10}{'OOS MaxDD':>11}")

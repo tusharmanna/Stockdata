@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Repository Structure
 
 **Prime Strategies (Active):**
-- **Tushar v2 (volatility-targeted)** — `tushar_v2_backtest.py`, `tushar_v2_signal.py` (TQQQ 3x, defensive `target_vol=0.45`), plus `tushar_v2_walkforward.py` and `tushar_v2_stresstest.py` for validation. v2 keeps the v1 regime gate and changes only position sizing while invested: `exposure = clip(target_vol / realized_vol, 0, 1.5)`.
+- **Tushar v2 (volatility-targeted)** — `tushar_v2_backtest.py`, `tushar_v2_signal.py` (TQQQ 3x, defensive `target_vol=0.45`, no margin), plus `tushar_v2_walkforward.py` and `tushar_v2_stresstest.py` for validation. v2 keeps the v1 regime gate and changes only position sizing while invested: `exposure = clip(target_vol / realized_vol, 0, 1.0)`.
 - **QLD no-margin variant** — `tushar_v2_qld_signal.py` (QLD 2x, cap 1.0, for Roth/HSA/401k).
 - `tusharStrategyDev.py` — **retained as the shared regime engine** (`_load`, `compute_signal_v1`); v2 and QLD both import it. Also contains the original v1 strategy.
 - `all_strategies_backtest.py` + `docs/STRATEGY_COMPARISON.md` — consolidated comparison/rationale for choosing v2 + QLD.
@@ -43,7 +43,7 @@ python run_scan.py
 python backfill_recent.py
 
 # Daily v2 strategy signals (prime strategies)
-python tushar_v2_signal.py        # TQQQ 3x vol-targeted (taxable/margin account)
+python tushar_v2_signal.py        # TQQQ 3x vol-targeted (taxable brokerage, no account margin)
 python tushar_v2_qld_signal.py    # QLD 2x no-margin (Roth/HSA/401k)
 ```
 
@@ -304,17 +304,17 @@ v2 keeps v1's regime gate unchanged but **changes how the position is sized whil
 
 **The strategy:**
 - **Regime gate:** identical to v1 (BULL = QQQ within 15% of 189-day high; else CASH). In CASH, exposure = 0.
-- **Position sizing in BULL regime:** `exposure = clip(target_vol / realized_vol_TQQQ, 0, 1.5)`
-  - `target_vol = 0.45` (annualized), `cap = 1.5`
+- **Position sizing in BULL regime:** `exposure = clip(target_vol / realized_vol_TQQQ, 0, 1.0)`
+  - `target_vol = 0.45` (annualized), `cap = 1.0`
   - `realized_vol_TQQQ = TQQQ_daily_ret.rolling(20).std() × √252`
-  - Plain English: **delever when TQQQ gets volatile, lever up (within cap) when it's calm.** During a 2022-style crash the position automatically shrinks; during calm uptrends it can hold up to 1.5× TQQQ.
-- **Costs (modeled honestly):** financing charged on the borrowed portion when exposure > 1.0 (margin on top of a 3x ETF); T-bill yield credited on idle cash. Rate schedule: ~1.5% (2010–2021), ~5–6% (2022–2026). TQQQ's expense ratio is already in its price.
+  - Plain English: **delever when TQQQ gets volatile and restore exposure when it calms.** During a 2022-style crash the position automatically shrinks; during calm uptrends it can hold up to 100% TQQQ without adding margin on top of the 3× fund.
+- **Costs:** T-bill yield is credited on idle cash. The generic backtest retains financing logic for research variants above 1.0, but the production cap does not borrow. TQQQ's expense ratio is already in its price.
 - **Causal:** `exposure.shift(1) × TQQQ_daily_ret` — today's signal trades tomorrow.
 
 **Performance (2010–2026, $100k, after cost):**
-- v2 defensive: CAGR +44.5% | Sharpe **1.03** | Max DD **−46.5%** | $40.5M
-- vs v1 baseline: CAGR +43.1% | Sharpe 0.96 | Max DD −58.9% | $34.7M
-- Crash protection: 2022 −35.1% (v1 −54.7%), 2011 −15.3% (v1 −26.5%)
+- v2 defensive: CAGR +40.0% | Sharpe **1.03** | Max DD **−42.5%** | $25.7M
+- vs v1 baseline: CAGR +42.6% | Sharpe 0.95 | Max DD −58.9% | $34.6M
+- Crash protection: 2022 −35.1% (v1 −54.7%), 2011 −17.8% (v1 −26.5%)
 
 **⚠️ Honest caveat — what the walk-forward proved:** A clean walk-forward (fit `target_vol` on 2010–2018, verify on 2019–2026) showed **out-of-sample Sharpe is flat (~1.08) across every target_vol from 0.45 to 0.90, and identical to v1's**. Vol-targeting did **not** add risk-adjusted edge out of sample — it is a **risk-reduction knob, not alpha**. Higher target → more return *and* proportionally more drawdown (same Sharpe). `target_vol = 0.45` is the defensive setting the walk-forward endorses: it cuts max drawdown ~−59% → ~−43% (OOS) at v1-equivalent Sharpe. The favorable full-sample numbers above are partly in-sample drift; the *repeatable* benefit is shallower drawdowns, not extra return. All results are single-asset, single-path; live/taxed/slippage results will be lower.
 
@@ -361,8 +361,8 @@ were **superseded by the v2 / QLD prime strategies** and moved to `old/`:
 `qqq_2026_strategy.py`, `setup_pyramid_schedule.ps1`.
 
 For their backtest results (and how they compare to v2/QLD), see `docs/STRATEGY_COMPARISON.md`. Headline:
-the weighted pyramid (25/35/40, 3x) returned +10,021% / Sharpe 0.98 / maxDD −59.9%, but v2 defensive
-beat it on every axis (+40.4k% / 1.03 / −46.5%). To revive one, move it back from `old/`.
+the weighted pyramid (25/35/40, 3x) remains lower-Sharpe with a deeper drawdown than v2 defensive.
+To revive one, move it back from `old/`.
 
 ## Key Behaviours to Preserve
 

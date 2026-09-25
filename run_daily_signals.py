@@ -157,7 +157,7 @@ def update_document(signals):
         f"**Regime Gate:** {signals.get('regime','?')} - "
         f"{signals.get('pcthi', 0):.1f}% below 189d high (threshold: 15%)\n\n"
         f"**v2 Strategies:**\n"
-        f"- TQQQ v2 (1.5x cap): Hold {signals.get('tqqq_exposure','?')}x | Vol: {signals.get('tqqq_vol','?')}%\n"
+        f"- TQQQ v2 (1.0x cap): Hold {signals.get('tqqq_exposure','?')}x | Vol: {signals.get('tqqq_vol','?')}%\n"
         f"- QLD v2 (1.0x cap): {signals.get('qld_exposure','?')}% | Vol: {signals.get('qld_vol','?')}%\n\n"
         f"**Market Data:**\n"
         f"- QQQ Close: ${signals.get('qqq_close', 0):.2f}\n"
@@ -430,8 +430,8 @@ def _build_email_body(signals, exposures):
         f"REGIME : {regime}",
         f"QQQ    : ${qqq_cl:.2f}  |  189d High: ${hi189:.2f}  |  {pcthi:.1f}% below high  |  Gate at 15%",
         "",
-        "TQQQ v2  (taxable / margin account)",
-        f"  Target Exposure  : {t_expo}x TQQQ   (cap 1.5x)",
+        "TQQQ v2  (taxable brokerage account)",
+        f"  Target Exposure  : {t_expo}x TQQQ   (cap 1.0x, no margin)",
         f"  20d Vol          : {t_vol}%",
         "",
         "QLD v2  (Roth / HSA / 401k -- no margin)",
@@ -581,7 +581,7 @@ def main():
         print(f"\nToday's Signals ({datetime.now().strftime('%Y-%m-%d')}):")
         print(f"  Regime Gate: {signals.get('regime','?')} ({_fmt(signals.get('pcthi'),'.1f')}% below 189d high)")
         print(f"  QQQ v2 : {signals.get('qqq_exposure_v2','?')}x | Vol: {_fmt(signals.get('qqq_vol_v2'),'.0f')}%")
-        print(f"  TQQQ v2: {signals.get('tqqq_exposure','?')}x (cap 1.5x, with margin)")
+        print(f"  TQQQ v2: {signals.get('tqqq_exposure','?')}x (cap 1.0x, no margin)")
         print(f"  QLD v2 : {signals.get('qld_exposure','?')}% (cap 100%, no margin)")
         print("=" * 70)
 

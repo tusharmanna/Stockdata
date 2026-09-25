@@ -19,7 +19,7 @@ from tushar_v2_backtest import strat_returns, annual_returns, TRADING_DAYS
 from tushar_v2_backtest import RATE_SPLIT_YEARS, TBILL_EARLY, TBILL_LATE  # for reference
 
 VOL_WINDOW  = 20
-LEV_CAP     = 1.5
+LEV_CAP     = 1.0
 CURRENT_VOL = 0.45   # currently configured setting
 
 OUT_DIR  = "charts"

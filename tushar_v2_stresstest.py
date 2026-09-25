@@ -11,7 +11,7 @@ actually hold v2 with real money:
   4. Withdrawal stress — $1M start, pulling income out: does it survive a bad
      start, or does sequence-of-returns deplete it?
 
-Uses v2 after-cost daily returns (defensive target_vol=0.45, cap 1.5), reusing
+Uses v2 after-cost daily returns (defensive target_vol=0.45, cap 1.0), reusing
 v1's regime logic from tusharStrategyDev.py.
 """
 
@@ -21,7 +21,7 @@ import pandas as pd
 from tusharStrategyDev import _load, compute_signal_v1, QQQ_TICKER, TQQQ_TICKER
 
 TRADING_DAYS = 252
-TARGET_VOL, LEV_CAP, VOL_WINDOW = 0.45, 1.5, 20
+TARGET_VOL, LEV_CAP, VOL_WINDOW = 0.45, 1.0, 20
 RATE_SPLIT_YEARS = 12
 TBILL_EARLY, TBILL_LATE = 0.015, 0.05
 MARGIN_EARLY, MARGIN_LATE = 0.025, 0.06
@@ -151,8 +151,8 @@ def main():
         else:
             print(f"  {label:<26}: low ${min_bal:,.0f}  ->  final ${bal:,.0f}")
 
-    print("\nNote: after-cost gross of TAX. Real margin calls during a deep")
-    print("drawdown could force liquidation at the worst possible moment.")
+    print("\nNote: after-cost but gross of tax and trading slippage. TQQQ's")
+    print("fund-level leverage still makes deep and fast losses possible.")
 
 
 if __name__ == "__main__":

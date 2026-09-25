@@ -1,19 +1,19 @@
 # Account Summary & v2 Strategy Allocation
 
-**Last Updated:** 2026-08-11 14:15
+**Last Updated:** 2026-09-25 12:06
 **Snapshot Date:** 2026-06-16
 
-## TODAY'S SIGNALS (2026-08-11)
+## TODAY'S SIGNALS (2026-09-25)
 
-**Regime Gate:** BULL - 3.7% below 189d high (threshold: 15%)
+**Regime Gate:** BULL - 0.3% below 189d high (threshold: 15%)
 
 **v2 Strategies:**
-- TQQQ v2 (1.5x cap): Hold 0.6x | Vol: 74%
-- QLD v2 (1.0x cap): 90% | Vol: 50%
+- TQQQ v2 (1.0x cap): Hold 0.94x | Vol: 48%
+- QLD v2 (1.0x cap): 100% | Vol: 32%
 
 **Market Data:**
-- QQQ Close: $717.70
-- 189d High: $717.70
+- QQQ Close: $745.20
+- 189d High: $745.20
 
 ---
 
@@ -223,7 +223,7 @@ Target exposure = 0.45 (target vol) / 0.854 (realized vol) = 0.53x
 
 ### BrokerageLink Self-Directed ($339,902.67)
 
-**Strategy:** v2 TQQQ (Volatility-targeted, 3× leverage with margin)  
+**Strategy:** v2 TQQQ (Volatility-targeted, 3× fund leverage, no account margin)  
 **Signal Today:** Hold 0.53x TQQQ | Action: HOLD
 
 | Item | Value |
@@ -236,13 +236,13 @@ Target exposure = 0.45 (target vol) / 0.854 (realized vol) = 0.53x
 
 **Annual cash yield (on $159,803):** ~$7,990/year
 
-**Note:** v2 TQQQ strategy uses margin financing on the leveraged portion. Actual margin cost is ~5.5–6% post-2022 rates, applied to the borrowed portion (when exposure > 1.0).
+**Note:** v2 TQQQ exposure is capped at 1.0× account equity, so it does not borrow on top of the fund's internal 3× leverage.
 
 ---
 
 ### IB Brokerage (Self-Directed) ($100,000.00)
 
-**Strategy:** v2 TQQQ (Volatility-targeted, 3× leverage with margin)  
+**Strategy:** v2 TQQQ (Volatility-targeted, 3× fund leverage, no account margin)  
 **Signal Today:** Hold 0.53x TQQQ | Action: HOLD
 
 | Item | Value |

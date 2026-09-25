@@ -207,20 +207,22 @@
         }
 
         .action-required {
-            background-color: #fff3cd;
-            color: #856404;
+            background-color: #fee2e2;
+            color: #b91c1c;
             padding: 0.4rem 0.8rem;
             border-radius: 4px;
-            font-weight: 600;
+            border: 1px solid #ef4444;
+            font-weight: 800;
             font-size: 0.85rem;
         }
 
         .action-hold {
-            background-color: #d1ecf1;
-            color: #0c5460;
+            background-color: #fff5f5;
+            color: #b91c1c;
             padding: 0.4rem 0.8rem;
             border-radius: 4px;
-            font-weight: 600;
+            border: 1px solid #ef4444;
+            font-weight: 800;
             font-size: 0.85rem;
         }
 
@@ -237,6 +239,26 @@
             text-align: center;
             padding: 2rem;
             color: #999;
+        }
+
+        .override-controls {
+            padding: 1rem;
+            margin-bottom: 1.25rem;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+
+        .override-help {
+            color: #6c757d;
+            font-size: 0.82rem;
+        }
+
+        #override-status {
+            min-height: 1.25rem;
+            margin-top: 0.4rem;
+            font-size: 0.85rem;
+            font-weight: 600;
         }
 
         .container-xl {
@@ -305,6 +327,13 @@
         <!-- Combined Accounts Table -->
         <div class="strategy-section">
             <h3 style="margin-bottom: 1.5rem; color: #222;">All Accounts</h3>
+            <div class="override-controls">
+                <div class="override-help">
+                    Click an account's <strong>Update</strong> button to apply its live share difference at the current price.
+                    On first use, select <code>E:\work\Stockdata\account_overrides.json</code> when prompted.
+                </div>
+                <div id="override-status" role="status" aria-live="polite"></div>
+            </div>
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
                     <thead>
@@ -316,7 +345,7 @@
                             <th>Cost Basis</th>
                             <th>Avg Cost / Share</th>
                             <th colspan="4" class="group-header group-divider">Cost Basis View</th>
-                            <th colspan="4" class="group-header group-divider">Live Price View</th>
+                            <th colspan="5" class="group-header group-divider">Live Price View</th>
                         </tr>
                         <tr>
                             <th colspan="6"></th>
@@ -328,6 +357,7 @@
                             <th>Target Shares (Live)</th>
                             <th>Difference (Live)</th>
                             <th>Recommendation</th>
+                            <th>Apply</th>
                         </tr>
                     </thead>
                     <tbody id="combined-tbody">
@@ -567,6 +597,137 @@
         const fmtNum = (val) => new Intl.NumberFormat('en-US', { minimumFractionDigits: 0 }).format(Math.round(val));
         const fmtPct = (val) => val.toFixed(1) + '%';
 
+        // ============ ACCOUNT OVERRIDE EDITOR ============
+        // A local file page cannot write to disk without a user-selected file handle.
+        // The browser asks for account_overrides.json once, then reuses that handle.
+        let overridesFileHandle = null;
+
+        function setOverrideStatus(message, type = 'muted') {
+            const status = document.getElementById('override-status');
+            status.textContent = message;
+            status.className = type === 'success'
+                ? 'text-success'
+                : (type === 'error' ? 'text-danger' : 'text-muted');
+        }
+
+        function refreshCurrentExposureDisplay() {
+            const totalBalance = allAccounts.reduce((sum, account) => sum + account.balance, 0);
+            const totalCost = allAccounts.reduce((sum, account) => sum + account.getTotalCost(), 0);
+            const exposure = totalBalance > 0 ? (totalCost / totalBalance) * 100 : 0;
+            document.getElementById('current-exposure').value = exposure.toFixed(1);
+        }
+
+        function calculateOverrideUpdate(existing, quantityDelta, costDelta) {
+            const currentShares = Number(existing.current_shares);
+            const currentCost = Number(existing.total_cost);
+            if (!Number.isFinite(currentShares) || !Number.isFinite(currentCost)) {
+                throw new Error('The selected account must have numeric current_shares and total_cost values.');
+            }
+
+            const newShares = currentShares + quantityDelta;
+            const adjustedCost = Math.round((currentCost + costDelta) * 100) / 100;
+            const newCost = Math.max(0, adjustedCost);
+            if (newShares < 0) {
+                throw new Error('This change would make current_shares negative.');
+            }
+
+            return {
+                current_shares: Number.isInteger(newShares) ? newShares : Math.round(newShares * 1000000) / 1000000,
+                total_cost: newCost
+            };
+        }
+
+        async function selectOverridesFile() {
+            if (!window.showOpenFilePicker) {
+                throw new Error('Direct file updates require desktop Chrome or Edge.');
+            }
+
+            const handles = await window.showOpenFilePicker({
+                id: 'stockdata-account-overrides',
+                multiple: false,
+                excludeAcceptAllOption: true,
+                types: [{
+                    description: 'Account overrides JSON',
+                    accept: { 'application/json': ['.json'] }
+                }]
+            });
+            const handle = handles[0];
+            if (!handle || handle.name !== 'account_overrides.json') {
+                throw new Error('Please select E:\\work\\Stockdata\\account_overrides.json.');
+            }
+            overridesFileHandle = handle;
+            return handle;
+        }
+
+        async function updateAccountOverride(event, accountId) {
+            const button = event.currentTarget;
+            const account = allAccounts.find(item => item.id === accountId);
+            if (!account) {
+                setOverrideStatus(`Account "${accountId}" was not found.`, 'error');
+                return;
+            }
+
+            const state = account.getState(getTargetExposure());
+            const quantityDelta = state.liveSharesAction;
+            const currentPrice = Number(account.price);
+            const costDelta = Math.round((quantityDelta * currentPrice) * 100) / 100;
+
+            if (quantityDelta === 0) {
+                setOverrideStatus(`${account.name} is already at its live target.`);
+                return;
+            }
+            if (!Number.isFinite(currentPrice) || currentPrice <= 0) {
+                setOverrideStatus(`No valid current price is available for ${account.name}.`, 'error');
+                return;
+            }
+
+            button.disabled = true;
+            setOverrideStatus('Waiting for account_overrides.json...');
+
+            try {
+                const handle = overridesFileHandle || await selectOverridesFile();
+                const file = await handle.getFile();
+                const overrides = JSON.parse(await file.text());
+                if (!overrides || Array.isArray(overrides) || typeof overrides !== 'object') {
+                    throw new Error('account_overrides.json must contain a JSON object.');
+                }
+                if (!overrides[accountId]) {
+                    throw new Error(`No override entry exists for account "${accountId}".`);
+                }
+
+                const updated = calculateOverrideUpdate(overrides[accountId], quantityDelta, costDelta);
+                overrides[accountId] = { ...overrides[accountId], ...updated };
+
+                const writable = await handle.createWritable();
+                await writable.write(JSON.stringify(overrides, null, 2) + '\n');
+                await writable.close();
+
+                // Reflect the saved values immediately without waiting for the next sync.
+                account.accountData.current_shares = updated.current_shares;
+                account.accountData.total_cost = updated.total_cost;
+                account.accountData.avg_cost = updated.current_shares > 0
+                    ? Math.round((updated.total_cost / updated.current_shares) * 100) / 100
+                    : 0;
+
+                renderCombinedTable();
+                refreshCurrentExposureDisplay();
+                setOverrideStatus(
+                    `Saved ${account.name}: ${quantityDelta > 0 ? '+' : ''}${quantityDelta} shares at ${fmtMoney(currentPrice)}; ` +
+                    `new holdings ${updated.current_shares} shares and ${fmtMoney(updated.total_cost)} total cost.`,
+                    'success'
+                );
+            } catch (error) {
+                if (error && error.name === 'AbortError') {
+                    setOverrideStatus('Update canceled; no changes were saved.');
+                } else {
+                    console.error('Unable to update account overrides:', error);
+                    setOverrideStatus(`Update failed: ${error.message}`, 'error');
+                }
+            } finally {
+                button.disabled = false;
+            }
+        }
+
         // Get target exposure from input
         function getTargetExposure() {
             return parseFloat(document.getElementById('new-exposure').value) || 45;
@@ -600,6 +761,13 @@
                         <td>${state.liveTargetShares}</td>
                         <td class="${diffClass}" style="font-weight: 600;">${state.liveSharesAction > 0 ? '+' : ''}${state.liveSharesAction}</td>
                         <td><span class="${liveActionClass}">${liveRecommendation}</span></td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-primary"
+                                onclick="updateAccountOverride(event, decodeURIComponent('${encodeURIComponent(state.id)}'))"
+                                ${state.liveSharesAction === 0 ? 'disabled' : ''}>
+                                Update
+                            </button>
+                        </td>
                     </tr>
                 `;
             });

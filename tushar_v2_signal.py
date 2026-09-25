@@ -3,7 +3,7 @@
 Run daily to see:
   - v1 regime (BULL = QQQ within 15% of 189d high, else CASH)
   - TQQQ 20-day realized volatility
-  - Target TQQQ exposure: clip(0.45 / realized_vol, 0, 1.5)
+  - Target TQQQ exposure: clip(0.45 / realized_vol, 0, 1.0)
   - Action vs yesterday: ENTER / EXIT / LEVER UP / LEVER DOWN / HOLD / IN CASH
 
 target_vol = 0.45 is the walk-forward-endorsed setting: out of sample it matched
@@ -23,7 +23,7 @@ import yfinance as yf
 from tusharStrategyDev import compute_signal_v1
 
 TARGET_VOL = 0.45   # walk-forward-endorsed defensive setting (was 0.75 aggressive)
-LEV_CAP = 1.5
+LEV_CAP = 1.0      # No margin on top of a 3x ETF
 VOL_WINDOW = 20
 TRADING_DAYS = 252
 PERIOD = "1y"

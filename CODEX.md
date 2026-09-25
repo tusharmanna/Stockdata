@@ -6,7 +6,7 @@ This file is the Codex working context for this repository. It summarizes the cu
 
 `Stockdata` is a Python trading research and automation repo. The active production focus is daily Nasdaq strategy signals:
 
-- TQQQ v2: leveraged/margin account strategy using TQQQ.
+- TQQQ v2: volatility-targeted strategy using TQQQ without margin on top of the fund.
 - QLD v2: no-margin account strategy for Roth/HSA/401k-style accounts.
 - QQQ v2: conservative comparison/monitoring signal.
 
@@ -40,8 +40,8 @@ Shared v1 regime engine:
 TQQQ v2:
 
 - Files: `tushar_v2_signal.py`, `tushar_v2_backtest.py`, `tushar_v2_walkforward.py`, `tushar_v2_stresstest.py`.
-- Constants: `TARGET_VOL = 0.45`, `LEV_CAP = 1.5`, `VOL_WINDOW = 20`, `TRADING_DAYS = 252`.
-- Exposure in bull regime: `clip(0.45 / realized_vol_TQQQ, 0, 1.5)`.
+- Constants: `TARGET_VOL = 0.45`, `LEV_CAP = 1.0`, `VOL_WINDOW = 20`, `TRADING_DAYS = 252`.
+- Exposure in bull regime: `clip(0.45 / realized_vol_TQQQ, 0, 1.0)`.
 - Exposure in cash regime: `0.0`.
 - Realized volatility: 20-day rolling standard deviation of TQQQ daily returns, annualized by `sqrt(252)`.
 - Signal history: `signals/tushar_v2_history.csv`.
@@ -78,7 +78,7 @@ If changing strategy logic, use the same discipline:
 - Causal returns using shifted exposure.
 - Fit parameters only on 2010-2018.
 - Judge OOS on 2019-2026.
-- After-cost returns for TQQQ margin exposure.
+- After-cost returns with T-bill yield on idle cash; production TQQQ exposure is capped at 1.0.
 - Adoption bar: better OOS Sharpe and no materially worse max drawdown.
 
 ## Daily Automation

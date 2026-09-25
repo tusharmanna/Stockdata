@@ -7,13 +7,14 @@ realized volatility instead of a binary 0/100%:
 
     exposure = clip(target_vol / realized_vol_TQQQ, 0, cap)   (only in bull regime)
 
-Defensive settings: target_vol = 0.45, cap = 1.5. This is the one configuration the
+Defensive settings: target_vol = 0.45, cap = 1.0. This is the deployable configuration;
+it keeps exposure within account equity rather than adding margin on top of a 3x ETF.
+The 0.45 target is the one configuration the
 walk-forward test endorsed (tushar_v2_walkforward.py): out of sample it matched v1's
 Sharpe (~1.09) while cutting max drawdown from ~-57% to ~-43%. Note vol-targeting did
 NOT add risk-adjusted edge out of sample — it is a risk-reduction knob, not alpha.
-Because cap > 1.0 allows margin on top of a 3x ETF, the backtest charges financing on
-the borrowed portion and credits T-bill yield on idle cash — the after-cost row is the
-honest figure.
+The backtest retains generic financing logic for research variants and credits T-bill
+yield on idle cash; at the production 1.0 cap there is no borrowed portion.
 
 Reuses v1's regime logic from tusharStrategyDev.py (DRY).
 """
@@ -25,7 +26,7 @@ from tusharStrategyDev import _load, compute_signal_v1, QQQ_TICKER, TQQQ_TICKER
 
 TRADING_DAYS = 252
 TARGET_VOL = 0.45   # walk-forward-endorsed defensive setting (was 0.75 aggressive)
-LEV_CAP = 1.5
+LEV_CAP = 1.0      # No margin on top of a 3x ETF
 VOL_WINDOW = 20
 
 # Blended, regime-realistic rate schedule (annualized).

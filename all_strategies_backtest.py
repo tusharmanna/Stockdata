@@ -69,8 +69,8 @@ def main():
         "Pyramid 33/33/33 (3x)": (pyr_eq * 3).shift(1).fillna(0) * qret,
         "Pyramid 25/35/40 (3x)": (pyr_w * 3).shift(1).fillna(0) * qret,
         "v1 (3x TQQQ)": lever_cost(reg.clip(0, 1.0), tret),
-        "v2 defensive (3x)": lever_cost((reg * (0.45 / rv_t).clip(0, 1.5)).clip(0, 1.5), tret),
-        "v2 aggressive (3x)": lever_cost((reg * (0.75 / rv_t).clip(0, 1.5)).clip(0, 1.5), tret),
+        "v2 defensive (3x)": lever_cost((reg * (0.45 / rv_t).clip(0, 1.0)).clip(0, 1.0), tret),
+        "v2 aggressive (3x)": lever_cost((reg * (0.75 / rv_t).clip(0, 1.0)).clip(0, 1.0), tret),
     }
 
     def annual(r):
