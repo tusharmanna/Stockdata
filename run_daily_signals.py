@@ -315,6 +315,32 @@ def display_live_rebalance():
     print("\n" + "\n".join(_format_live_rebalance_block(rows)))
 
 
+def write_github_summary():
+    """Write the account actions to the GitHub Actions run summary."""
+    summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
+    if not summary_path:
+        return
+
+    rows = _account_rebalance_rows()
+    with open(summary_path, "a", encoding="utf-8") as f:
+        f.write("## Daily Signal Rebalance Actions\n\n")
+        if not rows:
+            f.write("> No account rebalance data available.\n")
+            return
+
+        signal_date = rows[0].get("sig_date") or "?"
+        target = rows[0].get("tgt_exp", 0)
+        f.write(f"Signal date: **{signal_date}** · Target exposure: **{target:.1f}%**\n\n")
+        f.write("| Account | ETF | Current exposure | Target shares | Change | Action |\n")
+        f.write("|---|---:|---:|---:|---:|---|\n")
+        for row in rows:
+            f.write(
+                f"| {row['name']} | {row['etf']} | {row['live_exp']:.1f}% | "
+                f"{row['tgt_shares']} | {row['diff']:+d} | "
+                f"**{row['recommendation']}** |\n"
+            )
+
+
 def _format_live_rebalance_block(rows=None):
     """Full LIVE PRICE VIEW block (console + email)."""
     rows = rows if rows is not None else _account_rebalance_rows()
@@ -586,6 +612,11 @@ def main():
             display_live_rebalance()
         except Exception as e:
             print(f"[WARNING] Could not display live rebalance: {e}")
+
+        try:
+            write_github_summary()
+        except Exception as e:
+            print(f"[WARNING] Could not write GitHub Actions summary: {e}")
 
         try:
             open_dashboard()

@@ -38,7 +38,7 @@ jobs:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
         run: |
           mkdir -p signals
-          .venv/bin/python run_daily_signals.py 2>&1 | tee signals/run_output.txt
+          .venv/bin/python -u run_daily_signals.py 2>&1 | tee signals/run_output.txt
 
       - name: Upload signal outputs
         if: always()
